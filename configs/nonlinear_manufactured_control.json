@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "experiment_id": "forced_nonlinear_poisson_end_to_end_control",
+  "description": "Small forced smooth negative control coupling the independent finite-cylinder Poisson solve to nonlinear transformed axisymmetric time evolution",
+  "interpretation": "This is a forced manufactured trajectory, not an unforced general Navier-Stokes solution, not a singularity candidate, and not a proof.",
+  "coordinate_system": "axisymmetric cylindrical half-plane (r,z), periodic z",
+  "normalization_description": "dimensionless manufactured fields",
+  "units": {
+    "r": "dimensionless length",
+    "z": "dimensionless length",
+    "time": "dimensionless time",
+    "u1": "dimensionless transformed swirl u^theta/r",
+    "omega1": "dimensionless transformed azimuthal vorticity omega^theta/r",
+    "psi1": "dimensionless transformed streamfunction psi^theta/r",
+    "energy": "dimensionless kinetic energy on the finite cylinder",
+    "vorticity": "dimensionless inverse time"
+  },
+  "seed": 20260728,
+  "viscosity": 0.05,
+  "final_time": 0.01,
+  "r_max": 1.0,
+  "z_min": 0.0,
+  "z_max": 6.283185307179586,
+  "radial_resolutions": [9, 17, 33],
+  "axial_resolutions": [16, 32, 64],
+  "time_step_coefficient": 0.2,
+  "diagnostic_stride": 1,
+  "fault_amplitude": 0.05,
+  "acceptance": {
+    "minimum_observed_order": 1.5,
+    "maximum_finest_relative_error": 0.01,
+    "maximum_discrete_poisson_residual": 1e-10,
+    "maximum_outer_trace_error": 1e-12,
+    "maximum_energy_relative_error": 0.01,
+    "maximum_vorticity_relative_error": 0.01
+  }
+}
