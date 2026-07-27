@@ -1,0 +1,15 @@
+# Exact Python-level dependency target for Dockerfile.
+#
+# This graph deliberately matches the measured Windows reference versions
+# where packages are platform-independent.  The Linux image build has not yet
+# been executed in this repository, so this file is not represented as a
+# verified Linux lockfile.  The pinned base-image digest supplies its own
+# Debian and CPython runtime.
+numpy==1.26.4
+pytest==9.0.3
+iniconfig==2.3.0
+packaging==26.0
+pluggy==1.6.0
+Pygments==2.19.2
+setuptools==80.10.2
+pip==26.1.2

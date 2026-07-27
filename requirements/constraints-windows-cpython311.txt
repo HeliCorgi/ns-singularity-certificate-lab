@@ -1,0 +1,18 @@
+# Reproduction constraints measured on the Windows reference environment.
+#
+# Verified environment on 2026-07-28:
+#   CPython 3.11.9 (64-bit), Windows 10.0.26200, NumPy wheel with
+#   OpenBLAS64 0.3.23.dev, ILP64, OpenMP, MAX_THREADS=2.
+#
+# These are exact Python-package constraints, not a cross-platform lockfile.
+# NumPy wheel build metadata, CPU features, thread variables, and BLAS/LAPACK
+# details are recorded independently in runtime-provenance/v2.
+numpy==1.26.4
+pytest==9.0.3
+iniconfig==2.3.0
+packaging==26.0
+pluggy==1.6.0
+Pygments==2.19.2
+colorama==0.4.6; sys_platform == "win32"
+setuptools==80.10.2
+pip==26.1.2
