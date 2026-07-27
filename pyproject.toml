@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ns-singularity-certificate-lab"
+version = "0.1.0"
+description = "Auditable numerical foundations for axisymmetric Navier-Stokes candidate studies"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24,<3",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8,<10",
+]
+dev = [
+    "pytest>=8,<10",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-markers"
+testpaths = ["tests"]
+filterwarnings = [
+    "error",
+]

@@ -1,0 +1,34 @@
+{
+  "experiment_id": "smooth_swirl_diffusion_control",
+  "files": {
+    "config.snapshot.json": {
+      "bytes": 1343,
+      "sha256": "8cd5969d9b42d41acea2bbc2487b1b2bfd2395a91d679079db9d112f0d67aca0"
+    },
+    "convergence.csv": {
+      "bytes": 263,
+      "sha256": "9c277e38f0333a2e59e45c8d03c4d7effdd51fd27649ace1db8bcd54afbab9ec"
+    },
+    "diagnostics.csv": {
+      "bytes": 1871,
+      "sha256": "f455ea5753ebd8e29fb5f73e49496a4cb7b6570a74d3a0e397d5925120f87a44"
+    },
+    "energy.svg": {
+      "bytes": 1374,
+      "sha256": "6867b90b68f2dd9ffb41dac77e36304152371e367c2a4c681e229c2d6db9b7e2"
+    },
+    "profiles.npz": {
+      "bytes": 21792,
+      "sha256": "3c5f697a743ddb9fb6f80a8e8ecc29e43941763ac128328e44db46c9eb8d5ca6"
+    },
+    "profiles.svg": {
+      "bytes": 7599,
+      "sha256": "2a27753bf1af431c2ae37c859b7b69555c3aaf13b8b4f8d1bc32aa0d0b7d9f67"
+    },
+    "summary.json": {
+      "bytes": 3562,
+      "sha256": "0c8c9c30aaec01e91bedde4161751a87a1b33201e91613a35bbbfe71db61d636"
+    }
+  },
+  "schema_version": 1
+}

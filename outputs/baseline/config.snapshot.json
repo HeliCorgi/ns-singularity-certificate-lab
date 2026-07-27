@@ -1,0 +1,33 @@
+{
+  "acceptance": {
+    "energy_relative_increase_tolerance": 1e-11,
+    "maximum_finest_relative_l2_error": 0.001,
+    "minimum_observed_order": 1.7,
+    "stability_peak_factor": 1.0000000001
+  },
+  "amplitude": 1.0,
+  "boundary_sensitivity": {
+    "compare_radius": 1.0,
+    "maximum_allowed_difference": 1e-08,
+    "points_per_unit": 32,
+    "radii": [
+      2.0,
+      3.0
+    ]
+  },
+  "description": "Non-singular axisymmetric swirl-only Gaussian diffusion control",
+  "dt_over_dr": 0.1,
+  "experiment_id": "smooth_swirl_diffusion_control",
+  "final_time": 0.25,
+  "r_max": 5.0,
+  "resolutions": [
+    33,
+    65,
+    129
+  ],
+  "sample_count": 21,
+  "schema_version": 1,
+  "seed": 20260727,
+  "sigma": 1.0,
+  "viscosity": 0.05
+}

@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "experiment_id": "smooth_swirl_diffusion_control",
+  "description": "Non-singular axisymmetric swirl-only Gaussian diffusion control",
+  "coordinate_system": "axisymmetric cylindrical (r,z), finite periodic-z control cylinder",
+  "normalization_description": "dimensionless with reference length and velocity equal to one",
+  "normalization": {
+    "length_scale_L0": 1.0,
+    "velocity_scale_U0": 1.0
+  },
+  "units": {
+    "r": "dimensionless length",
+    "z": "dimensionless length",
+    "time": "dimensionless time",
+    "u1": "dimensionless transformed swirl u^theta/r",
+    "energy_per_unit_z": "dimensionless kinetic energy per dimensionless z length"
+  },
+  "seed": 20260727,
+  "viscosity": 0.05,
+  "amplitude": 1.0,
+  "sigma": 1.0,
+  "final_time": 0.25,
+  "r_max": 5.0,
+  "z_period": 6.283185307179586,
+  "resolutions": [33, 65, 129],
+  "dt_over_dr": 0.1,
+  "sample_count": 21,
+  "boundary_sensitivity": {
+    "radii": [2.0, 3.0],
+    "points_per_unit": 32,
+    "compare_radius": 1.0,
+    "maximum_allowed_difference": 1e-8
+  },
+  "acceptance": {
+    "minimum_observed_order": 1.7,
+    "maximum_finest_relative_l2_error": 0.001,
+    "energy_relative_increase_tolerance": 1e-11,
+    "stability_peak_factor": 1.0000000001
+  }
+}

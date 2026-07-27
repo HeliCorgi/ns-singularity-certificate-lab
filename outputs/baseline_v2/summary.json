@@ -1,0 +1,86 @@
+{
+  "acceptance_checks": {
+    "all_values_finite": true,
+    "energy_nonincreasing_with_tolerance": true,
+    "errors_decrease_under_refinement": true,
+    "finest_error_passes": true,
+    "observed_order_passes": true,
+    "outer_boundary_not_dominant": true,
+    "stable_peak": true
+  },
+  "accepted_as_control": true,
+  "convergence": {
+    "max_errors": [
+      0.0016719060565005828,
+      0.00043253542829502223,
+      0.0001087983871879139
+    ],
+    "observed_orders": [
+      1.99412411489383,
+      1.9984186131341382
+    ],
+    "relative_l2_errors": [
+      0.0008804028753337372,
+      0.00022099898476018887,
+      5.5310340510584766e-05
+    ],
+    "resolutions": [
+      33,
+      65,
+      129
+    ]
+  },
+  "experiment_id": "smooth_swirl_diffusion_control",
+  "false_positive_guard": {
+    "classification": "bounded_or_decaying_control",
+    "important_limitation": "This heuristic can reject an obvious false positive; it cannot prove regularity or singularity.",
+    "reason": "peak physical vorticity lacks sustained monotone growth",
+    "reciprocal_blowup_fit_attempted": false,
+    "sustained_tail_growth": false
+  },
+  "interpretation": "Non-singular numerical control only. This output is neither a singularity candidate nor a mathematical proof.",
+  "method": {
+    "axis_limit": "L u1(0) = 4*u1_rr(0)",
+    "domain": "0<=r<=5.0, z periodic with period 6.283185307179586; fields are z-independent",
+    "equation": "u1_t = nu * (u1_rr + 3*u1_r/r)",
+    "outer_boundary_for_convergence": "analytic Dirichlet trace",
+    "spatial_operator": "independent second-order centered radial stencil",
+    "time_integrator": "Crank-Nicolson, theta=1/2"
+  },
+  "reproducibility": {
+    "config_sha256": "26f8c18819bffe6161a9066b4cc838368e9b26e5839d8cdde3a47349916d999b",
+    "runtime_provenance": {
+      "git_dirty": true,
+      "git_head": "unborn/not-a-git-checkout",
+      "numpy_version": "1.26.4",
+      "platform": "Windows-10-10.0.26200-SP0",
+      "python_implementation": "CPython",
+      "python_version": "3.11.9",
+      "schema": "ns-certificate-lab/runtime-provenance/v1",
+      "source_fingerprint_algorithm": "sha256-path-and-content-v1",
+      "source_fingerprint_file_count": 18,
+      "source_fingerprint_scope": [
+        "pyproject.toml",
+        "src",
+        "experiments",
+        "configs"
+      ],
+      "source_fingerprint_sha256": "a6d3d2ea03fa43d27fa379d14d64da6d4a6400a523674df57b314978755f2914"
+    },
+    "seed": 20260727
+  },
+  "schema_version": 1,
+  "stability_and_physics": {
+    "all_finite": true,
+    "boundary_compare_radius": 1.0,
+    "boundary_inner_max_difference": 8.940570506155154e-11,
+    "boundary_radii": [
+      2.0,
+      3.0
+    ],
+    "final_energy_per_unit_z": 0.35620139814951374,
+    "initial_energy_per_unit_z": 0.39269914274236706,
+    "maximum_relative_energy_increase": 0.0,
+    "peak_vorticity_factor": 1.0
+  }
+}

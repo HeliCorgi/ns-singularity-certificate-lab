@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "experiment_id": "smooth_forced_manufactured_audit",
+  "coordinate_system": "axisymmetric cylindrical half-plane (r,z), periodic z",
+  "normalization_description": "dimensionless manufactured fields",
+  "units": {
+    "r": "dimensionless length",
+    "z": "dimensionless length",
+    "time": "dimensionless time",
+    "u1": "dimensionless transformed swirl u^theta/r",
+    "omega1": "dimensionless transformed azimuthal vorticity omega^theta/r",
+    "psi1": "dimensionless transformed streamfunction psi^theta/r"
+  },
+  "seed": 1729,
+  "time": 0.2,
+  "viscosity": 0.05,
+  "r_max": 1.0,
+  "z_min": 0.0,
+  "z_max": 6.283185307179586,
+  "normalization": {
+    "length_scale_L0": 1.0,
+    "velocity_scale_U0": 1.0
+  },
+  "radial_resolutions": [17, 33, 65]
+}
