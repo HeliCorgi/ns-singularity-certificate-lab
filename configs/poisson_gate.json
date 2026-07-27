@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "experiment": "finite_cylinder_poisson_gate",
+  "r_max": 1.7,
+  "z_min": 0.0,
+  "z_max": 6.283185307179586,
+  "mode": 3,
+  "resolutions": [
+    {"nr": 17, "nz": 32},
+    {"nr": 33, "nz": 64},
+    {"nr": 65, "nz": 128}
+  ],
+  "condition_mode_indices": [0, 1, 3]
+}

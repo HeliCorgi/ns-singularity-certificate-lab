@@ -1,0 +1,79 @@
+{
+  "acceptance": {
+    "all_passed": true,
+    "cross_stencil_defect_strictly_decreases": true,
+    "errors_strictly_decrease": true,
+    "maximum_boundary_error_below_2e_13": true,
+    "maximum_fourier_matrix_residual_below_2e_9": true,
+    "minimum_cross_stencil_order_at_least_1_85": true,
+    "minimum_observed_order_at_least_1_85": true
+  },
+  "axis_row": "8*(psi[0]-psi[1])/dr^2 in the negative operator",
+  "experiment": "finite_cylinder_poisson_gate",
+  "limitations": [
+    "binary64 arithmetic without outward rounding",
+    "finite cylinder with periodic z",
+    "no full-space Green-tail or domain-truncation bound",
+    "condition numbers are dense estimates for selected Fourier modes only"
+  ],
+  "operator": "-(d_rr + 3/r d_r + d_zz)",
+  "outer_boundary": "explicit nonzero Dirichlet data at r=R",
+  "rows": [
+    {
+      "boundary_error_max": 1.1102230246251565e-16,
+      "condition_numbers": {
+        "0": 4162.495667558572,
+        "1": 3377.6108594131597,
+        "3": 1727.04882953543
+      },
+      "dr": 0.10625,
+      "dz": 0.19634954084936207,
+      "fourier_matrix_residual_max": 9.947598300641403e-13,
+      "max_abs_error": 0.0045440839763752905,
+      "nr": 17,
+      "nz": 32,
+      "observed_order_from_previous": null,
+      "physical_cross_stencil_defect_max": 0.05673546216528447,
+      "physical_cross_stencil_defect_rms": 0.025143652283797415,
+      "weighted_relative_l2_error": 0.0019421866831844169
+    },
+    {
+      "boundary_error_max": 1.1102230246251565e-16,
+      "condition_numbers": {
+        "0": 23170.314635818817,
+        "1": 18745.632051032928,
+        "3": 9216.257818741984
+      },
+      "dr": 0.053125,
+      "dz": 0.09817477042468103,
+      "fourier_matrix_residual_max": 1.0260237104375847e-11,
+      "max_abs_error": 0.0011375995487790114,
+      "nr": 33,
+      "nz": 64,
+      "observed_order_from_previous": 1.9568848432342691,
+      "physical_cross_stencil_defect_max": 0.014280534159253566,
+      "physical_cross_stencil_defect_rms": 0.006203114222748744,
+      "weighted_relative_l2_error": 0.0005002763080098939
+    },
+    {
+      "boundary_error_max": 1.1102230246251565e-16,
+      "condition_numbers": {
+        "0": 129995.70334317695,
+        "1": 105032.06682838217,
+        "3": 50685.83923593898
+      },
+      "dr": 0.0265625,
+      "dz": 0.04908738521234052,
+      "fourier_matrix_residual_max": 1.1743850336642936e-10,
+      "max_abs_error": 0.0002844981598735252,
+      "nr": 65,
+      "nz": 128,
+      "observed_order_from_previous": 1.9781927583262116,
+      "physical_cross_stencil_defect_max": 0.0035761923796249206,
+      "physical_cross_stencil_defect_rms": 0.0015375728292862329,
+      "weighted_relative_l2_error": 0.00012697393494842045
+    }
+  ],
+  "schema_version": 1,
+  "statement": "floating-point finite-cylinder manufactured-solution gate; not a continuum proof"
+}
