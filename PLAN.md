@@ -60,21 +60,58 @@ declared tolerances.
 Status: the recorded run passed its numerical acceptance checks; the CI
 workflow now includes this replay.  It remains a finite-grid negative control.
 
-## Phase 2.5 — independent elliptic solve gate (next minimum step)
+## Phase 2.5 — independent elliptic solve gate (completed)
 
-- Design a finite-cylinder solver for
-  \(-(\partial_{rr}+3r^{-1}\partial_r+\partial_{zz})\psi_1=\omega_1\)
-  with periodic \(z\) and an explicitly declared outer radial boundary.
-- Implement it anew in the current conventions; do not copy the audited legacy
-  prototype.
-- Directly test the axis row, global sign, outer boundary rows, and a
-  manufactured solution over at least three refinements.
-- Record conditioning, residual, and boundary/truncation limitations before
-  using the solver in any trajectory code.
+- Two independent implementations now exist: the committed `poisson.py`
+  (\(r^3\)-flux finite volume, Fourier in \(z\), Thomas solve) and the
+  integrated bundle solver `finite_cylinder_poisson.py` (non-divergence-form
+  direct differences, Fourier in \(z\), independent Thomas solve).
+- Both pass non-circular manufactured tests at three refinements with
+  observed order ~2, and both reject sign/axis/boundary faults.
+- A dedicated cross-validation suite (`tests/test_poisson_cross_validation.py`)
+  pins the shared conventions to roundoff on radially-exact fields (CV-2),
+  measures the genuine \(O(\Delta r^2)\) inter-solver disagreement with an
+  explicit lower bound that fails if independence ever collapses (CV-1), and
+  runs paired fault injections (CV-3).
+- Documented limitation: the axial Fourier treatment and the grid class are
+  shared between the two solvers, so independence holds for the radial
+  operator, boundary bookkeeping, and linear algebra only.  A non-Fourier
+  axial path remains an open verification gate.
 
-Exit gate: an implementation independent of the existing diagnostic
-operators passes non-circular manufactured and fault-injection tests.  Do not
-start candidate discovery at this phase.
+Status: reached.  Conditioning and boundary/truncation limitations are
+recorded; no whole-space claim is made.
+
+## Phase 2.6 — nonlinear wall-bounded production solver (completed)
+
+- Hou finite-cylinder setup audited from the arXiv LaTeX sources
+  (v1, v2, and the deferred method paper arXiv:2102.06663) into
+  `docs/hou_setup_audit.md` and equation-audit entries E-27–E-31.
+- Production Heun/RK2 integrator for the full nonlinear
+  \((u_1,\omega_1,\psi_1)\) system with no-slip/no-flow wall conditions
+  (single Dirichlet \(\psi_1(1,z)=0\) elliptic solve plus second-order
+  Thom-type wall vorticity, E-31), adaptive CFL time step, and the
+  two-stage viscosity protocol (E-30).
+- Verified by forced manufactured convergence (space and time, order ~2),
+  zero-field/small-amplitude/symmetry/circulation invariants, five fault
+  injections, and restart fidelity.
+
+Status: reached.  This validates the discretization, not any physical claim.
+
+## Phase 2.7 — Hou early-time run on uniform grids (evidence stage)
+
+- Integrate the audited E-29 datum at three uniform resolutions to
+  \(t=T_1=0.002191729\) with \(\nu=5\times10^{-4}\), full-period \(z\),
+  monitored (not imposed) odd symmetry.
+- Record amplification trajectories, \((R(t),Z(t))\), energy/enstrophy,
+  circulation, divergence residuals, and the independent solver-B elliptic
+  cross-check at every snapshot.
+- Compare against the published 1536² amplification 20.5235 at \(T_1\)
+  while stating plainly that a uniform fixed grid cannot resolve Hou's
+  adaptive scales; discrepancies are evidence, not failure to be hidden.
+
+Exit gate: multi-resolution trends recorded with raw checkpoints; either a
+resolution-consistent growth trend or a documented negative result.  Do not
+start candidate discovery from this phase alone.
 
 ## Phase 3 — preregistered candidate discovery (future)
 

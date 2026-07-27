@@ -1,0 +1,941 @@
+diff --git a/src/ns_certificate_lab/finite_cylinder_poisson.py b/src/ns_certificate_lab/finite_cylinder_poisson.py
+new file mode 100644
+index 0000000..39cd9b9
+--- /dev/null
++++ b/src/ns_certificate_lab/finite_cylinder_poisson.py
+@@ -0,0 +1,313 @@
++r"""Independent finite-cylinder solver for ``-L5 psi = omega``.
++
++This module solves
++
++.. math::
++
++    -(\partial_{rr} + 3 r^{-1}\partial_r + \partial_{zz})\psi = \omega
++
++on ``0 <= r <= R`` with periodic ``z`` and an explicitly supplied Dirichlet
++value at ``r=R``.  The cylindrical axis is included.  Smooth even fields obey
++
++.. math::
++
++    (\partial_{rr} + 3 r^{-1}\partial_r)\psi\big|_{r=0}
++    = 4\partial_{rr}\psi(0),
++
++which gives the second-order discrete axis row
++``8 * (psi[1] - psi[0]) / dr**2``.
++
++The solve is deliberately independent of :mod:`ns_certificate_lab.operators`:
++periodicity is diagonalized with a discrete Fourier transform and every radial
++mode is solved by a local tridiagonal implementation.  A separate physical-
++space stencil is provided for residual auditing.
++
++This is a floating-point numerical primitive, not an interval proof and not a
++full-space Green-function solver.
++"""
++
++from __future__ import annotations
++
++from dataclasses import dataclass
++from typing import Mapping
++
++import numpy as np
++import numpy.typing as npt
++
++from .grid import AxisymmetricGrid
++
++FloatArray = npt.NDArray[np.float64]
++ComplexArray = npt.NDArray[np.complex128]
++
++
++@dataclass(frozen=True)
++class PoissonSolveDiagnostics:
++    """Diagnostics attached to one finite-cylinder Poisson solve."""
++
++    fourier_matrix_residual_max: float
++    physical_cross_stencil_defect_rms: float
++    physical_cross_stencil_defect_max: float
++    boundary_error_max: float
++    condition_numbers: Mapping[int, float]
++
++
++@dataclass(frozen=True)
++class PoissonSolveResult:
++    """Solution and numerical diagnostics."""
++
++    psi: FloatArray
++    diagnostics: PoissonSolveDiagnostics
++
++
++def _validate_periodic_grid(grid: AxisymmetricGrid) -> None:
++    if not grid.periodic_z:
++        raise ValueError("finite-cylinder Poisson solver requires periodic_z=True")
++    if grid.z_period is None or not np.isfinite(grid.z_period) or grid.z_period <= 0.0:
++        raise ValueError("periodic grid must have a positive finite z_period")
++
++
++def _validate_boundary(boundary: npt.ArrayLike | float, grid: AxisymmetricGrid) -> FloatArray:
++    array = np.asarray(boundary, dtype=np.float64)
++    if array.ndim == 0:
++        array = np.full(grid.nz, float(array), dtype=np.float64)
++    if array.shape != (grid.nz,):
++        raise ValueError(f"outer_boundary must have shape {(grid.nz,)}, got {array.shape}")
++    if not np.all(np.isfinite(array)):
++        raise ValueError("outer_boundary must contain only finite values")
++    return array
++
++
++def axial_wavenumbers(grid: AxisymmetricGrid) -> FloatArray:
++    """Return angular Fourier wavenumbers matching NumPy's FFT convention."""
++
++    _validate_periodic_grid(grid)
++    return 2.0 * np.pi * np.fft.fftfreq(grid.nz, d=grid.dz)
++
++
++def radial_mode_tridiagonal(
++    grid: AxisymmetricGrid,
++    *,
++    q_squared: float,
++) -> tuple[ComplexArray, ComplexArray, ComplexArray]:
++    """Assemble the radial tridiagonal system for one axial Fourier mode.
++
++    Arrays use the standard tridiagonal convention: ``lower[j]`` is row
++    ``j+1``, column ``j`` and ``upper[j]`` is row ``j``, column ``j+1``.
++    The final row is the outer Dirichlet identity equation.
++    """
++
++    _validate_periodic_grid(grid)
++    if not np.isfinite(q_squared) or q_squared < 0.0:
++        raise ValueError("q_squared must be finite and non-negative")
++
++    nr = grid.nr
++    dr = grid.dr
++    inv_dr2 = 1.0 / (dr * dr)
++
++    lower = np.zeros(nr - 1, dtype=np.complex128)
++    diagonal = np.zeros(nr, dtype=np.complex128)
++    upper = np.zeros(nr - 1, dtype=np.complex128)
++
++    # Axis limit: -4 psi_rr + q^2 psi, with
++    # psi_rr(0) ~= 2(psi_1 - psi_0)/dr^2.
++    diagonal[0] = 8.0 * inv_dr2 + q_squared
++    upper[0] = -8.0 * inv_dr2
++
++    for i in range(1, nr - 1):
++        r_i = grid.r[i]
++        radial_skew = 3.0 / (2.0 * r_i * dr)
++        lower[i - 1] = -inv_dr2 + radial_skew
++        diagonal[i] = 2.0 * inv_dr2 + q_squared
++        upper[i] = -inv_dr2 - radial_skew
++
++    # Explicit outer Dirichlet row.  The coupling from row nr-2 to the
++    # boundary remains in upper[nr-2]; the boundary row itself has no lower
++    # coupling.
++    lower[-1] = 0.0
++    diagonal[-1] = 1.0
++    return lower, diagonal, upper
++
++
++def assemble_radial_mode_matrix(
++    grid: AxisymmetricGrid,
++    *,
++    q_squared: float,
++) -> ComplexArray:
++    """Return a dense radial matrix for auditing and condition estimates."""
++
++    lower, diagonal, upper = radial_mode_tridiagonal(grid, q_squared=q_squared)
++    matrix = np.diag(diagonal)
++    matrix += np.diag(lower, k=-1)
++    matrix += np.diag(upper, k=1)
++    return np.asarray(matrix, dtype=np.complex128)
++
++
++def _solve_tridiagonal(
++    lower: ComplexArray,
++    diagonal: ComplexArray,
++    upper: ComplexArray,
++    rhs: ComplexArray,
++) -> ComplexArray:
++    """Solve a complex tridiagonal system by guarded Thomas elimination."""
++
++    n = diagonal.size
++    if lower.shape != (n - 1,) or upper.shape != (n - 1,) or rhs.shape != (n,):
++        raise ValueError("incompatible tridiagonal array shapes")
++
++    b = np.array(diagonal, dtype=np.complex128, copy=True)
++    c = np.array(upper, dtype=np.complex128, copy=True)
++    d = np.array(rhs, dtype=np.complex128, copy=True)
++    a = np.asarray(lower, dtype=np.complex128)
++
++    scale = max(1.0, float(np.max(np.abs(b))), float(np.max(np.abs(a))), float(np.max(np.abs(c))))
++    pivot_floor = 64.0 * np.finfo(np.float64).eps * scale
++
++    for i in range(1, n):
++        pivot = b[i - 1]
++        if abs(pivot) <= pivot_floor:
++            raise np.linalg.LinAlgError(f"near-zero tridiagonal pivot at row {i - 1}")
++        multiplier = a[i - 1] / pivot
++        b[i] -= multiplier * c[i - 1]
++        d[i] -= multiplier * d[i - 1]
++
++    if abs(b[-1]) <= pivot_floor:
++        raise np.linalg.LinAlgError(f"near-zero tridiagonal pivot at row {n - 1}")
++
++    solution = np.empty(n, dtype=np.complex128)
++    solution[-1] = d[-1] / b[-1]
++    for i in range(n - 2, -1, -1):
++        if abs(b[i]) <= pivot_floor:
++            raise np.linalg.LinAlgError(f"near-zero tridiagonal pivot at row {i}")
++        solution[i] = (d[i] - c[i] * solution[i + 1]) / b[i]
++    return solution
++
++
++def apply_finite_cylinder_system(
++    psi: npt.ArrayLike,
++    grid: AxisymmetricGrid,
++) -> FloatArray:
++    """Apply the discrete PDE rows and outer Dirichlet identity row.
++
++    Rows ``0 .. nr-2`` contain the second-order approximation to ``-L5 psi``.
++    The final radial row returns ``psi(R,z)`` itself, matching the identity row
++    used by the solver.  This physical-space implementation does not invoke the
++    Fourier assembly used in :func:`solve_finite_cylinder_poisson`.
++    """
++
++    _validate_periodic_grid(grid)
++    field = grid.validate_field(psi, name="psi")
++    dr = grid.dr
++    dz = grid.dz
++    inv_dr2 = 1.0 / (dr * dr)
++    inv_dz2 = 1.0 / (dz * dz)
++
++    dzz = (np.roll(field, -1, axis=1) - 2.0 * field + np.roll(field, 1, axis=1)) * inv_dz2
++    result = np.empty_like(field)
++
++    radial_axis = 8.0 * (field[1, :] - field[0, :]) * inv_dr2
++    result[0, :] = -(radial_axis + dzz[0, :])
++
++    r = grid.r[1:-1, None]
++    drr = (field[2:, :] - 2.0 * field[1:-1, :] + field[:-2, :]) * inv_dr2
++    dr_centered = (field[2:, :] - field[:-2, :]) / (2.0 * dr)
++    radial = drr + 3.0 * dr_centered / r
++    result[1:-1, :] = -(radial + dzz[1:-1, :])
++
++    result[-1, :] = field[-1, :]
++    return result
++
++
++def _condition_number_sample(
++    grid: AxisymmetricGrid,
++    *,
++    mode_indices: tuple[int, ...],
++) -> dict[int, float]:
++    q = axial_wavenumbers(grid)
++    result: dict[int, float] = {}
++    for raw_index in mode_indices:
++        index = int(raw_index) % grid.nz
++        matrix = assemble_radial_mode_matrix(grid, q_squared=float(q[index] * q[index]))
++        result[index] = float(np.linalg.cond(matrix))
++    return result
++
++
++def solve_finite_cylinder_poisson(
++    omega: npt.ArrayLike,
++    grid: AxisymmetricGrid,
++    *,
++    outer_boundary: npt.ArrayLike | float,
++    condition_mode_indices: tuple[int, ...] = (0, 1),
++) -> PoissonSolveResult:
++    """Solve ``-L5 psi = omega`` with periodic ``z`` and outer Dirichlet data.
++
++    Parameters
++    ----------
++    omega:
++        Right-hand side sampled on the full ``(nr, nz)`` grid.  Values on the
++        outer row are ignored because that row is replaced by the Dirichlet
++        equation.
++    grid:
++        Uniform axisymmetric grid including ``r=0`` and ``r=R``.  ``z`` must be
++        periodic and omit its right endpoint.
++    outer_boundary:
++        Scalar or length-``nz`` array specifying ``psi(R,z)``.
++    condition_mode_indices:
++        Fourier mode indices for which dense 2-norm condition estimates are
++        recorded.  This diagnostic can be disabled with ``()``.
++    """
++
++    _validate_periodic_grid(grid)
++    rhs_physical = grid.validate_field(omega, name="omega")
++    boundary = _validate_boundary(outer_boundary, grid)
++
++    rhs_hat = np.fft.fft(rhs_physical, axis=1)
++    boundary_hat = np.fft.fft(boundary)
++    psi_hat = np.empty_like(rhs_hat, dtype=np.complex128)
++    q = axial_wavenumbers(grid)
++
++    fourier_residual_max = 0.0
++    for mode in range(grid.nz):
++        lower, diagonal, upper = radial_mode_tridiagonal(
++            grid,
++            q_squared=float(q[mode] * q[mode]),
++        )
++        mode_rhs = np.array(rhs_hat[:, mode], dtype=np.complex128, copy=True)
++        mode_rhs[-1] = boundary_hat[mode]
++        mode_solution = _solve_tridiagonal(lower, diagonal, upper, mode_rhs)
++        psi_hat[:, mode] = mode_solution
++
++        check = diagonal * mode_solution
++        check[1:] += lower * mode_solution[:-1]
++        check[:-1] += upper * mode_solution[1:]
++        fourier_residual_max = max(
++            fourier_residual_max,
++            float(np.max(np.abs(check - mode_rhs))),
++        )
++
++    psi_complex = np.fft.ifft(psi_hat, axis=1)
++    imaginary_max = float(np.max(np.abs(psi_complex.imag)))
++    real_scale = max(1.0, float(np.max(np.abs(psi_complex.real))))
++    if imaginary_max > 2048.0 * np.finfo(np.float64).eps * real_scale:
++        raise ArithmeticError(
++            "inverse FFT produced an unexpectedly large imaginary component: "
++            f"{imaginary_max:.3e}"
++        )
++    psi = np.asarray(psi_complex.real, dtype=np.float64)
++
++    system_rhs = np.array(rhs_physical, dtype=np.float64, copy=True)
++    system_rhs[-1, :] = boundary
++    physical_residual = apply_finite_cylinder_system(psi, grid) - system_rhs
++    interior_residual = physical_residual[:-1, :]
++    boundary_error = psi[-1, :] - boundary
++
++    diagnostics = PoissonSolveDiagnostics(
++        fourier_matrix_residual_max=fourier_residual_max,
++        physical_cross_stencil_defect_rms=float(np.sqrt(np.mean(interior_residual * interior_residual))),
++        physical_cross_stencil_defect_max=float(np.max(np.abs(interior_residual))),
++        boundary_error_max=float(np.max(np.abs(boundary_error))),
++        condition_numbers=_condition_number_sample(
++            grid,
++            mode_indices=condition_mode_indices,
++        ),
++    )
++    return PoissonSolveResult(psi=psi, diagnostics=diagnostics)
+diff --git a/tests/test_finite_cylinder_poisson.py b/tests/test_finite_cylinder_poisson.py
+new file mode 100644
+index 0000000..9304077
+--- /dev/null
++++ b/tests/test_finite_cylinder_poisson.py
+@@ -0,0 +1,166 @@
++from __future__ import annotations
++
++import numpy as np
++import pytest
++
++from ns_certificate_lab.finite_cylinder_poisson import (
++    apply_finite_cylinder_system,
++    assemble_radial_mode_matrix,
++    axial_wavenumbers,
++    solve_finite_cylinder_poisson,
++)
++from ns_certificate_lab.grid import AxisymmetricGrid
++
++
++def _manufactured_fields(
++    grid: AxisymmetricGrid,
++    *,
++    mode: int = 3,
++) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
++    r, z = grid.mesh()
++    q = 2.0 * np.pi * mode / float(grid.z_period)
++
++    a, b = -0.31, 0.07
++    c, d, e = 0.22, -0.19, 0.035
++    radial_constant = 1.1 + a * r**2 + b * r**4
++    radial_mode = c + d * r**2 + e * r**4
++    cosine = np.cos(q * z)
++    psi = radial_constant + radial_mode * cosine
++
++    omega_constant = -(8.0 * a + 24.0 * b * r**2)
++    omega_mode = (q * q * radial_mode - 8.0 * d - 24.0 * e * r**2) * cosine
++    omega = omega_constant + omega_mode
++    return psi, omega, psi[-1, :]
++
++
++def _weighted_relative_l2(error: np.ndarray, exact: np.ndarray, grid: AxisymmetricGrid) -> float:
++    # Formal L5 radial measure.  The axis has zero weight and does not cause a
++    # singular quadrature factor.
++    weights = grid.r[:, None] ** 3
++    numerator = np.sum(weights * error * error)
++    denominator = np.sum(weights * exact * exact)
++    return float(np.sqrt(numerator / denominator))
++
++
++def test_axis_row_has_coefficient_eight_and_outer_identity() -> None:
++    grid = AxisymmetricGrid.uniform(nr=9, nz=12, r_max=2.0)
++    matrix = assemble_radial_mode_matrix(grid, q_squared=0.0)
++    inv_dr2 = 1.0 / grid.dr**2
++
++    assert matrix[0, 0] == pytest.approx(8.0 * inv_dr2)
++    assert matrix[0, 1] == pytest.approx(-8.0 * inv_dr2)
++    assert np.count_nonzero(matrix[0, 2:]) == 0
++
++    expected_boundary = np.zeros(grid.nr)
++    expected_boundary[-1] = 1.0
++    np.testing.assert_allclose(matrix[-1, :].real, expected_boundary)
++    np.testing.assert_allclose(matrix[-1, :].imag, 0.0)
++
++
++def test_fourier_wavenumbers_match_period() -> None:
++    grid = AxisymmetricGrid.uniform(nr=9, nz=16, r_max=1.0, z_max=4.0 * np.pi)
++    q = axial_wavenumbers(grid)
++    assert q[1] == pytest.approx(0.5)
++    assert q[-1] == pytest.approx(-0.5)
++
++
++def test_nonzero_boundary_manufactured_solution_converges_second_order() -> None:
++    sizes = ((17, 32), (33, 64), (65, 128))
++    errors: list[float] = []
++    cross_defects: list[float] = []
++
++    for nr, nz in sizes:
++        grid = AxisymmetricGrid.uniform(nr=nr, nz=nz, r_max=1.7)
++        exact, omega, boundary = _manufactured_fields(grid)
++        result = solve_finite_cylinder_poisson(
++            omega,
++            grid,
++            outer_boundary=boundary,
++            condition_mode_indices=(),
++        )
++        errors.append(_weighted_relative_l2(result.psi - exact, exact, grid))
++        cross_defects.append(result.diagnostics.physical_cross_stencil_defect_max)
++        assert result.diagnostics.boundary_error_max < 2.0e-13
++        assert result.diagnostics.fourier_matrix_residual_max < 2.0e-9
++
++    orders = [np.log(errors[i] / errors[i + 1]) / np.log(2.0) for i in range(2)]
++    assert errors[2] < errors[1] < errors[0]
++    assert min(orders) > 1.85
++    defect_orders = [np.log(cross_defects[i] / cross_defects[i + 1]) / np.log(2.0) for i in range(2)]
++    assert cross_defects[2] < cross_defects[1] < cross_defects[0]
++    assert min(defect_orders) > 1.85
++
++
++def test_global_sign_is_not_silently_reversed() -> None:
++    grid = AxisymmetricGrid.uniform(nr=33, nz=32, r_max=1.4)
++    exact, omega, boundary = _manufactured_fields(grid, mode=2)
++
++    correct = solve_finite_cylinder_poisson(
++        omega,
++        grid,
++        outer_boundary=boundary,
++        condition_mode_indices=(),
++    ).psi
++    wrong = solve_finite_cylinder_poisson(
++        -omega,
++        grid,
++        outer_boundary=boundary,
++        condition_mode_indices=(),
++    ).psi
++
++    correct_error = _weighted_relative_l2(correct - exact, exact, grid)
++    wrong_error = _weighted_relative_l2(wrong - exact, exact, grid)
++    assert correct_error < 2.0e-3
++    assert wrong_error > 50.0 * correct_error
++
++
++def test_physical_space_system_residual_uses_dirichlet_row() -> None:
++    grid = AxisymmetricGrid.uniform(nr=25, nz=40, r_max=1.2)
++    exact, omega, boundary = _manufactured_fields(grid, mode=4)
++    lhs = apply_finite_cylinder_system(exact, grid)
++
++    # The outer equation is psi(R,z)=g(z), not the differential equation.
++    np.testing.assert_allclose(lhs[-1, :], boundary, rtol=0.0, atol=0.0)
++    assert np.max(np.abs(lhs[:-1, :] - omega[:-1, :])) > 0.0  # continuum/discrete defect
++
++
++def test_condition_numbers_are_recorded_for_requested_modes() -> None:
++    grid = AxisymmetricGrid.uniform(nr=17, nz=24, r_max=1.0)
++    exact, omega, boundary = _manufactured_fields(grid)
++    result = solve_finite_cylinder_poisson(
++        omega,
++        grid,
++        outer_boundary=boundary,
++        condition_mode_indices=(0, 1, grid.nz // 2),
++    )
++    assert set(result.diagnostics.condition_numbers) == {0, 1, grid.nz // 2}
++    assert all(np.isfinite(value) and value > 1.0 for value in result.diagnostics.condition_numbers.values())
++
++
++@pytest.mark.parametrize(
++    "omega,boundary,match",
++    [
++        (np.zeros((8, 12)), np.zeros(12), "shape"),
++        (np.full((9, 12), np.nan), np.zeros(12), "finite"),
++        (np.zeros((9, 12)), np.zeros(11), "shape"),
++        (np.zeros((9, 12)), np.full(12, np.inf), "finite"),
++    ],
++)
++def test_invalid_inputs_are_rejected(
++    omega: np.ndarray,
++    boundary: np.ndarray,
++    match: str,
++) -> None:
++    grid = AxisymmetricGrid.uniform(nr=9, nz=12, r_max=1.0)
++    with pytest.raises(ValueError, match=match):
++        solve_finite_cylinder_poisson(omega, grid, outer_boundary=boundary)
++
++
++def test_nonperiodic_grid_is_rejected() -> None:
++    grid = AxisymmetricGrid.uniform(nr=9, nz=12, r_max=1.0, periodic_z=False)
++    with pytest.raises(ValueError, match="periodic"):
++        solve_finite_cylinder_poisson(
++            np.zeros(grid.shape),
++            grid,
++            outer_boundary=np.zeros(grid.nz),
++        )
+diff --git a/experiments/run_poisson_gate.py b/experiments/run_poisson_gate.py
+new file mode 100644
+index 0000000..578c1e1
+--- /dev/null
++++ b/experiments/run_poisson_gate.py
+@@ -0,0 +1,231 @@
++"""Run the finite-cylinder Poisson manufactured-solution gate."""
++
++from __future__ import annotations
++
++import argparse
++import csv
++import hashlib
++import json
++from pathlib import Path
++from typing import Any
++
++import numpy as np
++
++from ns_certificate_lab.finite_cylinder_poisson import solve_finite_cylinder_poisson
++from ns_certificate_lab.grid import AxisymmetricGrid
++
++
++def _load_json(path: Path) -> dict[str, Any]:
++    with path.open("r", encoding="utf-8") as handle:
++        data = json.load(handle)
++    if not isinstance(data, dict):
++        raise ValueError("config root must be an object")
++    return data
++
++
++def _write_json(path: Path, data: object) -> None:
++    text = json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False) + "\n"
++    path.write_text(text, encoding="utf-8")
++
++
++def _sha256(path: Path) -> str:
++    digest = hashlib.sha256()
++    with path.open("rb") as handle:
++        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
++            digest.update(chunk)
++    return digest.hexdigest()
++
++
++def _manufactured(
++    grid: AxisymmetricGrid,
++    *,
++    mode: int,
++) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
++    r, z = grid.mesh()
++    q = 2.0 * np.pi * mode / float(grid.z_period)
++    a, b = -0.31, 0.07
++    c, d, e = 0.22, -0.19, 0.035
++    constant = 1.1 + a * r**2 + b * r**4
++    oscillatory_radial = c + d * r**2 + e * r**4
++    cosine = np.cos(q * z)
++    psi = constant + oscillatory_radial * cosine
++    omega = -(8.0 * a + 24.0 * b * r**2)
++    omega += (q * q * oscillatory_radial - 8.0 * d - 24.0 * e * r**2) * cosine
++    return psi, omega, psi[-1, :]
++
++
++def _weighted_relative_l2(error: np.ndarray, exact: np.ndarray, grid: AxisymmetricGrid) -> float:
++    weights = grid.r[:, None] ** 3
++    return float(np.sqrt(np.sum(weights * error**2) / np.sum(weights * exact**2)))
++
++
++def run(config_path: Path, output_dir: Path) -> dict[str, Any]:
++    if output_dir.exists():
++        raise FileExistsError(f"refusing to overwrite existing output directory: {output_dir}")
++    output_dir.mkdir(parents=True)
++
++    config = _load_json(config_path)
++    mode = int(config["mode"])
++    rows: list[dict[str, Any]] = []
++    final_arrays: dict[str, np.ndarray] | None = None
++
++    for item in config["resolutions"]:
++        nr = int(item["nr"])
++        nz = int(item["nz"])
++        grid = AxisymmetricGrid.uniform(
++            nr=nr,
++            nz=nz,
++            r_max=float(config["r_max"]),
++            z_min=float(config["z_min"]),
++            z_max=float(config["z_max"]),
++            periodic_z=True,
++        )
++        exact, omega, boundary = _manufactured(grid, mode=mode)
++        result = solve_finite_cylinder_poisson(
++            omega,
++            grid,
++            outer_boundary=boundary,
++            condition_mode_indices=tuple(int(v) for v in config["condition_mode_indices"]),
++        )
++        error = result.psi - exact
++        row = {
++            "nr": nr,
++            "nz": nz,
++            "dr": grid.dr,
++            "dz": grid.dz,
++            "weighted_relative_l2_error": _weighted_relative_l2(error, exact, grid),
++            "max_abs_error": float(np.max(np.abs(error))),
++            "fourier_matrix_residual_max": result.diagnostics.fourier_matrix_residual_max,
++            "physical_cross_stencil_defect_rms": result.diagnostics.physical_cross_stencil_defect_rms,
++            "physical_cross_stencil_defect_max": result.diagnostics.physical_cross_stencil_defect_max,
++            "boundary_error_max": result.diagnostics.boundary_error_max,
++            "condition_numbers": {
++                str(index): value for index, value in result.diagnostics.condition_numbers.items()
++            },
++        }
++        rows.append(row)
++        final_arrays = {
++            "r": grid.r,
++            "z": grid.z,
++            "psi_exact": exact,
++            "omega": omega,
++            "outer_boundary": boundary,
++            "psi_numerical": result.psi,
++            "error": error,
++        }
++
++    for index in range(len(rows) - 1):
++        coarse = float(rows[index]["weighted_relative_l2_error"])
++        fine = float(rows[index + 1]["weighted_relative_l2_error"])
++        h_coarse = float(rows[index]["dr"])
++        h_fine = float(rows[index + 1]["dr"])
++        rows[index + 1]["observed_order_from_previous"] = float(
++            np.log(coarse / fine) / np.log(h_coarse / h_fine)
++        )
++    rows[0]["observed_order_from_previous"] = None
++
++    orders = [float(row["observed_order_from_previous"]) for row in rows[1:]]
++    cross_defect_orders = [
++        float(
++            np.log(
++                float(rows[i]["physical_cross_stencil_defect_max"])
++                / float(rows[i + 1]["physical_cross_stencil_defect_max"])
++            )
++            / np.log(float(rows[i]["dr"]) / float(rows[i + 1]["dr"]))
++        )
++        for i in range(len(rows) - 1)
++    ]
++    acceptance = {
++        "errors_strictly_decrease": all(
++            float(rows[i + 1]["weighted_relative_l2_error"])
++            < float(rows[i]["weighted_relative_l2_error"])
++            for i in range(len(rows) - 1)
++        ),
++        "minimum_observed_order_at_least_1_85": min(orders) >= 1.85,
++        "cross_stencil_defect_strictly_decreases": all(
++            float(rows[i + 1]["physical_cross_stencil_defect_max"])
++            < float(rows[i]["physical_cross_stencil_defect_max"])
++            for i in range(len(rows) - 1)
++        ),
++        "minimum_cross_stencil_order_at_least_1_85": min(cross_defect_orders) >= 1.85,
++        "maximum_fourier_matrix_residual_below_2e_9": max(
++            float(row["fourier_matrix_residual_max"]) for row in rows
++        ) < 2.0e-9,
++        "maximum_boundary_error_below_2e_13": max(
++            float(row["boundary_error_max"]) for row in rows
++        ) < 2.0e-13,
++    }
++    acceptance["all_passed"] = all(acceptance.values())
++
++    summary = {
++        "schema_version": 1,
++        "experiment": "finite_cylinder_poisson_gate",
++        "statement": "floating-point finite-cylinder manufactured-solution gate; not a continuum proof",
++        "operator": "-(d_rr + 3/r d_r + d_zz)",
++        "axis_row": "8*(psi[0]-psi[1])/dr^2 in the negative operator",
++        "outer_boundary": "explicit nonzero Dirichlet data at r=R",
++        "rows": rows,
++        "acceptance": acceptance,
++        "limitations": [
++            "binary64 arithmetic without outward rounding",
++            "finite cylinder with periodic z",
++            "no full-space Green-tail or domain-truncation bound",
++            "condition numbers are dense estimates for selected Fourier modes only",
++        ],
++    }
++
++    summary_path = output_dir / "summary.json"
++    csv_path = output_dir / "convergence.csv"
++    arrays_path = output_dir / "finest_solution.npz"
++    config_snapshot_path = output_dir / "config.snapshot.json"
++
++    _write_json(summary_path, summary)
++    _write_json(config_snapshot_path, config)
++    with csv_path.open("w", encoding="utf-8", newline="") as handle:
++        fieldnames = [
++            "nr",
++            "nz",
++            "dr",
++            "dz",
++            "weighted_relative_l2_error",
++            "max_abs_error",
++            "observed_order_from_previous",
++            "fourier_matrix_residual_max",
++            "physical_cross_stencil_defect_rms",
++            "physical_cross_stencil_defect_max",
++            "boundary_error_max",
++        ]
++        writer = csv.DictWriter(handle, fieldnames=fieldnames)
++        writer.writeheader()
++        for row in rows:
++            writer.writerow({key: row[key] for key in fieldnames})
++    assert final_arrays is not None
++    np.savez(arrays_path, **final_arrays)
++
++    manifest = {
++        "schema_version": 1,
++        "payloads": {
++            path.name: {"sha256": _sha256(path), "bytes": path.stat().st_size}
++            for path in (summary_path, csv_path, arrays_path, config_snapshot_path)
++        },
++    }
++    manifest_path = output_dir / "manifest.json"
++    _write_json(manifest_path, manifest)
++    (output_dir / "manifest.json.sha256").write_text(_sha256(manifest_path) + "\n", encoding="ascii")
++
++    if not acceptance["all_passed"]:
++        raise RuntimeError("finite-cylinder Poisson gate failed acceptance checks")
++    return summary
++
++
++def main() -> None:
++    parser = argparse.ArgumentParser()
++    parser.add_argument("--config", type=Path, required=True)
++    parser.add_argument("--output-dir", type=Path, required=True)
++    args = parser.parse_args()
++    summary = run(args.config, args.output_dir)
++    print(json.dumps(summary["acceptance"], ensure_ascii=False, sort_keys=True))
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/configs/poisson_gate.json b/configs/poisson_gate.json
+new file mode 100644
+index 0000000..fbc1076
+--- /dev/null
++++ b/configs/poisson_gate.json
+@@ -0,0 +1,14 @@
++{
++  "schema_version": 1,
++  "experiment": "finite_cylinder_poisson_gate",
++  "r_max": 1.7,
++  "z_min": 0.0,
++  "z_max": 6.283185307179586,
++  "mode": 3,
++  "resolutions": [
++    {"nr": 17, "nz": 32},
++    {"nr": 33, "nz": 64},
++    {"nr": 65, "nz": 128}
++  ],
++  "condition_mode_indices": [0, 1, 3]
++}
+diff --git a/docs/finite_cylinder_poisson.md b/docs/finite_cylinder_poisson.md
+new file mode 100644
+index 0000000..066b674
+--- /dev/null
++++ b/docs/finite_cylinder_poisson.md
+@@ -0,0 +1,85 @@
++# Finite-cylinder `-L5` Poisson gate
++
++## Scope
++
++This milestone implements the floating-point boundary-value problem
++
++\[
++-\left(\partial_{rr}+\frac{3}{r}\partial_r+\partial_{zz}\right)\psi_1
++=\omega_1,
++\qquad 0\le r\le R,
++\]
++
++with periodic `z`, regular even behavior at the axis, and explicitly supplied
++Dirichlet data at `r=R`.
++
++It is an independent elliptic numerical gate. It is not a whole-space solver,
++does not bound the effect of the artificial outer boundary, and does not use
++interval arithmetic.
++
++## Discretization
++
++The periodic axial direction is diagonalized with NumPy's discrete Fourier
++transform. For each axial angular wavenumber `q`, the radial problem is
++tridiagonal.
++
++At an interior radial point,
++
++\[
++-\mathcal L_5\psi_i =
++\left(-\frac1{\Delta r^2}+\frac{3}{2r_i\Delta r}\right)\psi_{i-1}
+++\left(\frac2{\Delta r^2}+q^2\right)\psi_i
+++\left(-\frac1{\Delta r^2}-\frac{3}{2r_i\Delta r}\right)\psi_{i+1}.
++\]
++
++For a smooth even function at the axis,
++
++\[
++\left(\partial_{rr}+\frac3r\partial_r\right)\psi\big|_{r=0}
++=4\partial_{rr}\psi(0).
++\]
++
++With an even ghost point, `psi(-dr)=psi(dr)`, this gives
++
++\[
++(-\mathcal L_5\psi)_0
++\approx \frac{8}{\Delta r^2}(\psi_0-\psi_1)+q^2\psi_0.
++\]
++
++The final radial row is the identity equation `psi(R,z)=g(z)`.
++
++## Independence
++
++The solver does not call the existing cylindrical diagnostic operators. It
++uses Fourier diagonalization and a local complex tridiagonal solver.
++
++A separate physical-space implementation applies the discrete PDE rows and the
++outer identity row. This supplies a second residual path. The continuum error
++is measured independently against an analytic polynomial-times-cosine
++manufactured solution with nonzero outer boundary data.
++
++## Acceptance gate
++
++The initial gate requires:
++
++- direct inspection tests for the axis coefficient `8`;
++- direct inspection of the outer identity row;
++- a global-sign fault test;
++- nonzero analytic outer boundary data;
++- at least three refinements;
++- decreasing analytic error with observed order at least `1.85`;
++- small Fourier-system and physical-space matrix residuals;
++- rejected nonperiodic, nonfinite, and shape-invalid inputs;
++- selected dense 2-norm condition estimates recorded as diagnostics.
++
++## Limitations
++
++- All arithmetic is binary64 and is not outward rounded.
++- Fourier differentiation is used only in the solve; the residual audit uses a
++  second-order physical-space periodic stencil.
++- Dense condition numbers are sampled for selected modes and are not a
++  stability theorem.
++- The finite outer radius is an artificial boundary. No full-space Green tail
++  or domain-truncation bound is provided.
++- Passing this gate permits later trajectory-code design review only. It is not
++  evidence for a singularity.
+diff --git a/POISSON_GATE_REPORT.md b/POISSON_GATE_REPORT.md
+new file mode 100644
+index 0000000..532d04e
+--- /dev/null
++++ b/POISSON_GATE_REPORT.md
+@@ -0,0 +1,96 @@
++# Finite-cylinder Poisson gate implementation report
++
++## Implemented milestone
++
++This bundle implements the next recorded repository gate:
++
++\[
++-\left(\partial_{rr}+\frac{3}{r}\partial_r+\partial_{zz}\right)\psi_1=\omega_1
++\]
++
++on a finite cylinder with periodic `z`, regular axis behavior, and explicit
++nonzero outer Dirichlet data.
++
++## Files
++
++- `src/ns_certificate_lab/finite_cylinder_poisson.py`
++- `tests/test_finite_cylinder_poisson.py`
++- `experiments/run_poisson_gate.py`
++- `configs/poisson_gate.json`
++- `docs/finite_cylinder_poisson.md`
++- `outputs/poisson_gate_v1/`
++
++The implementation intentionally uses a new module name and does not overwrite
++an existing `poisson.py`.
++
++## Numerical method
++
++- periodic `z`: discrete Fourier transform;
++- radial direction: newly assembled second-order tridiagonal system;
++- axis limit: coefficient `8` in the negative operator row;
++- outer radius: explicit Dirichlet identity row;
++- solve: guarded complex Thomas algorithm;
++- independent audit: separate physical-space second-order periodic stencil.
++
++## Recorded results
++
++Manufactured solution resolutions:
++
++| `(nr,nz)` | weighted relative L2 error | observed order | Fourier matrix residual max | cross-stencil defect max |
++|---|---:|---:|---:|---:|
++| `(17,32)` | `1.9421867e-3` | — | `9.95e-13` | `5.67355e-2` |
++| `(33,64)` | `5.0027631e-4` | `1.9569` | `1.03e-11` | `1.42805e-2` |
++| `(65,128)` | `1.2697393e-4` | `1.9782` | `1.17e-10` | `3.57619e-3` |
++
++The cross-stencil defect is not expected to be at roundoff because the solver
++uses Fourier axial differentiation while the audit path uses an independent
++second-order physical-space axial stencil. Its observed orders were about
++`1.9902` and `1.9976`.
++
++Selected raw dense condition estimates increased with refinement. These values
++are representation-dependent because the PDE rows and unscaled Dirichlet
++identity row have different magnitudes; they are diagnostics, not stability
++bounds.
++
++## Validation performed
++
++Against the previously uploaded repository snapshot:
++
++```text
++53 passed
++```
++
++This consists of the snapshot's existing tests plus 11 new Poisson-gate tests.
++The experiment's seven acceptance checks passed. Python compilation and all
++four manifest payload hashes were also checked.
++
++## Important integration note
++
++The public GitHub branch is newer than the uploaded snapshot. The new files use
++unique paths and only depend on the stable `AxisymmetricGrid` interface, so they
++are designed to be copied into the current repository without replacing the
++newer Cartesian and time-convergence work. The full current GitHub test suite
++must still be run locally after copying. Do not update `STATUS.md` to claim the
++gate is complete until that current-branch replay succeeds.
++
++## Reproduction
++
++From the repository root:
++
++```powershell
++$env:PYTHONPATH='src'
++$env:PYTHONDONTWRITEBYTECODE='1'
++python -m pytest -q
++python -m experiments.run_poisson_gate --config configs/poisson_gate.json --output-dir outputs/poisson_gate_local
++```
++
++Choose a fresh output directory; the experiment refuses to overwrite an
++existing evidence directory.
++
++## What this does not establish
++
++- no full-space boundary-tail estimate;
++- no interval arithmetic;
++- no nonlinear time evolution;
++- no singularity candidate;
++- no evidence that the Millennium problem is solved.

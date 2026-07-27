@@ -368,7 +368,14 @@ def run(config: dict[str, Any], output_dir: Path) -> dict[str, Any]:
                 "averages; this is second-order consistent for the smooth "
                 "even manufactured field"
             ),
-            "axis_limit": "8*(psi1[1]-psi1[0])/dr^2",
+            # Labelling clarification only, not a behavior change: the summary
+            # previously stated the axis row without naming the operator sign
+            # it belongs to, which reads as ambiguous next to the solved
+            # equation -L5 psi1 = omega1.
+            "axis_limit": (
+                "8*(psi1[1]-psi1[0])/dr^2 in the positive L5 radial part; "
+                "negative-operator row is 8*(psi1[0]-psi1[1])/dr^2"
+            ),
             "axial": "NumPy FFT Fourier coefficients",
             "linear_solve": "locally implemented per-mode Thomas algorithm",
             "outer_boundary": "nonzero z-dependent analytic Dirichlet trace",
