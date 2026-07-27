@@ -61,6 +61,11 @@ u^z=r^{-1}\partial_r(r\psi^\theta)
 | E-24 | 閉じた系から3D原始変数系への同値性 | **一次資料で確認済み** | 正則性・極条件込みで [LW] |
 | E-25 | 有限円柱Poisson対照問題 | **導出済み** | E-13へ周期 \(z\)・外側Dirichletを明示 |
 | E-26 | \(r^3\)-flux離散式・軸係数8 | **導出済み** | control-volume積分とFourier変換 |
+| E-27 | Hou 円柱の壁条件(\(r=1\)) | **一次資料で確認済み** | 独立導出、[Hou21, eqs. (2.4)–(2.5)] |
+| E-28 | Hou 円柱の対称性・半周期領域 | **一次資料で確認済み** | [Hou21, §2]、[LW] |
+| E-29 | Hou 初期値と導出ノルム | **一次資料で確認済み** | [Hou21, eq. (2.2)]、ノルム値は導出済み |
+| E-30 | Hou 数値プロトコル(二段階粘性等) | **一次資料で確認済み** | [Hou21, §1.4, §3, App. A]、[HH21, App. A] |
+| E-31 | 壁渦度条件の2次離散式 | **導出済み** | 壁での Taylor 展開 |
 
 ## 3. 元の3次元方程式
 
@@ -441,6 +446,144 @@ manufactured refinementで数値検査できるが、厳密cell積分ではな�
 また、この非対称な座標基底matrixの通常の条件数は、\(r^3dr\) 重み付き
 coercivity定数ではない。
 
+## 8b. Hou 有限円柱設定(E-27–E-31)
+
+以下は [Hou21](arXiv:2107.06509v2、LaTeX 原文で監査)の有限円柱計算を
+再現するための境界条件・対称性・初期値・数値プロトコルの監査である。
+詳細な一次資料監査は `docs/hou_setup_audit.md` に記録した。
+[Hou21, eqs. (2.1a)–(2.1d)] は E-11–E-14 と符号込みで完全に一致することを
+原文照合で確認した(既存の [HLW, eqs. (2.3a–d)] 照合に追加)。
+
+### E-27: 壁条件(\(r=1\)、no-slip/no-flow)
+
+\[
+\psi_1(t,1,z)=0,\qquad
+u_1(t,1,z)=0,\qquad
+\omega_1(t,1,z)=-\psi_{1,rr}(t,1,z).
+\tag{E-27}
+\]
+
+導出: no-flow \(u^r(1,z)=-1\cdot\psi_{1,z}(1,z)=0\) は
+\(\psi_1(1,z)=0\)(z 全体で定数 0)から従う [Hou21, eq. (2.4)]。
+no-slip \(u^\theta(1,z)=1\cdot u_1(1,z)=0\) から \(u_1(1,z)=0\)。
+no-slip \(u^z(1,z)=2\psi_1(1,z)+\psi_{1,r}(1,z)=0\) と \(\psi_1(1,z)=0\) から
+\(\psi_{1,r}(1,z)=0\)。このとき E-13 を壁上で評価すると、壁に沿って
+\(\psi_1\equiv0\) なので \(\psi_{1,zz}(1,z)=0\)、\(\psi_{1,r}(1,z)=0\) より
+\(-\psi_{1,rr}(1,z)=\omega_1(1,z)\)、すなわち Thom 型渦度境界条件
+[Hou21, eq. (2.5)] を得る。
+
+**状態: 一次資料で確認済み。**
+
+監査警告: Poisson solve には Dirichlet 条件 \(\psi_1(1,z)=0\) **のみ**を課す。
+\(\psi_{1,r}(1,z)=0\) は渦度境界条件の生成にのみ使う。両方を E-13 の
+境界条件として課すと2階楕円問題が過剰決定になり **誤り**。
+[Hou21, §2] は "We will enforce the no-slip boundary condition for
+\(\omega_1\) as a vorticity boundary condition by discretizing
+\(\omega_1(t,1,z)=-\psi_{1,rr}(t,1,z)\) and imposing
+\(\psi_{1,r}(t,1,z)=0\)" と明記する。
+
+### E-28: 対称性と半周期領域
+
+[Hou21, §2] の設定: \(z\) 周期 1、\(u_1,\omega_1,\psi_1\) は \(r\) について偶
+(E-16 と一致)、\(z\) について奇。周期性と奇対称性から計算領域は半周期
+\(D_1=\{(r,z):0\le r\le1,\ 0\le z\le1/2\}\) に縮約でき、境界
+\(z=0,1/2\) では \(u_1=\omega_1=\psi_1=0\)、\(u^z=0\)。
+
+**状態: 一次資料で確認済み。**
+
+監査警告: \(z\) 奇対称性は初期値 E-29 の性質が力学で保存されるもので
+あり(\(\omega_1\) の奇性は \(\partial_z(u_1^2)\) を通じて動的に誘導される
+[Hou21, §2])、軸対称性からは従わない(E-16 の注意と同じ)。フル周期
+\(z\in[0,1)\) で計算する実装では、奇対称性の保存を課すのではなく診断として
+監視し、破れを故障として扱う。
+
+### E-29: Hou 初期値と導出ノルム
+
+\[
+u_1(0,r,z)=\frac{12000\,(1-r^2)^{18}\,\sin(2\pi z)}{1+12.5\,\sin^2(\pi z)},
+\qquad \omega_1(0,r,z)=0.
+\tag{E-29}
+\]
+
+[Hou21, eq. (2.2)] を原文照合で確認(係数 12000、指数 18、分母
+\(1+12.5\sin^2(\pi z)\) を含む)。\(\omega_1(0)=0\) と E-27 の同次境界条件
+から \(\psi_1(0)\equiv0\)、従って \(u^r(0)=u^z(0)=0\)(導出済み。論文の
+"The other two velocity components are set to zero initially" と整合)。
+
+導出値(論文には**記載がない**。E-04/E-18b から独立導出):
+\(\omega(0)\) は \(\omega^\theta(0)=0\)、\(\omega^r=-r\,\partial_zu_1\)、
+\(\omega^z=2u_1+r\,u_{1,r}\) のみ。最大値は \(z=0\)、\(r=1/\sqrt{37}\) の
+\(\omega^r\) 成分で
+
+\[
+\|\omega(0)\|_\infty
+=24000\pi\cdot37^{-1/2}\cdot(36/37)^{18}
+\approx 7569.62,
+\qquad
+\|u_1(0)\|_\infty\approx3265.9863\ \text{at}\ (r,z)\approx(0,0.0845843).
+\tag{E-29b}
+\]
+
+**状態: 一次資料で確認済み(E-29)、導出済み(E-29b)。**
+E-29b は再現実行の増幅率換算(論文は比のみ記載)に必須であり、実装時に
+数値最大化で再検証する。
+
+### E-30: Hou 数値プロトコル
+
+一次資料に記録された再現必須事実:
+
+1. **二段階粘性**: \(\nu=5\times10^{-4}\) を \(t\in[0,t_0]\)、
+   \(t_0=0.00227375\)、その後 \(\nu=5\times10^{-3}\) [Hou21, §3]。
+   \(\nu=5\times10^{-3}\) 一定ではない。
+2. 空間 2 次有限差分(適応写像座標)、時間 2 次陽的 Runge–Kutta
+   (Heun、Butcher 表 \(c=(0,1)\), \(a_{21}=1\), \(b=(1/2,1/2)\))
+   [Hou21, §1.4; HH21, App. A]。
+3. 適応時間刻み: CFL 定数 0.1 の対流・粘性制約の最小
+   [HH21, App. A]。
+4. \(t_0\) 以後の粗格子 run は 1536\(^2\) 状態からの restart であり、
+   独立 run ではない [Hou21, §3.3.2]。
+5. 早期再現ターゲット(1536\(^2\)):
+   \(t=T_1=0.002191729\)(45,000 steps)で
+   \(\|\omega\|_\infty/\|\omega(0)\|_\infty\approx20.5235\)、
+   \(t=T_2=0.002261605\)(60,000 steps)で \(\approx139.5777\)、
+   \(t_0\) で \(498.42\) [Hou21, App. A.2, §3.2.2]。
+   ごく早期には \(\|u_1\|_\infty\) は**減少**する [Hou21, §2]。
+
+**状態: 一次資料で確認済み(プロトコルの記録として)。**
+これは Hou の手法記述の監査であって、本リポジトリ実装の正当性や
+"potentially singular" 主張の検証ではない。Poisson solver
+(B-spline Galerkin)、filter、適応 mesh 写像は [HH21] に委ねられており、
+一様固定格子の本実装はそれらを複製しない(差異は再現報告に明記する)。
+
+### E-31: 壁渦度条件の2次離散式
+
+一様格子 \(r_i=i\Delta r\)、\(r_{n}=1\)(壁)、\(h=\Delta r\) とする。
+E-27 の \(\psi_1(1,z)=0\)、\(\psi_{1,r}(1,z)=0\) を用いた壁での Taylor 展開
+
+\[
+\psi_{n-1}=\tfrac{h^2}{2}\psi_{1,rr}(1,z)-\tfrac{h^3}{6}\psi_{1,rrr}(1,z)+O(h^4),
+\qquad
+\psi_{n-2}=2h^2\psi_{1,rr}(1,z)-\tfrac{4h^3}{3}\psi_{1,rrr}(1,z)+O(h^4)
+\]
+
+から \(\psi_{1,rrr}\) を消去して
+
+\[
+\omega_1(t,1,z)
+=-\psi_{1,rr}(1,z)
+=-\frac{8\psi_{n-1}-\psi_{n-2}}{2h^2}+O(h^2).
+\tag{E-31}
+\]
+
+1次の Thom 式は \(\omega_1(1,z)=-2\psi_{n-1}/h^2+O(h)\)。
+
+**状態: 導出済み。**
+[Hou21] は離散式そのものを印刷しておらず([HH21] は wall 行で
+\((\omega_1)_{n,j}=-(\psi_{1,rr})_{n,j}\) と外挿
+\(v_{n+1,j}=3v_{n,j}-3v_{n-1,j}+v_{n-2,j}\) を記載)、E-31 の具体的
+離散化は本リポジトリの選択である。manufactured 収束テストで
+2次を確認しなければ実装受入としない。
+
 ## 9. エネルギー、次元、スケーリング
 
 ### E-20: 物理エネルギー
@@ -652,3 +795,12 @@ manufactured oracleへ直接照合し、円柱radial符号、成分写像、渦�
   PDF: <https://archive.ymsc.tsinghua.edu.cn/pacm_download/200/8347-Liu_Wang_SIMA_2009.pdf>
 - **[Z23]** Bernard Nowakowski and Wojciech M. Zajączkowski, “Global Regular Axially-Symmetric Solutions to the Navier–Stokes Equations with Small Swirl,” *Journal of Mathematical Fluid Mechanics* 25 (2023), article 73.
   DOI: <https://doi.org/10.1007/s00021-023-00793-9>
+- **[Hou21]** Thomas Y. Hou, “Potentially singular behavior of the 3D Navier–Stokes equations,” arXiv:2107.06509v2 (2022), *Foundations of Computational Mathematics* 掲載受理。
+  arXiv: <https://arxiv.org/abs/2107.06509>
+  監査は v1(2021-07-14)と v2(2022-05-26)の LaTeX 原文
+  (`arxiv.org/e-print/2107.06509`)に対して行った。v1 と v2 で結論の解釈が
+  反転している(詳細は `docs/hou_setup_audit.md` §9)。
+- **[HH21]** Thomas Y. Hou and De Huang, “Potential Singularity of the 3D Euler Equations in the Interior Domain,” arXiv:2102.06663。
+  arXiv: <https://arxiv.org/abs/2102.06663>
+  [Hou21, §2] が数値手法の詳細(B-spline Galerkin Poisson solver、
+  CFL 定数、mesh 密度関数、filter)を本論文 Appendix A/B に委ねている。

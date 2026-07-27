@@ -6,6 +6,7 @@ import argparse
 import csv
 import hashlib
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +14,11 @@ import numpy as np
 
 from ns_certificate_lab.finite_cylinder_poisson import solve_finite_cylinder_poisson
 from ns_certificate_lab.grid import AxisymmetricGrid
+from ns_certificate_lab.provenance import collect_runtime_provenance
+
+EXPECTED_SCHEMA_VERSION = 1
+EXPECTED_EXPERIMENT = "finite_cylinder_poisson_gate"
+MINIMUM_RESOLUTIONS = 3
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -21,6 +27,96 @@ def _load_json(path: Path) -> dict[str, Any]:
     if not isinstance(data, dict):
         raise ValueError("config root must be an object")
     return data
+
+
+def _finite_number(value: Any, *, name: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{name} must be a finite number")
+    converted = float(value)
+    if not math.isfinite(converted):
+        raise ValueError(f"{name} must be a finite number")
+    return converted
+
+
+def _plain_int(value: Any, *, name: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError(f"{name} must be an integer")
+    return int(value)
+
+
+def _validate_config(config: dict[str, Any]) -> None:
+    """Reject unknown, missing or mislabeled gate configuration keys.
+
+    The gate writes a preregistered acceptance verdict, so an unnoticed typo,
+    a silently ignored extra key, or a config describing a different
+    experiment would corrupt the evidence trail rather than fail loudly.
+    """
+
+    required = {
+        "schema_version",
+        "experiment",
+        "r_max",
+        "z_min",
+        "z_max",
+        "mode",
+        "resolutions",
+        "condition_mode_indices",
+    }
+    if not isinstance(config, dict):
+        raise ValueError("Poisson gate config must be an object")
+    if set(config) != required:
+        raise ValueError("Poisson gate config has missing or unknown keys")
+    if _plain_int(config["schema_version"], name="schema_version") != (
+        EXPECTED_SCHEMA_VERSION
+    ):
+        raise ValueError("unsupported Poisson gate config schema")
+    if config["experiment"] != EXPECTED_EXPERIMENT:
+        raise ValueError("experiment must equal the audited canonical value")
+
+    r_max = _finite_number(config["r_max"], name="r_max")
+    if r_max <= 0.0:
+        raise ValueError("r_max must be a finite positive number")
+    z_min = _finite_number(config["z_min"], name="z_min")
+    z_max = _finite_number(config["z_max"], name="z_max")
+    if z_max <= z_min:
+        raise ValueError("z_min and z_max must define a finite positive period")
+
+    mode = _plain_int(config["mode"], name="mode")
+    if mode < 1:
+        raise ValueError("mode must be a positive integer axial wavenumber index")
+
+    resolutions = config["resolutions"]
+    if not isinstance(resolutions, list) or len(resolutions) < MINIMUM_RESOLUTIONS:
+        # A refinement study with fewer than three grids cannot report a
+        # second observed order, so the convergence claim would rest on a
+        # single ratio.
+        raise ValueError(
+            "resolutions must contain at least three refinement entries"
+        )
+    radial_points: list[int] = []
+    axial_points: list[int] = []
+    for index, item in enumerate(resolutions):
+        if not isinstance(item, dict) or set(item) != {"nr", "nz"}:
+            raise ValueError(f"resolutions[{index}] must have exactly nr and nz")
+        nr = _plain_int(item["nr"], name=f"resolutions[{index}].nr")
+        nz = _plain_int(item["nz"], name=f"resolutions[{index}].nz")
+        if nr < 4 or nz < 5:
+            raise ValueError(
+                f"resolutions[{index}] must satisfy nr >= 4 and nz >= 5"
+            )
+        radial_points.append(nr)
+        axial_points.append(nz)
+    if radial_points != sorted(set(radial_points)):
+        raise ValueError("resolutions must have strictly increasing nr")
+    if axial_points != sorted(set(axial_points)):
+        raise ValueError("resolutions must have strictly increasing nz")
+
+    indices = config["condition_mode_indices"]
+    if not isinstance(indices, list):
+        raise ValueError("condition_mode_indices must be a list of integers")
+    for position, value in enumerate(indices):
+        if _plain_int(value, name=f"condition_mode_indices[{position}]") < 0:
+            raise ValueError("condition_mode_indices must be non-negative")
 
 
 def _write_json(path: Path, data: object) -> None:
@@ -60,11 +156,15 @@ def _weighted_relative_l2(error: np.ndarray, exact: np.ndarray, grid: Axisymmetr
 
 
 def run(config_path: Path, output_dir: Path) -> dict[str, Any]:
+    config = _load_json(config_path)
+    _validate_config(config)
     if output_dir.exists():
         raise FileExistsError(f"refusing to overwrite existing output directory: {output_dir}")
+    # One runtime snapshot is taken before any solve, so the recorded source
+    # fingerprint describes the inputs that produced every row below.
+    provenance = collect_runtime_provenance()
     output_dir.mkdir(parents=True)
 
-    config = _load_json(config_path)
     mode = int(config["mode"])
     rows: list[dict[str, Any]] = []
     final_arrays: dict[str, np.ndarray] | None = None
@@ -171,7 +271,10 @@ def run(config_path: Path, output_dir: Path) -> dict[str, Any]:
             "finite cylinder with periodic z",
             "no full-space Green-tail or domain-truncation bound",
             "condition numbers are dense estimates for selected Fourier modes only",
+            "radial matrix row i=1 has a positive off-diagonal, so it is not an "
+            "M-matrix and has no discrete maximum principle",
         ],
+        "reproducibility": {"runtime_provenance": provenance},
     }
 
     summary_path = output_dir / "summary.json"

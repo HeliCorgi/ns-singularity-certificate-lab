@@ -7,6 +7,7 @@ from ns_certificate_lab.finite_cylinder_poisson import (
     apply_finite_cylinder_system,
     assemble_radial_mode_matrix,
     axial_wavenumbers,
+    radial_mode_tridiagonal,
     solve_finite_cylinder_poisson,
 )
 from ns_certificate_lab.grid import AxisymmetricGrid
@@ -164,3 +165,70 @@ def test_nonperiodic_grid_is_rejected() -> None:
             grid,
             outer_boundary=np.zeros(grid.nz),
         )
+
+
+def test_detects_complex_omega_input() -> None:
+    # Injected defect: a complex right-hand side.  Without an explicit guard
+    # NumPy would silently discard the imaginary part while emitting a
+    # ComplexWarning, so the solve would answer a different question than the
+    # caller asked.  Rejection must be explicit.
+    grid = AxisymmetricGrid.uniform(nr=9, nz=12, r_max=1.0)
+    omega = np.full(grid.shape, 1.0 + 0.5j)
+    with pytest.raises(ValueError, match="omega must be real-valued"):
+        solve_finite_cylinder_poisson(
+            omega,
+            grid,
+            outer_boundary=np.zeros(grid.nz),
+        )
+
+
+def test_detects_complex_boundary_input() -> None:
+    # Injected defect: complex outer Dirichlet data, same silent-truncation
+    # hazard as the complex right-hand side above.
+    grid = AxisymmetricGrid.uniform(nr=9, nz=12, r_max=1.0)
+    with pytest.raises(ValueError, match="outer_boundary must be real-valued"):
+        solve_finite_cylinder_poisson(
+            np.zeros(grid.shape),
+            grid,
+            outer_boundary=np.full(grid.nz, 1.0j),
+        )
+
+
+def test_first_interior_row_has_a_positive_off_diagonal_known_limitation() -> None:
+    """Pin the sign of the row-``1`` lower coefficient.
+
+    This pins a KNOWN limitation so it cannot silently change meaning: at
+    ``r_1 = dr`` the lower coefficient is ``-1/dr^2 + 3/(2*dr*dr) = +0.5/dr^2``,
+    which is a POSITIVE off-diagonal.  The radial matrix is therefore not an
+    M-matrix and admits no discrete maximum principle, and row ``1`` is not
+    diagonally dominant.  The assertions below are not an endorsement of the
+    scheme; they record the documented structural defect (see
+    ``docs/finite_cylinder_poisson.md``) so that any future change to it is a
+    deliberate, reviewed change rather than an accident.
+    """
+
+    grid = AxisymmetricGrid.uniform(nr=17, nz=16, r_max=1.7)
+    dr = grid.dr
+    inv_dr2 = 1.0 / (dr * dr)
+    # r[1] is exactly one spacing from the axis, computed here from the grid
+    # rather than from the solver module.
+    assert grid.r[1] == dr
+
+    lower, diagonal, upper = radial_mode_tridiagonal(grid, q_squared=0.0)
+    # ``lower[j]`` is the (j+1, j) entry, so row 1 uses ``lower[0]``.
+    row_one_lower = lower[0]
+    assert row_one_lower.imag == 0.0
+    assert row_one_lower.real == -inv_dr2 + 3.0 / (2.0 * dr * dr)
+    assert row_one_lower.real == pytest.approx(0.5 * inv_dr2)
+    assert row_one_lower.real > 0.0
+
+    # Row 1 is not diagonally dominant: |diag| < |lower| + |upper|.
+    row_one_diagonal = diagonal[1]
+    row_one_upper = upper[1]
+    assert row_one_diagonal.real == pytest.approx(2.0 * inv_dr2)
+    assert row_one_upper.real == pytest.approx(-2.5 * inv_dr2)
+    assert abs(row_one_diagonal) < abs(row_one_lower) + abs(row_one_upper)
+
+    # The dense assembly agrees with the coefficient arrays.
+    matrix = assemble_radial_mode_matrix(grid, q_squared=0.0)
+    assert matrix[1, 0] == row_one_lower

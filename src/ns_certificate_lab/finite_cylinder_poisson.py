@@ -66,7 +66,25 @@ def _validate_periodic_grid(grid: AxisymmetricGrid) -> None:
         raise ValueError("periodic grid must have a positive finite z_period")
 
 
+def _reject_complex(value: npt.ArrayLike, *, name: str) -> None:
+    """Reject complex input explicitly instead of silently discarding it.
+
+    Without this guard NumPy would cast a complex array to ``float64`` and
+    drop the imaginary part behind a :class:`numpy.ComplexWarning`.  Rejection
+    is the audited behavior of the sibling solver in
+    :mod:`ns_certificate_lab.poisson`.
+    """
+
+    raw = np.asarray(value)
+    if np.iscomplexobj(raw) or (
+        raw.dtype.kind == "O"
+        and any(isinstance(item, complex) for item in raw.flat)
+    ):
+        raise ValueError(f"{name} must be real-valued")
+
+
 def _validate_boundary(boundary: npt.ArrayLike | float, grid: AxisymmetricGrid) -> FloatArray:
+    _reject_complex(boundary, name="outer_boundary")
     array = np.asarray(boundary, dtype=np.float64)
     if array.ndim == 0:
         array = np.full(grid.nz, float(array), dtype=np.float64)
@@ -257,6 +275,7 @@ def solve_finite_cylinder_poisson(
     """
 
     _validate_periodic_grid(grid)
+    _reject_complex(omega, name="omega")
     rhs_physical = grid.validate_field(omega, name="omega")
     boundary = _validate_boundary(outer_boundary, grid)
 
