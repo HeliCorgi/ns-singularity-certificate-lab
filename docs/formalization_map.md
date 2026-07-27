@@ -118,6 +118,70 @@ M0 (Clay命題固定)
      └─ ノルム発散         ← blow-up criterion(新規形式化)
 ```
 
+## 段階 0–1 の具体的形式化対象(2026-07-28 追加)
+
+数値探索を止めない範囲で先行形式化する小対象。環境は
+`formal/`(Lean 4 v4.32.1 + mathlib4 v4.32.1、`lean-toolchain` で固定)。
+
+### F-1 再スケーリングの代数的恒等式(E-21b)
+
+- **命題:** \(u^{(\lambda)}(x,t)=\lambda u(\lambda x,\lambda^2t)\) が E-01 を
+  満たすことと \(u\) が満たすことの同値、および
+  \(u_1^{(\lambda)}=\lambda^2u_1(\lambda r,\lambda z,\lambda^2t)\) 等の
+  変換則(E-21b)。
+- **仮定:** 場の微分可能性のみ。純代数+連鎖律。
+- **mathlib 基盤:** `fderiv` の合成則、`deriv_comp`。新規理論不要。
+- **数値のみの部分:** なし。
+
+### F-2 有限物理時間条件
+
+- **命題:** \(L:[s_0,\infty)\to(0,\infty)\) 可測に対し
+  \(t(s)=\int_{s_0}^sL(\sigma)^2d\sigma\) が
+  \(\int_{s_0}^\infty L^2<\infty\) のとき有限極限 \(T\) を持ち、
+  \(s\to\infty\) が物理時刻 \(t\uparrow T<\infty\) に対応する。
+- **仮定:** \(L\) の可測性・可積分性(候補証明書から供給)。
+- **mathlib 基盤:** `MeasureTheory.integral`、単調収束。ほぼ既存。
+- **区間証明書へ:** \(\int L^2\) の数値上界を厳密上界へ変換する部分。
+
+### F-3 速度回復式と発散ゼロ(E-14/E-15)
+
+- **命題:** \(C^2\) な \(\psi_1\) に対し \(u^r=-r\psi_{1,z}\)、
+  \(u^z=2\psi_1+r\psi_{1,r}\) は \(r>0\) で
+  \(\partial_ru^r+u^r/r+\partial_zu^z=0\) を満たし、軸極限でも
+  連続的に 0(E-16 偶対称の下)。
+- **mathlib 基盤:** `fderiv` 計算、積の微分。新規理論不要。
+- **意義:** M1 の最初の Lean 補題として最適。E-15 の紙上導出の機械検証。
+
+### F-4 候補証明書の有限次元不等式
+
+- **命題:** radii-polynomial / Newton–Kantorovich 型
+  \(Y+Zr+\tfrac K2r^2\le r\)(\(Y,Z,K,r\in\mathbb Q_{\ge0}\)、
+  \(Z<1\))の検査器と、その成立が縮小写像条件を含意する抽象補題。
+- **仮定:** 抽象 Banach 空間での標準仮定(段階 3 で実体化)。
+- **mathlib 基盤:** `Rat` 算術、`norm_num`;縮小写像は
+  `ContractingWith` が既存。
+- **区間証明書へ:** \(Y,Z,K\) の数値を二進有理数上界として出力する
+  発見コード側の変換器(独立実装、未着手)。
+
+### F-5 最終 Clay 反例命題までの依存関係
+
+段階 0 として `formal/NSSingularity/ClayStatement.lean` に (A)–(D) と
+無外力強化版反例命題を **定義のみ**(証明なし・`sorry` なし)で固定する。
+依存 DAG:
+
+```text
+F-5 (Clay命題定義)
+ ← F-3 (発散ゼロ恒等式) … 初期値の許容性検査
+ ← F-1 (スケーリング)   … 再スケーリング軌道→物理解
+ ← F-2 (有限物理時間)   … T<∞
+ ← F-4 (証明書不等式)   … 軌道存在(段階3)
+ → FinalTheorem(段階4、未着手)
+```
+
+最終証明経路の `sorry`・`admit`・未証明 axiom 禁止は
+`LEAN4_VERIFICATION_POLICY.md` のとおり維持する。段階 0 は定義のみで
+この制約に抵触しない。
+
 ## 未解決の形式化上の論点
 
 1. mathlib には NS 方程式の定義も局所適切性もない。局所存在
