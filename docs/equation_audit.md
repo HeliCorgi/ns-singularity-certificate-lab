@@ -59,6 +59,8 @@ u^z=r^{-1}\partial_r(r\psi^\theta)
 | E-22 | 変数の物理次元 | **導出済み** | 次元解析 |
 | E-23 | 循環 \(\Gamma\) 方程式 | **導出済み** | E-05 へ \(\Gamma=ru^\theta\) を代入 |
 | E-24 | 閉じた系から3D原始変数系への同値性 | **一次資料で確認済み** | 正則性・極条件込みで [LW] |
+| E-25 | 有限円柱Poisson対照問題 | **導出済み** | E-13へ周期 \(z\)・外側Dirichletを明示 |
+| E-26 | \(r^3\)-flux離散式・軸係数8 | **導出済み** | control-volume積分とFourier変換 |
 
 ## 3. 元の3次元方程式
 
@@ -368,6 +370,77 @@ E-01 の発散を取り E-01 の発散ゼロを使用。全空間では減衰条
 **状態: 一次資料で確認済み。**
 [LW] は軸対称 solenoidal vector field の vorticity–stream 形式と primitive 形式の同値性を、極条件を含めて扱う。極条件を外した半平面上の形式解については、この同値性を主張してはならない。
 
+### E-25: 有限円柱Poisson対照問題
+
+独立楕円solverの数値対照では、E-13そのものに対して
+
+\[
+0\le r\le R,\qquad z\in[0,L_z)\ \text{periodic},\qquad
+\psi_1(R,z)=g(z),\qquad \partial_r\psi_1(0,z)=0
+\tag{E-25}
+\]
+
+を課す。\(g\) は明示的な滑らかなDirichlet traceである。
+
+**状態: 導出済み。**
+PDEの符号はE-13、軸条件はE-16から得る。周期条件と外側Dirichlet条件は
+manufactured controlのために宣言した有限領域境界であり、元の
+\(\mathbb R^3\) 問題から導かれた無限遠条件ではない。従ってE-25の解を
+全空間解へ同一視すること、または外側境界誤差が制御済みとすることは
+**誤り**。
+
+### E-26: 独立Poisson solverの離散式
+
+\[
+\mathcal L_{5,r}\psi
+=r^{-3}\partial_r(r^3\partial_r\psi)
+\]
+
+について、\(r_i=i\Delta r\) と
+\[
+V_i=\int_{r_{i-1/2}}^{r_{i+1/2}}r^3\,dr
+=\frac{r_{i+1/2}^4-r_{i-1/2}^4}{4}
+\]
+を用い、
+\[
+(\mathcal L_{5,r}^{\,h}\psi)_i=
+\frac{
+r_{i+1/2}^3(\psi_{i+1}-\psi_i)/\Delta r
+-r_{i-1/2}^3(\psi_i-\psi_{i-1})/\Delta r
+}{V_i}.
+\tag{E-26a}
+\]
+
+軸cellでは \(r_{-1/2}=0\)、\(r_{1/2}=\Delta r/2\) なので
+\[
+(\mathcal L_{5,r}^{\,h}\psi)_0
+=\frac{8(\psi_1-\psi_0)}{\Delta r^2}.
+\tag{E-26b}
+\]
+
+\(z\) のFourier波数 \(k_m=2\pi m/L_z\) ごとに、未知radial行の
+\(-\mathcal L_5\) matrixは
+\[
+-a_i^-\widehat\psi_{i-1}
++(a_i^-+a_i^++k_m^2)\widehat\psi_i
+-a_i^+\widehat\psi_{i+1}
+=\widehat\omega_i,
+\tag{E-26c}
+\]
+\[
+a_i^\pm=\frac{r_{i\pm1/2}^3}{\Delta r\,V_i}.
+\]
+最後の未知行では既知の外側値を右辺へ
+\(+a_i^+\widehat g_m\) として移す。
+
+**状態: 導出済み。**
+E-26aはfluxのcontrol-volume積分、E-26bはその軸極限、E-26cは
+\(-\partial_{zz}\mapsto+k_m^2\) から得た。実装はRHSの節点値をcell平均の
+近似として使用するため、滑らかな偶関数に対する二次整合性は
+manufactured refinementで数値検査できるが、厳密cell積分ではない。
+また、この非対称な座標基底matrixの通常の条件数は、\(r^3dr\) 重み付き
+coercivity定数ではない。
+
 ## 9. エネルギー、次元、スケーリング
 
 ### E-20: 物理エネルギー
@@ -517,6 +590,9 @@ E-05 に \(u^\theta=\Gamma/r\) を代入。軸正則性から \(\Gamma=O(r^2)\)�
 9. 既存の円柱差分を共有しない一様 Cartesian \(x,y,z\) 実装で、E-01 の
    3成分発散、full curl、vector Laplacian、primitive momentum residualを
    再計算し、局所的な故障もRMSと最大誤差の双方で拒否する。
+10. 有限円柱Poisson solveはE-25–E-26を明示し、E-13の全体符号、軸係数8、
+    非零外側trace、複数Fourier mode、代数残差と独立物理空間残差を分離して
+    少なくとも3解像度で検査する。
 
 **現在の実装状態。** 条件 1–4, 6, 8 は production finite-difference
 経路と故障注入で実装・テスト済み。条件 7 は保存候補をchecksum検証後に
@@ -547,7 +623,12 @@ E-18a, E-18bを一様Cartesian格子へ写す。checkerはCartesian配列だけ�
 manufactured oracleへ直接照合し、円柱radial符号、成分写像、渦度符号、
 発散汚染、局所一点、周期seamの故障を拒否する。
 
-従って、ここに列挙した条件 1–9 の初期受入状態は **導出済み・数値テスト
+条件10は、既存 `operators.py` をimportしない `poisson.py` の
+\(r^3\)-flux/Fourier/Thomas経路で実装した。test側の直接
+非発散形stencil、閉形式manufactured pair、独立dense matrix solveを用いて、
+符号、軸係数、非零境界、FFT mode、三重対角解を交差検査した。
+
+従って、ここに列挙した条件 1–10 の初期受入状態は **導出済み・数値テスト
 済み** である。ただし、これは有限格子・binary64・許容差付きの独立監査で
 あり、E-01 の連続体解、全空間の境界条件、離散化誤差上界、または特異点を
 証明しない。将来の未知候補には、候補固有の圧力・時間微分・境界・精度検査を

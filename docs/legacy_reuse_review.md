@@ -174,12 +174,22 @@ off-diagonalが正になる。これは偶smooth fieldに対する局所整合�
 
 ## 8. 現在の採否
 
-**結論: 今回はPoisson solverを移植しない。**
+**結論: 旧Poisson solverは移植していない。設計監査後、現行規約だけから
+独立solverを新規実装した。**
 
-[../STATUS.md](../STATUS.md) の直近ゲートは、既存円柱差分を共有しない
-Cartesian原始変数監査と、空間固定の時間刻み収束である。ここで旧Poisson
-実装を導入するとSciPy依存と別の境界監査が先に増え、この最小の一手を妨げる。
+先にCartesian原始変数監査と固定格子時間収束を完了した後、
+`src/ns_certificate_lab/poisson.py` にNumPyだけの別実装を追加した。旧試作の
+pointwise sparse matrix、SciPy、旧grid、旧boundary helper、旧`l5`はコピーも
+importもしていない。新実装は
+\(r^{-3}\partial_r(r^3\partial_r\psi_1)\) のcontrol-volume flux、
+\(z\) のFFT、各modeのローカルThomas solveを用いる。
 
-将来の独立楕円solver milestoneでは、上記10設計要点を新規実装し、軸行・符号・
-非零外側境界・manufactured convergence・領域半径感度を現在のartifact形式で
-保存する。それまではPoisson solverを **将来作業** とする。
+上記設計要点のうち、PDE/境界行の分離、軸係数8、全体符号、周期wrap、
+非零解析Dirichlet trace、3解像度・複数modeのmanufactured convergence、
+代数残差と独立物理空間残差の分離、metadata、異なるflux離散化は
+実装・自動テスト済みである。
+
+一方、\(r,z\) の完全に分離したrefinement、領域半径感度、全空間tail、
+重み付きcoercivity、区間演算は **未確認** のままである。従って新solverも
+有限円柱上の浮動小数点試作品であり、旧実装または連続体Poisson問題の
+正しさを認証するものではない。
