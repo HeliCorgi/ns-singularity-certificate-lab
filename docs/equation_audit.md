@@ -795,11 +795,14 @@ manufactured oracleへ直接照合し、円柱radial符号、成分写像、渦�
   PDF: <https://archive.ymsc.tsinghua.edu.cn/pacm_download/200/8347-Liu_Wang_SIMA_2009.pdf>
 - **[Z23]** Bernard Nowakowski and Wojciech M. Zajączkowski, “Global Regular Axially-Symmetric Solutions to the Navier–Stokes Equations with Small Swirl,” *Journal of Mathematical Fluid Mechanics* 25 (2023), article 73.
   DOI: <https://doi.org/10.1007/s00021-023-00793-9>
-- **[Hou21]** Thomas Y. Hou, “Potentially singular behavior of the 3D Navier–Stokes equations,” arXiv:2107.06509v2 (2022), *Foundations of Computational Mathematics* 掲載受理。
+- **[Hou21]** Thomas Y. Hou, “Potentially Singular Behavior of the 3D Navier–Stokes Equations,” *Foundations of Computational Mathematics* (2022), DOI 10.1007/s10208-022-09578-4(= arXiv:2107.06509v2)。
   arXiv: <https://arxiv.org/abs/2107.06509>
   監査は v1(2021-07-14)と v2(2022-05-26)の LaTeX 原文
-  (`arxiv.org/e-print/2107.06509`)に対して行った。v1 と v2 で結論の解釈が
-  反転している(詳細は `docs/hou_setup_audit.md` §9)。
+  (`arxiv.org/e-print/2107.06509`)、および**出版版 PDF**
+  (SHA-256 `b8ad5ed5...e765acd`、`docs/hou_setup_audit.md` §12)に対して
+  行った。出版版で計算設定の変更はなく、方程式・境界条件・初期値・粘性
+  プロトコルの引用は arXiv v2 の式番号のまま有効(付録 (A.1)→(4.1) のみ
+  改番)。v1 と v2 で結論の解釈が反転している(同 §9)。
 - **[HH21]** Thomas Y. Hou and De Huang, “Potential Singularity of the 3D Euler Equations in the Interior Domain,” arXiv:2102.06663。
   arXiv: <https://arxiv.org/abs/2102.06663>
   [Hou21, §2] が数値手法の詳細(B-spline Galerkin Poisson solver、
