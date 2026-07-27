@@ -36,6 +36,7 @@ from ns_certificate_lab.finite_cylinder_poisson import solve_finite_cylinder_poi
 from ns_certificate_lab.grid import AxisymmetricGrid
 from ns_certificate_lab.nonlinear_cylinder import (
     DIAGNOSTIC_FIELDS,
+    RELATIVE_DIAGNOSTIC_FIELDS,
     ConstrainedState,
     cartesian_vorticity,
     constrain_state,
@@ -56,6 +57,78 @@ E29_AMPLITUDE = 12000.0
 E29B_MAX_ABS_U1 = 3265.9863
 E29B_MAX_CARTESIAN_VORTICITY = 7569.62
 
+# --------------------------------------------------------------- CFL policy
+#
+# ``adaptive_time_step`` sizes a step from the velocity maxima of the state at
+# the START of that step; ``compute_diagnostics`` reports the effective CFL
+# from the state the step PRODUCED.  With the advective bound active and
+# frozen velocities the two coincide exactly, because
+# ``max(|u^r|/dr, |u^z|/dz)`` is the reciprocal of ``min(dr/|u^r|, dz/|u^z|)``.
+# The recorded effective CFL therefore exceeds ``cfl_coefficient`` by exactly
+# the intra-step relative growth of the dominant directional velocity ratio.
+# Clipping to snapshot / viscosity-switch / ``t_final`` targets and the
+# ``max_time_step`` cap only ever shrink ``dt``, so they can only lower the
+# effective CFL.  The delegated HH21 guidance recorded in
+# ``docs/hou_setup_audit.md`` bounds the one-step relative growth of the
+# maximum by one percent; the shipped ``outputs/hou_early_time_v1`` run
+# measured 0.23 percent at its worst step.  The acceptance check therefore
+# compares against ``C (1 + cfl_excess_tolerance)`` instead of ``C``.
+DEFAULT_CFL_EXCESS_TOLERANCE = 0.05
+V1_CFL_COEFFICIENT = 0.1
+V1_MAXIMUM_ADVECTIVE_CFL = 0.10022676304450114
+V1_ADVECTIVE_CFL_EXCESS_RATIO = (
+    V1_MAXIMUM_ADVECTIVE_CFL / V1_CFL_COEFFICIENT - 1.0
+)
+
+CFL_RULE = (
+    "dt <= C * min(dr / max|u^r|, dz / max|u^z|) evaluated at the START of the "
+    "step, intersected with the viscous bound C * min(dr,dz)^2 / (4 nu), the "
+    "max_time_step cap and the clipping to the next snapshot, viscosity "
+    "switch or t_final target"
+)
+EFFECTIVE_CFL_DEFINITION = (
+    "dt * max(max|u^r| / dr, max|u^z| / dz) evaluated on the state AFTER the "
+    "step (diagnostics key advective_cfl)"
+)
+CFL_EXCESS_MECHANISM = (
+    "The step is sized before the velocities grow. With the advective bound "
+    "active and frozen velocities the post-step effective CFL equals C "
+    "exactly, because max(|u^r|/dr, |u^z|/dz) = 1 / min(dr/|u^r|, dz/|u^z|); "
+    "the measured excess is therefore exactly the one-step relative growth of "
+    "the dominant directional velocity ratio. Step clipping and the "
+    "max_time_step cap only shrink dt and so only lower the effective CFL."
+)
+
+
+def advective_cfl_within_tolerance(
+    max_effective_cfl: float,
+    *,
+    cfl_coefficient: float,
+    cfl_excess_tolerance: float = DEFAULT_CFL_EXCESS_TOLERANCE,
+) -> bool:
+    """Return whether a post-step effective CFL is inside the allowed excess.
+
+    The rule is ``max_effective_cfl <= C * (1 + cfl_excess_tolerance)``.  A
+    non-finite measurement never passes.  ``cfl_excess_tolerance = 0`` demands
+    the post-step CFL never exceed ``C`` at all, which the start-of-step
+    selection rule cannot guarantee (the v1 run recorded
+    ``0.10022676304450114`` against ``C = 0.1``).
+    """
+
+    coefficient = _number(cfl_coefficient, name="cfl_coefficient", positive=True)
+    tolerance = _number(cfl_excess_tolerance, name="cfl_excess_tolerance")
+    if tolerance < 0.0:
+        raise ValueError("cfl_excess_tolerance must be nonnegative")
+    if isinstance(max_effective_cfl, bool) or not isinstance(
+        max_effective_cfl, (int, float)
+    ):
+        return False
+    measured = float(max_effective_cfl)
+    if not math.isfinite(measured):
+        return False
+    return measured <= coefficient * (1.0 + tolerance)
+
+
 LIMITATIONS = (
     "A uniform fixed grid cannot resolve the adaptive mesh scales (minimum "
     "spacing of order 1e-8) used by the source calculation; every quantity "
@@ -75,15 +148,30 @@ LIMITATIONS = (
 
 @dataclass(frozen=True)
 class SnapshotRecord:
-    """One checkpointed snapshot and its independent elliptic cross-check."""
+    """One checkpointed snapshot and its independent elliptic cross-check.
+
+    ``psi_cross_solver_relative_difference`` is
+    ``psi_cross_solver_max_abs_difference / psi_cross_solver_relative_denominator``
+    and that denominator is ``max |psi1|`` of solver A *at this snapshot*, i.e.
+    the same number as ``max_abs_psi1``.
+    """
 
     time: float
     checkpoint: str
     psi_cross_solver_max_abs_difference: float
     psi_cross_solver_relative_difference: float
+    psi_cross_solver_relative_denominator: float
+    psi_cross_solver_argmax_r: float
+    psi_cross_solver_argmax_z: float
     solver_b_boundary_error_max: float
     solver_b_physical_defect_max: float
     max_abs_psi1: float
+    max_abs_u1: float
+    argmax_u1_r: float
+    argmax_u1_z: float
+    max_cartesian_vorticity: float
+    argmax_cartesian_vorticity_r: float
+    argmax_cartesian_vorticity_z: float
 
 
 @dataclass(frozen=True)
@@ -175,7 +263,14 @@ def validate_config(config: dict[str, Any]) -> None:
         "diagnostic_stride",
         "acceptance",
     }
-    if not isinstance(config, dict) or set(config) != required:
+    # Optional keys keep every shipped config valid without edits; each one has
+    # a documented default.
+    optional = {"cfl_excess_tolerance"}
+    if (
+        not isinstance(config, dict)
+        or not required <= set(config)
+        or not set(config) <= required | optional
+    ):
         raise ValueError("hou early time config has missing or unknown keys")
     if config["schema_version"] != 1:
         raise ValueError("schema_version must be 1")
@@ -230,6 +325,12 @@ def validate_config(config: dict[str, Any]) -> None:
         raise ValueError("the last snapshot time must be t_final")
 
     _number(config["cfl_coefficient"], name="cfl_coefficient", positive=True)
+    if "cfl_excess_tolerance" in config:
+        tolerance = _number(
+            config["cfl_excess_tolerance"], name="cfl_excess_tolerance"
+        )
+        if tolerance < 0.0:
+            raise ValueError("cfl_excess_tolerance must be nonnegative")
     _number(config["max_time_step"], name="max_time_step", positive=True)
     _positive_integer(config["max_steps"], name="max_steps")
     _positive_integer(config["diagnostic_stride"], name="diagnostic_stride")
@@ -296,8 +397,14 @@ def initial_norms(
 def _cross_check_snapshot(
     grid: AxisymmetricGrid,
     state: ConstrainedState,
-) -> tuple[float, float, float, float]:
-    """Re-solve the snapshot elliptic problem with the independent solver B."""
+) -> dict[str, float]:
+    """Re-solve the snapshot elliptic problem with the independent solver B.
+
+    The relative difference is divided by ``max |psi1|`` of solver A at this
+    snapshot; that denominator and the ``(r, z)`` location of the largest
+    absolute difference are returned alongside it so the report never shows a
+    relative number without the scale it was taken against.
+    """
 
     solution = solve_finite_cylinder_poisson(
         state.omega1,
@@ -305,14 +412,22 @@ def _cross_check_snapshot(
         outer_boundary=0.0,
         condition_mode_indices=(),
     )
-    difference = float(np.max(np.abs(state.psi1 - solution.psi)))
-    scale = max(1.0e-300, float(np.max(np.abs(state.psi1))))
-    return (
-        difference,
-        difference / scale,
-        float(solution.diagnostics.boundary_error_max),
-        float(solution.diagnostics.physical_cross_stencil_defect_max),
-    )
+    deviation = np.abs(state.psi1 - solution.psi)
+    row, column = divmod(int(np.argmax(deviation)), grid.nz)
+    difference = float(deviation[row, column])
+    denominator = float(np.max(np.abs(state.psi1)))
+    scale = max(1.0e-300, denominator)
+    return {
+        "max_abs_difference": difference,
+        "relative_difference": difference / scale,
+        "relative_denominator": denominator,
+        "argmax_r": float(grid.r[row]),
+        "argmax_z": float(grid.z[column]),
+        "boundary_error_max": float(solution.diagnostics.boundary_error_max),
+        "physical_defect_max": float(
+            solution.diagnostics.physical_cross_stencil_defect_max
+        ),
+    }
 
 
 def evolve_resolution(
@@ -340,9 +455,10 @@ def evolve_resolution(
     def on_snapshot(
         time: float,
         state: ConstrainedState,
-        _diagnostics: dict[str, float],
+        diagnostics: dict[str, float],
     ) -> None:
-        difference, relative, boundary, defect = _cross_check_snapshot(grid, state)
+        cross = _cross_check_snapshot(grid, state)
+        difference = cross["max_abs_difference"]
         name = ""
         if checkpoint_dir is not None:
             name = f"checkpoint_nr{nr}_nz{nz}_t{len(snapshots):03d}.npz"
@@ -368,10 +484,25 @@ def evolve_resolution(
                 time=float(time),
                 checkpoint=name,
                 psi_cross_solver_max_abs_difference=difference,
-                psi_cross_solver_relative_difference=relative,
-                solver_b_boundary_error_max=boundary,
-                solver_b_physical_defect_max=defect,
+                psi_cross_solver_relative_difference=cross["relative_difference"],
+                psi_cross_solver_relative_denominator=cross["relative_denominator"],
+                psi_cross_solver_argmax_r=cross["argmax_r"],
+                psi_cross_solver_argmax_z=cross["argmax_z"],
+                solver_b_boundary_error_max=cross["boundary_error_max"],
+                solver_b_physical_defect_max=cross["physical_defect_max"],
                 max_abs_psi1=float(np.max(np.abs(state.psi1))),
+                max_abs_u1=float(diagnostics["max_abs_u1"]),
+                argmax_u1_r=float(diagnostics["argmax_u1_r"]),
+                argmax_u1_z=float(diagnostics["argmax_u1_z"]),
+                max_cartesian_vorticity=float(
+                    diagnostics["max_cartesian_vorticity"]
+                ),
+                argmax_cartesian_vorticity_r=float(
+                    diagnostics["argmax_cartesian_vorticity_r"]
+                ),
+                argmax_cartesian_vorticity_z=float(
+                    diagnostics["argmax_cartesian_vorticity_z"]
+                ),
             )
         )
 
@@ -439,7 +570,74 @@ def _series(result: ResolutionResult, name: str) -> list[float]:
     return [record[name] for record in result.history]
 
 
-def resolution_metrics(result: ResolutionResult) -> dict[str, Any]:
+# The record-only relativized constraint diagnostics, persisted per resolution
+# as a time series next to the absolute quantities they relativize.
+CONSTRAINT_SERIES_FIELDS: tuple[str, ...] = (
+    "time",
+    "divergence_residual_max",
+    *RELATIVE_DIAGNOSTIC_FIELDS,
+)
+
+DENOMINATOR_DEFINITIONS = {
+    "divergence_residual_relative": (
+        "max over the grid of |d_r u^r| + |u^r/r| + |d_z u^z| (key "
+        "divergence_relative_denominator), built from the same three terms "
+        "whose sum is the E-02 residual, with the same regular axis limit "
+        "u^r/r -> d_r u^r at r = 0"
+    ),
+    "divergence_pointwise_ratio_max": (
+        "the pointwise term sum |d_r u^r| + |u^r/r| + |d_z u^z| at each grid "
+        "point; the reported value is the largest pointwise ratio, i.e. the "
+        "reciprocal of the smallest TM-09 cancellation index kappa_res"
+    ),
+    "axis_parity_relative_u1": (
+        "max |d_r u1| over the grid (key axis_parity_relative_denominator_u1)"
+    ),
+    "axis_parity_relative_omega1": (
+        "max |d_r omega1| over the grid (key "
+        "axis_parity_relative_denominator_omega1)"
+    ),
+    "snapshot_cross_solver_psi_relative_difference": (
+        "max |psi1| of solver A at the same snapshot (snapshots.csv column "
+        "psi_cross_solver_relative_denominator, equal to max_abs_psi1)"
+    ),
+}
+
+
+def _relativization_row(record: dict[str, float]) -> dict[str, float]:
+    """Extract the relativized constraint entries of one diagnostic record."""
+
+    return {name: float(record[name]) for name in CONSTRAINT_SERIES_FIELDS}
+
+
+def _cross_solver_relativization(
+    snapshots: tuple[SnapshotRecord, ...],
+) -> dict[str, Any] | None:
+    """Report the worst relative cross-solver snapshot with its denominator."""
+
+    if not snapshots:
+        return None
+    worst = max(snapshots, key=lambda item: item.psi_cross_solver_relative_difference)
+    return {
+        "relative_difference_denominator": DENOMINATOR_DEFINITIONS[
+            "snapshot_cross_solver_psi_relative_difference"
+        ],
+        "worst_relative_snapshot_time": worst.time,
+        "worst_relative_difference": worst.psi_cross_solver_relative_difference,
+        "worst_relative_max_abs_difference": (
+            worst.psi_cross_solver_max_abs_difference
+        ),
+        "worst_relative_denominator": worst.psi_cross_solver_relative_denominator,
+        "worst_relative_argmax_r": worst.psi_cross_solver_argmax_r,
+        "worst_relative_argmax_z": worst.psi_cross_solver_argmax_z,
+    }
+
+
+def resolution_metrics(
+    result: ResolutionResult,
+    *,
+    cfl_coefficient: float | None = None,
+) -> dict[str, Any]:
     """Reduce one resolution's history to the recorded acceptance quantities."""
 
     identity = {
@@ -465,6 +663,12 @@ def resolution_metrics(result: ResolutionResult) -> dict[str, Any]:
         for record in result.history
         for value in record.values()
     )
+    maximum_cfl = max(_series(result, "advective_cfl"))
+    coefficient = (
+        None
+        if cfl_coefficient is None
+        else _number(cfl_coefficient, name="cfl_coefficient", positive=True)
+    )
     return {
         **identity,
         "all_diagnostics_finite": finite,
@@ -482,17 +686,53 @@ def resolution_metrics(result: ResolutionResult) -> dict[str, Any]:
         "maximum_amplification": max(amplification),
         "final_argmax_u1_r": result.history[-1]["argmax_u1_r"],
         "final_argmax_u1_z": result.history[-1]["argmax_u1_z"],
+        "final_argmax_cartesian_vorticity_r": result.history[-1][
+            "argmax_cartesian_vorticity_r"
+        ],
+        "final_argmax_cartesian_vorticity_z": result.history[-1][
+            "argmax_cartesian_vorticity_z"
+        ],
         "maximum_odd_symmetry_defect": max(odd_defect),
         "maximum_odd_symmetry_defect_ratio": max(odd_defect) / max(swirl),
         "maximum_axis_parity_defect": max(_series(result, "axis_parity_defect")),
         "maximum_divergence_residual": max(
             _series(result, "divergence_residual_max")
         ),
+        # ---- record-only relativized constraint diagnostics (TM-09) --------
+        "maximum_divergence_residual_relative": max(
+            _series(result, "divergence_residual_relative")
+        ),
+        "maximum_divergence_pointwise_ratio": max(
+            _series(result, "divergence_pointwise_ratio_max")
+        ),
+        "maximum_axis_parity_relative_u1": max(
+            _series(result, "axis_parity_relative_u1")
+        ),
+        "maximum_axis_parity_relative_omega1": max(
+            _series(result, "axis_parity_relative_omega1")
+        ),
+        "constraint_relativization": {
+            "gated": False,
+            "denominator_definitions": dict(DENOMINATOR_DEFINITIONS),
+            "initial": _relativization_row(result.history[0]),
+            "final": _relativization_row(result.history[-1]),
+        },
+        "constraint_relativization_series": {
+            name: _series(result, name) for name in CONSTRAINT_SERIES_FIELDS
+        },
+        "cross_solver_relativization": _cross_solver_relativization(
+            result.snapshots
+        ),
         "maximum_wall_u1_abs": max(_series(result, "wall_u1_max_abs")),
         "minimum_dt": min(record["dt"] for record in result.history[1:])
         if len(result.history) > 1
         else 0.0,
-        "maximum_advective_cfl": max(_series(result, "advective_cfl")),
+        "maximum_advective_cfl": maximum_cfl,
+        # Post-step measurement against the start-of-step selection rule; see
+        # CFL_EXCESS_MECHANISM and the summary cfl_policy block.
+        "maximum_advective_cfl_excess_ratio": (
+            None if coefficient is None else maximum_cfl / coefficient - 1.0
+        ),
         "viscosity_switch_times": list(result.viscosity_switch_times),
         "snapshot_cross_solver_psi_max_abs_difference": (
             max(
@@ -519,6 +759,8 @@ def evaluate(
 ) -> tuple[list[ResolutionResult], list[dict[str, Any]], dict[str, bool]]:
     validate_config(config)
     acceptance = config["acceptance"]
+    cfl_coefficient = float(config["cfl_coefficient"])
+    cfl_excess_tolerance = cfl_excess_tolerance_of(config)
     results = [
         evolve_resolution(
             config,
@@ -529,7 +771,10 @@ def evaluate(
         )
         for nr, nz in config["resolutions"]
     ]
-    metrics = [resolution_metrics(result) for result in results]
+    metrics = [
+        resolution_metrics(result, cfl_coefficient=cfl_coefficient)
+        for result in results
+    ]
     completed = [item for item in metrics if item.get("all_diagnostics_finite") is not None]
     finest = metrics[-1]
     checks = {
@@ -568,8 +813,73 @@ def evaluate(
             )
             for item in completed
         ),
+        # The recorded CFL is a post-step measurement of a step sized at the
+        # start of the step, so it is accepted against C (1 + tolerance).
+        "advective_cfl_within_tolerance": bool(completed)
+        and all(
+            advective_cfl_within_tolerance(
+                item["maximum_advective_cfl"],
+                cfl_coefficient=cfl_coefficient,
+                cfl_excess_tolerance=cfl_excess_tolerance,
+            )
+            for item in completed
+        ),
     }
     return results, metrics, checks
+
+
+def cfl_excess_tolerance_of(config: dict[str, Any]) -> float:
+    """Return the configured CFL excess tolerance or its documented default."""
+
+    if "cfl_excess_tolerance" not in config:
+        return DEFAULT_CFL_EXCESS_TOLERANCE
+    return _number(config["cfl_excess_tolerance"], name="cfl_excess_tolerance")
+
+
+def cfl_policy(
+    config: dict[str, Any],
+    metrics: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Return the summary block that fixes the CFL acceptance semantics."""
+
+    coefficient = float(config["cfl_coefficient"])
+    tolerance = cfl_excess_tolerance_of(config)
+    measured = [
+        float(item["maximum_advective_cfl"])
+        for item in metrics
+        if item.get("maximum_advective_cfl") is not None
+    ]
+    worst = max(measured) if measured else None
+    return {
+        "rule": CFL_RULE,
+        "effective_cfl_definition": EFFECTIVE_CFL_DEFINITION,
+        "why_the_effective_cfl_can_exceed_the_coefficient": CFL_EXCESS_MECHANISM,
+        "cfl_coefficient": coefficient,
+        "cfl_excess_tolerance": tolerance,
+        "cfl_excess_tolerance_source": (
+            "config key cfl_excess_tolerance"
+            if "cfl_excess_tolerance" in config
+            else f"default {DEFAULT_CFL_EXCESS_TOLERANCE}"
+        ),
+        "accepted_effective_cfl_bound": coefficient * (1.0 + tolerance),
+        "maximum_effective_cfl": worst,
+        "maximum_effective_cfl_excess_ratio": (
+            None if worst is None else worst / coefficient - 1.0
+        ),
+        "intra_step_growth_guidance": (
+            "docs/hou_setup_audit.md records the delegated HH21 "
+            "(arXiv:2102.06663) prescription: advective and viscous CFL "
+            "numbers 0.1 with a one-step relative growth of the maximum below "
+            "one percent, which bounds the excess above"
+        ),
+        "v1_reference_measurement": {
+            "run": "outputs/hou_early_time_v1 (193x384 resolution)",
+            "cfl_coefficient": V1_CFL_COEFFICIENT,
+            "maximum_advective_cfl": V1_MAXIMUM_ADVECTIVE_CFL,
+            "excess_ratio": V1_ADVECTIVE_CFL_EXCESS_RATIO,
+            "excess_percent": 100.0 * V1_ADVECTIVE_CFL_EXCESS_RATIO,
+        },
+    }
 
 
 def _write_csv(path: Path, fieldnames: list[str], rows: list[dict[str, Any]]) -> None:
@@ -623,8 +933,19 @@ def run(config: dict[str, Any], output_dir: Path) -> dict[str, Any]:
             "psi_cross_solver_relative_difference": (
                 item.psi_cross_solver_relative_difference
             ),
+            "psi_cross_solver_relative_denominator": (
+                item.psi_cross_solver_relative_denominator
+            ),
+            "psi_cross_solver_argmax_r": item.psi_cross_solver_argmax_r,
+            "psi_cross_solver_argmax_z": item.psi_cross_solver_argmax_z,
             "solver_b_boundary_error_max": item.solver_b_boundary_error_max,
             "solver_b_physical_defect_max": item.solver_b_physical_defect_max,
+            "max_abs_u1": item.max_abs_u1,
+            "argmax_u1_r": item.argmax_u1_r,
+            "argmax_u1_z": item.argmax_u1_z,
+            "max_cartesian_vorticity": item.max_cartesian_vorticity,
+            "argmax_cartesian_vorticity_r": item.argmax_cartesian_vorticity_r,
+            "argmax_cartesian_vorticity_z": item.argmax_cartesian_vorticity_z,
         }
         for result in results
         for item in result.snapshots
@@ -679,7 +1000,14 @@ def run(config: dict[str, Any], output_dir: Path) -> dict[str, Any]:
             "viscosity_protocol": "E-30 two-stage piecewise-constant schedule",
             "initial_data": "E-29 with amplitude 12000 times amplitude_scale",
             "symmetry": "full z period, odd symmetry monitored not imposed",
+            "constraint_relativization": (
+                "the E-02 divergence residual and the E-16c axis parity defect "
+                "are reported both absolutely and divided by their own "
+                "cancellation scales (TM-09); the relative numbers are "
+                "recorded and no acceptance check reads them"
+            ),
         },
+        "cfl_policy": cfl_policy(config, metrics),
         "reproducibility": {
             "seed": int(config["seed"]),
             "config_sha256": _sha256(config_bytes),

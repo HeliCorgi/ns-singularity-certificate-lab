@@ -82,23 +82,35 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from ns_certificate_lab import nonlinear_cylinder
 from ns_certificate_lab.grid import AxisymmetricGrid
 from ns_certificate_lab.nonlinear_cylinder import (
+    DIAGNOSTIC_FIELDS,
+    RELATIVE_DIAGNOSTIC_FIELDS,
     VALID_FAULTS,
     adaptive_time_step,
     axis_parity_defect,
     cartesian_vorticity,
+    compute_diagnostics,
     constrain_state,
+    heun_step,
     hou_initial_swirl,
     integrate,
     normalize_viscosity_schedule,
     odd_symmetry_defect,
+    relative_axis_parity,
+    relative_divergence,
     resume,
     save_checkpoint,
     thom_wall_vorticity,
     viscosity_at,
 )
-from ns_certificate_lab.operators import laplacian_5d_formal
+from ns_certificate_lab.operators import (
+    divergence_physical,
+    divergence_terms,
+    laplacian_5d_formal,
+    recover_velocity,
+)
 
 
 WAVE_NUMBER = 2.0 * math.pi
@@ -751,6 +763,302 @@ def test_e29_initial_data_matches_the_audited_norms() -> None:
     assert measured_u1 == pytest.approx(3265.9863, rel=0.01)
     assert measured_vorticity == pytest.approx(7569.62, rel=0.01)
     assert hou_initial_swirl(grid, amplitude_scale=0.5) == pytest.approx(0.5 * u1)
+
+
+# ------------------------------- relativized constraint diagnostics (TM-09)
+
+
+def _solenoidal_velocity(
+    grid: AxisymmetricGrid,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Return the E-14 velocities of a smooth ``psi1``.
+
+    ``u^r = -r psi1_z`` and ``u^z = 2 psi1 + r psi1_r`` satisfy
+    ``d_r u^r + u^r/r + d_z u^z = -psi1_z - r psi1_rz - psi1_z + 2 psi1_z
+    + r psi1_rz = 0`` identically in the continuum, so every nonzero discrete
+    divergence residual here is pure truncation error.
+    """
+
+    radius, axial = grid.mesh()
+    psi1 = (
+        (1.0 - radius**2) ** 2
+        * (1.0 + 0.3 * radius**2)
+        * np.sin(2.0 * np.pi * axial)
+    )
+    return recover_velocity(grid, psi1)
+
+
+def test_divergence_terms_sum_to_the_divergence_residual() -> None:
+    """Numerator and denominator of the relative metric share their terms."""
+
+    grid = _grid(33, 64)
+    u_r, u_z = _solenoidal_velocity(grid)
+    term_r, term_ratio, term_z = divergence_terms(grid, u_r, u_z)
+    assert np.array_equal(
+        (term_r + term_z) + term_ratio,
+        divergence_physical(grid, u_r, u_z),
+    )
+    # The axis row uses the regular limit u^r/r -> d_r u^r of E-02.
+    assert np.array_equal(term_ratio[0], term_r[0])
+
+
+def test_relative_divergence_is_discretization_level_for_a_recovered_field() -> None:
+    """An exactly solenoidal continuum field leaves an O(dr^2) relative residual."""
+
+    relatives: list[float] = []
+    for nr, nz in ((17, 32), (33, 64), (65, 128)):
+        grid = _grid(nr, nz)
+        u_r, u_z = _solenoidal_velocity(grid)
+        report = relative_divergence(grid, u_r, u_z)
+        # The cancellation scale is O(1) here, so the relative residual is not
+        # inflated by a vanishing denominator.
+        assert report["denominator"] > 1.0
+        assert report["residual_max"] == pytest.approx(
+            float(np.max(np.abs(divergence_physical(grid, u_r, u_z))))
+        )
+        assert report["relative"] == pytest.approx(
+            report["residual_max"] / report["denominator"]
+        )
+        # |sum of terms| <= sum of |terms| pointwise, so every ratio is in [0,1].
+        assert 0.0 <= report["pointwise_ratio_max"] <= 1.0 + 1.0e-12
+        for key in ("argmax_r", "pointwise_argmax_r"):
+            assert 0.0 <= report[key] <= grid.r[-1]
+        for key in ("argmax_z", "pointwise_argmax_z"):
+            assert 0.0 <= report[key] < 1.0
+        relatives.append(report["relative"])
+    # Measured: 7.57e-3, 2.20e-3, 5.92e-4 -- a factor of ~3.8 per refinement.
+    assert relatives[0] > relatives[1] > relatives[2]
+    assert relatives[1] < 0.4 * relatives[0]
+    assert relatives[2] < 0.4 * relatives[1]
+    assert relatives[-1] < 1.0e-3
+
+
+def test_detects_broken_divergence_in_relative_metric() -> None:
+    """A corrupted u^z must lift the relative residual from O(dr^2) to O(1)."""
+
+    grid = _grid(33, 64)
+    u_r, u_z = _solenoidal_velocity(grid)
+    clean = relative_divergence(grid, u_r, u_z)
+    # 1.5 u^z leaves 0.5 d_z u^z uncancelled: a fault the absolute residual
+    # alone could be argued away as "large because the fields are large".
+    broken = relative_divergence(grid, u_r, 1.5 * u_z)
+    assert clean["relative"] < 5.0e-3
+    # Measured: 0.199 against 2.20e-3 clean, i.e. a factor of 90.
+    assert broken["relative"] > 0.1
+    assert broken["relative"] > 50.0 * clean["relative"]
+    # The absolute residual grows by the same factor, but only the relative
+    # number says the residual is no longer a cancellation artefact.
+    assert broken["residual_max"] > 50.0 * clean["residual_max"]
+    assert broken["denominator"] == pytest.approx(clean["denominator"], rel=0.5)
+
+
+def test_relative_axis_parity_flags_broken_evenness() -> None:
+    """E-16c relativized by the field's own radial gradient scale."""
+
+    clean_relatives: list[float] = []
+    for nr, nz in ((17, 32), (33, 64), (65, 128)):
+        grid = _grid(nr, nz)
+        radius, axial = grid.mesh()
+        modulation = 1.0 + 0.5 * np.cos(2.0 * np.pi * axial)
+        even = (1.0 - radius**2) ** 2 * modulation
+        broken = even + radius * modulation
+
+        report = relative_axis_parity(grid, even)
+        assert report["defect"] == axis_parity_defect(grid, even)
+        assert report["denominator"] > 1.0
+        assert report["relative"] == pytest.approx(
+            report["defect"] / report["denominator"]
+        )
+        assert 0.0 <= report["argmax_z"] < 1.0
+        clean_relatives.append(report["relative"])
+
+        odd = relative_axis_parity(grid, broken)
+        # The odd component r*modulation has unit slope at the axis and that
+        # slope is also the largest radial gradient, so the ratio saturates.
+        assert odd["relative"] > 0.5
+        assert odd["relative"] > 100.0 * report["relative"]
+        assert odd["denominator"] > 0.0
+    # Measured: 9.58e-4, 1.19e-4, 1.49e-5 -- the O(dr^3) even-field floor.
+    assert clean_relatives[0] > clean_relatives[1] > clean_relatives[2]
+    assert clean_relatives[1] < 0.25 * clean_relatives[0]
+    assert clean_relatives[2] < 0.25 * clean_relatives[1]
+    assert clean_relatives[-1] < 1.0e-3
+
+
+def test_compute_diagnostics_reports_every_relative_metric() -> None:
+    grid = _grid(33, 64)
+    state = constrain_state(
+        grid,
+        hou_initial_swirl(grid, amplitude=500.0),
+        np.zeros(grid.shape),
+    )
+    state = heun_step(grid, state, dt=1.0e-4, time=0.0, viscosity=5.0e-4)
+    record = compute_diagnostics(
+        grid,
+        state,
+        time=1.0e-4,
+        dt=1.0e-4,
+        viscosity=5.0e-4,
+        step=1,
+    )
+    assert set(record) == set(DIAGNOSTIC_FIELDS)
+    assert set(RELATIVE_DIAGNOSTIC_FIELDS) <= set(record)
+    assert all(math.isfinite(value) for value in record.values())
+
+    divergence = relative_divergence(grid, state.u_r, state.u_z)
+    assert record["divergence_residual_max"] == divergence["residual_max"]
+    assert record["divergence_relative_denominator"] == divergence["denominator"]
+    assert record["divergence_residual_relative"] == divergence["relative"]
+    assert record["divergence_pointwise_ratio_max"] == (
+        divergence["pointwise_ratio_max"]
+    )
+    assert record["divergence_relative_denominator"] > 0.0
+
+    for name in ("u1", "omega1"):
+        report = relative_axis_parity(grid, getattr(state, name))
+        assert record[f"axis_parity_defect_{name}"] == report["defect"]
+        assert record[f"axis_parity_relative_{name}"] == report["relative"]
+        assert record[f"axis_parity_relative_denominator_{name}"] == (
+            report["denominator"]
+        )
+        assert record[f"axis_parity_relative_denominator_{name}"] > 0.0
+        assert record[f"axis_parity_argmax_z_{name}"] == report["argmax_z"]
+    # The pre-existing aggregate keeps its meaning: it dominates both fields.
+    assert record["axis_parity_defect"] >= record["axis_parity_defect_u1"]
+    assert record["axis_parity_defect"] >= record["axis_parity_defect_omega1"]
+
+    # Every reported location lies inside the domain.
+    for name in (
+        "divergence_residual_argmax_r",
+        "divergence_pointwise_ratio_argmax_r",
+        "argmax_cartesian_vorticity_r",
+        "argmax_u1_r",
+    ):
+        assert 0.0 <= record[name] <= grid.r[-1]
+    for name in (
+        "divergence_residual_argmax_z",
+        "divergence_pointwise_ratio_argmax_z",
+        "axis_parity_argmax_z_u1",
+        "axis_parity_argmax_z_omega1",
+        "argmax_cartesian_vorticity_z",
+        "argmax_u1_z",
+    ):
+        assert 0.0 <= record[name] < 1.0
+
+    # The recorded vorticity location is the argmax of the E-18b magnitude.
+    magnitude = np.sqrt(
+        sum(
+            component * component
+            for component in cartesian_vorticity(grid, state.u1, state.omega1)
+        )
+    )
+    row, column = divmod(int(np.argmax(magnitude)), grid.nz)
+    assert record["argmax_cartesian_vorticity_r"] == grid.r[row]
+    assert record["argmax_cartesian_vorticity_z"] == grid.z[column]
+    assert record["max_cartesian_vorticity"] == pytest.approx(
+        float(magnitude[row, column])
+    )
+
+
+# ---------------------------------------------------- CFL selection semantics
+
+
+def test_adaptive_step_is_sized_at_the_start_of_the_step() -> None:
+    """The recorded CFL is a post-step measurement of a start-of-step choice.
+
+    With the advective bound active and frozen velocities the effective CFL is
+    exactly ``cfl_coefficient``, because
+    ``max(|u^r|/dr, |u^z|/dz) = 1 / min(dr/|u^r|, dz/|u^z|)``.  The excess a
+    real run records is therefore exactly the intra-step growth of the
+    dominant directional velocity ratio, and nothing else.
+    """
+
+    grid = _grid(33, 64)
+    viscosity = 5.0e-4
+    coefficient = 0.1
+    state = constrain_state(
+        grid,
+        hou_initial_swirl(grid, amplitude=1000.0),
+        np.zeros(grid.shape),
+    )
+    # One short step to leave the u^r = u^z = 0 initial datum behind.
+    state = heun_step(grid, state, dt=1.0e-4, time=0.0, viscosity=viscosity)
+
+    def directional_ratio(current) -> float:
+        return max(
+            float(np.max(np.abs(current.u_r))) / grid.dr,
+            float(np.max(np.abs(current.u_z))) / grid.dz,
+        )
+
+    dt = adaptive_time_step(
+        grid, state, viscosity=viscosity, cfl_coefficient=coefficient
+    )
+    viscous_bound = coefficient * min(grid.dr**2, grid.dz**2) / (4.0 * viscosity)
+    assert dt < viscous_bound, "the advective bound must be the active one here"
+    # Frozen velocities: the effective CFL is the coefficient itself, up to the
+    # 1e-12 velocity floor of adaptive_time_step.
+    assert dt * directional_ratio(state) == pytest.approx(coefficient, rel=1.0e-9)
+
+    advanced = heun_step(
+        grid, state, dt=dt, time=1.0e-4, viscosity=viscosity
+    )
+    record = compute_diagnostics(
+        grid,
+        advanced,
+        time=1.0e-4 + dt,
+        dt=dt,
+        viscosity=viscosity,
+        step=2,
+    )
+    # The diagnostic is measured on the state the step produced ...
+    assert record["advective_cfl"] == pytest.approx(
+        dt * directional_ratio(advanced), rel=1.0e-12
+    )
+    # ... whose velocities grew, so the post-step number exceeds the
+    # coefficient by exactly that growth factor.
+    growth = directional_ratio(advanced) / directional_ratio(state)
+    assert growth > 1.0
+    assert record["advective_cfl"] == pytest.approx(
+        coefficient * growth, rel=1.0e-9
+    )
+    assert record["advective_cfl"] > coefficient
+
+
+def test_step_clipping_and_the_cap_only_lower_the_effective_cfl() -> None:
+    grid = _grid(17, 32)
+    state = constrain_state(
+        grid,
+        hou_initial_swirl(grid, amplitude=500.0),
+        np.zeros(grid.shape),
+    )
+    state = heun_step(grid, state, dt=1.0e-4, time=0.0, viscosity=5.0e-4)
+    unclipped = adaptive_time_step(
+        grid, state, viscosity=5.0e-4, cfl_coefficient=0.1
+    )
+    capped = adaptive_time_step(
+        grid,
+        state,
+        viscosity=5.0e-4,
+        cfl_coefficient=0.1,
+        max_time_step=1.0e-6,
+    )
+    assert capped == 1.0e-6 < unclipped
+    ratio = max(
+        float(np.max(np.abs(state.u_r))) / grid.dr,
+        float(np.max(np.abs(state.u_z))) / grid.dz,
+    )
+    assert capped * ratio < unclipped * ratio
+
+
+def test_module_documents_the_start_of_step_time_step_rule() -> None:
+    doc = nonlinear_cylinder.__doc__ or ""
+    assert "start" in doc
+    # The measured v1 excess, quoted so the acceptance tolerance is auditable.
+    assert "0.10022676304450114" in doc
+    assert "0.23" in doc
+    assert "0.0022676" in doc
+    selection = adaptive_time_step.__doc__ or ""
+    assert "start of the step" in selection
 
 
 def test_max_steps_stops_an_incomplete_run() -> None:

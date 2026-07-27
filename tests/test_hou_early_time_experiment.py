@@ -18,10 +18,18 @@ import numpy as np
 import pytest
 
 from experiments.run_hou_early_time import (
+    CONSTRAINT_SERIES_FIELDS,
+    DEFAULT_CFL_EXCESS_TOLERANCE,
     E29B_MAX_ABS_U1,
     E29B_MAX_CARTESIAN_VORTICITY,
     E29_AMPLITUDE,
+    V1_ADVECTIVE_CFL_EXCESS_RATIO,
+    V1_CFL_COEFFICIENT,
+    V1_MAXIMUM_ADVECTIVE_CFL,
+    advective_cfl_within_tolerance,
     build_grid,
+    cfl_excess_tolerance_of,
+    cfl_policy,
     evolve_resolution,
     initial_norms,
     run,
@@ -29,7 +37,10 @@ from experiments.run_hou_early_time import (
 )
 from ns_certificate_lab._integrity import strict_json_loads
 from ns_certificate_lab.artifacts import load_candidate
-from ns_certificate_lab.nonlinear_cylinder import load_checkpoint
+from ns_certificate_lab.nonlinear_cylinder import (
+    RELATIVE_DIAGNOSTIC_FIELDS,
+    load_checkpoint,
+)
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
@@ -103,6 +114,14 @@ def test_shipped_config_is_valid_and_targets_the_audited_protocol() -> None:
         ({"resolutions": [[129, 256], [193]]}, "\\[nr, nz\\] integer pair"),
         ({"amplitude_scale": 0.0}, "amplitude_scale must be positive"),
         ({"cfl_coefficient": -1.0}, "cfl_coefficient must be positive"),
+        (
+            {"cfl_excess_tolerance": -0.01},
+            "cfl_excess_tolerance must be nonnegative",
+        ),
+        (
+            {"cfl_excess_tolerance": "loose"},
+            "cfl_excess_tolerance must be a finite number",
+        ),
         ({"max_steps": 0}, "max_steps must be a positive integer"),
         ({"diagnostic_stride": 1.5}, "diagnostic_stride must be a positive"),
         ({"t_final": 0.0}, "t_final must be positive"),
@@ -207,6 +226,7 @@ def test_smoke_run_produces_a_complete_accepted_bundle(
         "odd_symmetry_preserved",
         "initial_norms_match_e29b",
         "cross_solver_elliptic_agreement_recorded",
+        "advective_cfl_within_tolerance",
     }
     assert set(summary["acceptance_checks"]) == expected_checks
     assert all(summary["acceptance_checks"].values())
@@ -328,6 +348,283 @@ def test_snapshot_checkpoints_reload_as_v2_candidates(
     assert checkpoint.metadata["experiment_id"] == "hou_early_time_v1"
     assert np.all(np.isfinite(checkpoint.state.u1))
     assert float(np.max(np.abs(checkpoint.state.u1[-1]))) == 0.0
+
+
+# ------------------------------------ relativized constraint diagnostics
+
+
+def test_shipped_configs_stay_valid_without_the_optional_cfl_key() -> None:
+    """The new key is optional: every shipped config must keep validating."""
+
+    for path in sorted(REPOSITORY_ROOT.glob("configs/hou_early_time*.json")):
+        config = strict_json_loads(
+            path.read_text(encoding="utf-8"),
+            label=f"hou early time config {path.name}",
+        )
+        assert isinstance(config, dict)
+        validate_config(config)
+        assert "cfl_excess_tolerance" not in config
+        assert cfl_excess_tolerance_of(config) == DEFAULT_CFL_EXCESS_TOLERANCE
+
+    explicit = _config()
+    explicit["cfl_excess_tolerance"] = 0.0
+    validate_config(explicit)
+    assert cfl_excess_tolerance_of(explicit) == 0.0
+
+
+def test_relative_constraint_columns_are_recorded_in_diagnostics_csv(
+    generated_run: tuple[dict[str, Any], Path, dict[str, Any]],
+) -> None:
+    _, output, _ = generated_run
+    with (output / "diagnostics.csv").open(newline="", encoding="utf-8") as stream:
+        rows = list(csv.DictReader(stream))
+    assert rows
+    assert set(RELATIVE_DIAGNOSTIC_FIELDS) <= rows[0].keys()
+    assert {
+        "argmax_cartesian_vorticity_r",
+        "argmax_cartesian_vorticity_z",
+    } <= rows[0].keys()
+    for row in rows:
+        for name in RELATIVE_DIAGNOSTIC_FIELDS:
+            assert math.isfinite(float(row[name]))
+        # Ratios of a residual to its own term sum are bounded by one.
+        assert 0.0 <= float(row["divergence_residual_relative"]) <= 1.0
+        assert 0.0 <= float(row["divergence_pointwise_ratio_max"]) <= 1.0
+        assert 0.0 <= float(row["axis_parity_relative_u1"]) <= 1.0
+        assert 0.0 <= float(row["axis_parity_relative_omega1"]) <= 1.0
+        # Every reported location lies inside the domain.
+        for name in (
+            "divergence_residual_argmax_r",
+            "divergence_pointwise_ratio_argmax_r",
+            "argmax_cartesian_vorticity_r",
+        ):
+            assert 0.0 <= float(row[name]) <= 1.0
+        for name in (
+            "divergence_residual_argmax_z",
+            "divergence_pointwise_ratio_argmax_z",
+            "axis_parity_argmax_z_u1",
+            "axis_parity_argmax_z_omega1",
+            "argmax_cartesian_vorticity_z",
+        ):
+            assert 0.0 <= float(row[name]) < 1.0
+    # The denominators are the physical scales the relative numbers refer to;
+    # they must be strictly positive once the flow has left the u = 0 datum.
+    moving = [row for row in rows if float(row["time"]) > 0.0]
+    assert moving
+    assert all(
+        float(row["divergence_relative_denominator"]) > 0.0 for row in moving
+    )
+    assert all(
+        float(row["axis_parity_relative_denominator_u1"]) > 0.0 for row in rows
+    )
+
+
+def test_summary_records_the_constraint_relativization_table(
+    generated_run: tuple[dict[str, Any], Path, dict[str, Any]],
+) -> None:
+    config, _, summary = generated_run
+    for item in summary["resolutions"]:
+        table = item["constraint_relativization"]
+        # Recorded, never gated.
+        assert table["gated"] is False
+        assert {
+            "divergence_residual_relative",
+            "divergence_pointwise_ratio_max",
+            "axis_parity_relative_u1",
+            "axis_parity_relative_omega1",
+        } <= set(table["denominator_definitions"])
+        assert all(
+            isinstance(text, str) and text.strip()
+            for text in table["denominator_definitions"].values()
+        )
+        assert set(table["initial"]) == set(CONSTRAINT_SERIES_FIELDS)
+        assert set(table["final"]) == set(CONSTRAINT_SERIES_FIELDS)
+        assert table["initial"]["time"] == 0.0
+        assert table["final"]["time"] == pytest.approx(config["t_final"])
+        assert table["final"]["divergence_relative_denominator"] > 0.0
+        assert table["final"]["axis_parity_relative_denominator_u1"] > 0.0
+        assert 0.0 <= table["final"]["divergence_residual_relative"] <= 1.0
+
+        series = item["constraint_relativization_series"]
+        assert set(series) == set(CONSTRAINT_SERIES_FIELDS)
+        lengths = {len(values) for values in series.values()}
+        assert lengths == {item["step_count"] + 1}
+        assert series["time"][0] == 0.0
+        assert series["time"][-1] == pytest.approx(config["t_final"])
+        for name in CONSTRAINT_SERIES_FIELDS:
+            assert series[name][0] == table["initial"][name]
+            assert series[name][-1] == table["final"][name]
+            assert all(math.isfinite(value) for value in series[name])
+
+        assert item["maximum_divergence_residual_relative"] == max(
+            series["divergence_residual_relative"]
+        )
+        assert item["maximum_axis_parity_relative_u1"] == max(
+            series["axis_parity_relative_u1"]
+        )
+        assert item["maximum_axis_parity_relative_omega1"] == max(
+            series["axis_parity_relative_omega1"]
+        )
+        assert item["maximum_divergence_pointwise_ratio"] == max(
+            series["divergence_pointwise_ratio_max"]
+        )
+        assert 0.0 <= item["final_argmax_cartesian_vorticity_r"] <= 1.0
+        assert 0.0 <= item["final_argmax_cartesian_vorticity_z"] < 1.0
+
+    # None of the new numbers is allowed to become an acceptance gate here.
+    assert "constraint" not in " ".join(summary["acceptance_checks"])
+
+
+def test_summary_documents_the_cross_solver_denominator(
+    generated_run: tuple[dict[str, Any], Path, dict[str, Any]],
+) -> None:
+    _, output, summary = generated_run
+    with (output / "snapshots.csv").open(newline="", encoding="utf-8") as stream:
+        snapshots = list(csv.DictReader(stream))
+    assert {
+        "psi_cross_solver_relative_denominator",
+        "psi_cross_solver_argmax_r",
+        "psi_cross_solver_argmax_z",
+        "argmax_cartesian_vorticity_r",
+        "argmax_cartesian_vorticity_z",
+        "max_cartesian_vorticity",
+        "argmax_u1_r",
+        "argmax_u1_z",
+    } <= snapshots[0].keys()
+    for row in snapshots:
+        # The relative difference is the absolute one over max |psi1|.
+        denominator = float(row["psi_cross_solver_relative_denominator"])
+        assert denominator == float(row["max_abs_psi1"])
+        if denominator > 0.0:
+            assert float(row["psi_cross_solver_relative_difference"]) == (
+                pytest.approx(
+                    float(row["psi_cross_solver_max_abs_difference"]) / denominator
+                )
+            )
+        assert 0.0 <= float(row["psi_cross_solver_argmax_r"]) <= 1.0
+        assert 0.0 <= float(row["psi_cross_solver_argmax_z"]) < 1.0
+        assert 0.0 <= float(row["argmax_cartesian_vorticity_r"]) <= 1.0
+        assert 0.0 <= float(row["argmax_cartesian_vorticity_z"]) < 1.0
+        assert math.isfinite(float(row["max_cartesian_vorticity"]))
+
+    for item in summary["resolutions"]:
+        block = item["cross_solver_relativization"]
+        assert "max |psi1|" in block["relative_difference_denominator"]
+        assert block["worst_relative_difference"] == (
+            item["snapshot_cross_solver_psi_relative_difference"]
+        )
+        assert block["worst_relative_denominator"] > 0.0
+        assert block["worst_relative_difference"] == pytest.approx(
+            block["worst_relative_max_abs_difference"]
+            / block["worst_relative_denominator"]
+        )
+        assert 0.0 <= block["worst_relative_argmax_r"] <= 1.0
+        assert 0.0 <= block["worst_relative_argmax_z"] < 1.0
+
+
+# ------------------------------------------------ CFL acceptance semantics
+
+
+def test_advective_cfl_acceptance_passes_on_a_real_run(
+    generated_run: tuple[dict[str, Any], Path, dict[str, Any]],
+) -> None:
+    """Part (i): the check holds for an actual end-to-end run."""
+
+    config, _, summary = generated_run
+    assert summary["acceptance_checks"]["advective_cfl_within_tolerance"] is True
+    policy = summary["cfl_policy"]
+    assert "START of the step" in policy["rule"]
+    assert "AFTER the step" in policy["effective_cfl_definition"]
+    assert policy["cfl_coefficient"] == config["cfl_coefficient"]
+    assert policy["cfl_excess_tolerance"] == DEFAULT_CFL_EXCESS_TOLERANCE
+    assert policy["cfl_excess_tolerance_source"].startswith("default")
+    assert policy["accepted_effective_cfl_bound"] == pytest.approx(
+        config["cfl_coefficient"] * (1.0 + DEFAULT_CFL_EXCESS_TOLERANCE)
+    )
+    assert policy["maximum_effective_cfl"] <= policy["accepted_effective_cfl_bound"]
+    assert policy["maximum_effective_cfl"] == max(
+        item["maximum_advective_cfl"] for item in summary["resolutions"]
+    )
+    for item in summary["resolutions"]:
+        assert item["maximum_advective_cfl_excess_ratio"] == pytest.approx(
+            item["maximum_advective_cfl"] / config["cfl_coefficient"] - 1.0
+        )
+    assert advective_cfl_within_tolerance(
+        policy["maximum_effective_cfl"],
+        cfl_coefficient=config["cfl_coefficient"],
+        cfl_excess_tolerance=DEFAULT_CFL_EXCESS_TOLERANCE,
+    )
+
+
+def test_advective_cfl_check_fails_at_zero_tolerance() -> None:
+    """Part (ii): the recorded v1 excess is a genuine failure at tolerance 0."""
+
+    assert V1_MAXIMUM_ADVECTIVE_CFL > V1_CFL_COEFFICIENT
+    assert V1_ADVECTIVE_CFL_EXCESS_RATIO == pytest.approx(0.0022676, abs=1.0e-7)
+    assert (
+        advective_cfl_within_tolerance(
+            V1_MAXIMUM_ADVECTIVE_CFL,
+            cfl_coefficient=V1_CFL_COEFFICIENT,
+            cfl_excess_tolerance=0.0,
+        )
+        is False
+    )
+    assert (
+        advective_cfl_within_tolerance(
+            V1_MAXIMUM_ADVECTIVE_CFL,
+            cfl_coefficient=V1_CFL_COEFFICIENT,
+            cfl_excess_tolerance=DEFAULT_CFL_EXCESS_TOLERANCE,
+        )
+        is True
+    )
+    # The boundary is inclusive and a real overshoot is still rejected.
+    assert advective_cfl_within_tolerance(
+        0.105, cfl_coefficient=0.1, cfl_excess_tolerance=0.05
+    )
+    assert not advective_cfl_within_tolerance(
+        0.1050001, cfl_coefficient=0.1, cfl_excess_tolerance=0.05
+    )
+    assert not advective_cfl_within_tolerance(
+        float("nan"), cfl_coefficient=0.1, cfl_excess_tolerance=0.05
+    )
+    assert not advective_cfl_within_tolerance(
+        float("inf"), cfl_coefficient=0.1, cfl_excess_tolerance=0.05
+    )
+    with pytest.raises(ValueError, match="cfl_excess_tolerance must be nonnegative"):
+        advective_cfl_within_tolerance(
+            0.1, cfl_coefficient=0.1, cfl_excess_tolerance=-0.1
+        )
+
+    # A zero-tolerance config would have rejected the v1 run outright.
+    config = _smoke_config()
+    config["cfl_excess_tolerance"] = 0.0
+    validate_config(config)
+    policy = cfl_policy(
+        config,
+        [{"maximum_advective_cfl": V1_MAXIMUM_ADVECTIVE_CFL}],
+    )
+    assert policy["cfl_excess_tolerance"] == 0.0
+    assert policy["accepted_effective_cfl_bound"] == pytest.approx(0.1)
+    assert policy["maximum_effective_cfl"] > policy["accepted_effective_cfl_bound"]
+    assert policy["cfl_excess_tolerance_source"] == "config key cfl_excess_tolerance"
+
+
+def test_cfl_policy_block_explains_the_measured_excess(
+    generated_run: tuple[dict[str, Any], Path, dict[str, Any]],
+) -> None:
+    """Part (iii): the mechanism and the v1 measurement are written down."""
+
+    _, _, summary = generated_run
+    policy = summary["cfl_policy"]
+    mechanism = policy["why_the_effective_cfl_can_exceed_the_coefficient"]
+    assert "sized before the velocities grow" in mechanism
+    assert "only shrink dt" in mechanism
+    assert "one percent" in policy["intra_step_growth_guidance"]
+    reference = policy["v1_reference_measurement"]
+    assert reference["maximum_advective_cfl"] == V1_MAXIMUM_ADVECTIVE_CFL
+    assert reference["cfl_coefficient"] == V1_CFL_COEFFICIENT
+    assert reference["excess_ratio"] == pytest.approx(V1_ADVECTIVE_CFL_EXCESS_RATIO)
+    assert reference["excess_percent"] == pytest.approx(0.22676, abs=1.0e-4)
 
 
 def test_nonempty_output_directory_is_refused(scratch_dir: Path) -> None:

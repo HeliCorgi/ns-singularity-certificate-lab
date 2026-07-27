@@ -147,6 +147,31 @@ def recover_velocity(
     return u_r, u_z
 
 
+def divergence_terms(
+    grid: AxisymmetricGrid,
+    u_r: npt.ArrayLike,
+    u_z: npt.ArrayLike,
+) -> tuple[FloatArray, FloatArray, FloatArray]:
+    """Return the three separate cylindrical divergence terms.
+
+    The tuple is ``(d_r u^r, u^r/r, d_z u^z)`` with the *same* guarded axis
+    evaluation used by :func:`divergence_physical`: at ``r = 0`` the singular
+    ratio ``u^r/r`` is replaced by its regular limit ``u^r_r(0)`` for a smooth
+    odd radial velocity, so the axis row reads ``2 u^r_r(0) + u^z_z(0)``.
+
+    Summing the three arrays reproduces :func:`divergence_physical` exactly, so
+    the terms can be used as the cancellation scale of that residual (TM-09).
+    """
+
+    radial = grid.validate_field(u_r, name="u_r")
+    axial = grid.validate_field(u_z, name="u_z")
+    radial_r = derivative_r(grid, radial, even_at_axis=False)
+    ratio = np.empty_like(radial_r)
+    ratio[1:] = radial[1:] / grid.r[1:, None]
+    ratio[0] = radial_r[0]
+    return radial_r, ratio, derivative_z(grid, axial)
+
+
 def divergence_physical(
     grid: AxisymmetricGrid,
     u_r: npt.ArrayLike,
@@ -158,12 +183,9 @@ def divergence_physical(
     radial velocity, the axis limit is ``2 u^r_r(0) + u^z_z(0)``.
     """
 
-    radial = grid.validate_field(u_r, name="u_r")
-    axial = grid.validate_field(u_z, name="u_z")
-    radial_r = derivative_r(grid, radial, even_at_axis=False)
-    out = radial_r + derivative_z(grid, axial)
-    out[1:] += radial[1:] / grid.r[1:, None]
-    out[0] += radial_r[0]
+    radial_r, ratio, axial_z = divergence_terms(grid, u_r, u_z)
+    out = radial_r + axial_z
+    out += ratio
     return out
 
 
