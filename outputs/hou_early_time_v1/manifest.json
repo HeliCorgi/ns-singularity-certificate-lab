@@ -1,0 +1,206 @@
+{
+  "experiment_id": "hou_early_time_v1",
+  "files": {
+    "checkpoints/checkpoint_nr129_nz256_t000.manifest.json": {
+      "bytes": 6464,
+      "sha256": "b7ba46a646f3662b322963447e94a3dde0d1ae4cc6c669165a21b0a5d78d758c"
+    },
+    "checkpoints/checkpoint_nr129_nz256_t000.manifest.json.sha256": {
+      "bytes": 65,
+      "sha256": "6a71178dc2d68ed4abb4f64d3cf172e19bc9f96a470956ba8dd34532637994d4"
+    },
+    "checkpoints/checkpoint_nr129_nz256_t000.npz": {
+      "bytes": 185485,
+      "sha256": "2847aafc26c210a79ba3100dfee1398f52a17054b730c807356eb950c1287670"
+    },
+    "checkpoints/checkpoint_nr129_nz256_t001.manifest.json": {
+      "bytes": 6487,
+      "sha256": "b6872295ee81a67e3bd01e449fd08dd67a360c1cd457d0ce85a1e24a80186412"
+    },
+    "checkpoints/checkpoint_nr129_nz256_t001.manifest.json.sha256": {
+      "bytes": 65,
+      "sha256": "417d8dd470421b1534598cb9f1234974982a1932f6668426a8c9df00e18a0838"
+    },
+    "checkpoints/checkpoint_nr129_nz256_t001.npz": {
+      "bytes": 563385,
+      "sha256": "0d7be4e7fa98c8b94b2d5d835f484ba678b43bc87c4e17d0fc37f47be8fb6f37"
+    },
+    "checkpoints/checkpoint_nr129_nz256_t002.manifest.json": {
+      "bytes": 6485,
+      "sha256": "2961eece1bb31af0c5457379f06b2cc0fbb673918dbd4ee79a9d7234eeaac575"
+    },
+    "checkpoints/checkpoint_nr129_nz256_t002.manifest.json.sha256": {
+      "bytes": 65,
+      "sha256": "cb5d9bef5b640d4224442ece58c02c739d9af289682c9250ede94deb7ecc3f8e"
+    },
+    "checkpoints/checkpoint_nr129_nz256_t002.npz": {
+      "bytes": 563269,
+      "sha256": "754de83c4e67dfd2885cce08ee97eaca687bab2753a4b963c113b164f0ef64ec"
+    },
+    "checkpoints/checkpoint_nr129_nz256_t003.manifest.json": {
+      "bytes": 6486,
+      "sha256": "2385e0c8dc2923d384e0cde2f3f25374462e0b8ae5b4a3b09eab44e4e874857b"
+    },
+    "checkpoints/checkpoint_nr129_nz256_t003.manifest.json.sha256": {
+      "bytes": 65,
+      "sha256": "c022c8b1768cbe4acf71920b0158dbcaa9d1e6b26ee7dd1b32695cadd6abf492"
+    },
+    "checkpoints/checkpoint_nr129_nz256_t003.npz": {
+      "bytes": 564652,
+      "sha256": "e892d205ef63c14693fc7c7488546cc8324d8081b319fbdd2537f98d1cfa76ca"
+    },
+    "checkpoints/checkpoint_nr129_nz256_t004.manifest.json": {
+      "bytes": 6495,
+      "sha256": "1de4be34f820fd3e730dc74038653e5ae0f946e29e5ea563ff17533c28c9ece6"
+    },
+    "checkpoints/checkpoint_nr129_nz256_t004.manifest.json.sha256": {
+      "bytes": 65,
+      "sha256": "f6b1f61d76257e1f1d3e86961b20cb134d9f357a2cfcfcf9e66c51dadce83497"
+    },
+    "checkpoints/checkpoint_nr129_nz256_t004.npz": {
+      "bytes": 567121,
+      "sha256": "0d7d6fcab1482723ceb1bf1e5ac0e868e09d6ae39cbd77880f5fb829ce0a0414"
+    },
+    "checkpoints/checkpoint_nr193_nz384_t000.manifest.json": {
+      "bytes": 6464,
+      "sha256": "baf985d826c953c60bb76e7ffd9cf0e5cc46f94d9a8458c0a337182776dcc276"
+    },
+    "checkpoints/checkpoint_nr193_nz384_t000.manifest.json.sha256": {
+      "bytes": 65,
+      "sha256": "5f5970839cb996213a325b15bfad3a2be71d9ae88f29f8df66f2c15534a8daf3"
+    },
+    "checkpoints/checkpoint_nr193_nz384_t000.npz": {
+      "bytes": 421448,
+      "sha256": "fb64dff26e62f7869b7694915a58e20d5d6c08199d9b9092bcb65488bba939e9"
+    },
+    "checkpoints/checkpoint_nr193_nz384_t001.manifest.json": {
+      "bytes": 6487,
+      "sha256": "91b501598ea881fcd12d6407badbfc5096f02c69eaa0f5c151e4b63547606182"
+    },
+    "checkpoints/checkpoint_nr193_nz384_t001.manifest.json.sha256": {
+      "bytes": 65,
+      "sha256": "2b3257e8c578bac60b045fb8bfd21cc23de28c0309c6194e252f20929f0c2efd"
+    },
+    "checkpoints/checkpoint_nr193_nz384_t001.npz": {
+      "bytes": 1276183,
+      "sha256": "c0f18cef67cef7ec6ee1c01211751300b6388f59eeb585633f638e3edab37751"
+    },
+    "checkpoints/checkpoint_nr193_nz384_t002.manifest.json": {
+      "bytes": 6485,
+      "sha256": "18d176dc3e427af2cb43ac3e5fcdca7ba477546cb89c0d53d6c8c3a1f206706e"
+    },
+    "checkpoints/checkpoint_nr193_nz384_t002.manifest.json.sha256": {
+      "bytes": 65,
+      "sha256": "42e38eb630170aac7a8d37df45d7ce0817bb0bbf3d946524b1a9756011540f0e"
+    },
+    "checkpoints/checkpoint_nr193_nz384_t002.npz": {
+      "bytes": 1279938,
+      "sha256": "b61003b325220c6b041cb753f35c2f1fb64252baa67bad3c165174b6feb1c6d3"
+    },
+    "checkpoints/checkpoint_nr193_nz384_t003.manifest.json": {
+      "bytes": 6487,
+      "sha256": "95baf9ccca97bf22f2353089159dd88788f2438ce8ac1ed954f509171bc01eaf"
+    },
+    "checkpoints/checkpoint_nr193_nz384_t003.manifest.json.sha256": {
+      "bytes": 65,
+      "sha256": "9842baffcb3f38a1951948c244a664cd875262a0cbb1c1570f865769028184bf"
+    },
+    "checkpoints/checkpoint_nr193_nz384_t003.npz": {
+      "bytes": 1282749,
+      "sha256": "93ba1d27c10ee07089c029979bfa3e716d8093e7d6b86a883e6a7ca6a2c34490"
+    },
+    "checkpoints/checkpoint_nr193_nz384_t004.manifest.json": {
+      "bytes": 6495,
+      "sha256": "3c2d75d1a50a6388e04603224bb730ab0c6a7e5af4fd99ce9d9e68db5c62af98"
+    },
+    "checkpoints/checkpoint_nr193_nz384_t004.manifest.json.sha256": {
+      "bytes": 65,
+      "sha256": "0810518021e86ca6d912ab9341651c365d0e94d980eb1d7683ecd2d6ce626e2e"
+    },
+    "checkpoints/checkpoint_nr193_nz384_t004.npz": {
+      "bytes": 1287740,
+      "sha256": "c42c3ce14b14f2443cb0c43321560b4a2ba711a1c3cb3d38aea5c2bfae0c6980"
+    },
+    "checkpoints/checkpoint_nr65_nz128_t000.manifest.json": {
+      "bytes": 6458,
+      "sha256": "136ea671acf809a86aeebbfc14330deb83d5bab2ed73070e6a5ea903be0e2048"
+    },
+    "checkpoints/checkpoint_nr65_nz128_t000.manifest.json.sha256": {
+      "bytes": 65,
+      "sha256": "2ef5351dd294ed2f7a893179b63b19fa706d0dfc7b9859ac9964006dfdad9754"
+    },
+    "checkpoints/checkpoint_nr65_nz128_t000.npz": {
+      "bytes": 47321,
+      "sha256": "4c2b02a128c9132f4782e00cc5752aa2bf36479ec44012d5b6f7311b3f885902"
+    },
+    "checkpoints/checkpoint_nr65_nz128_t001.manifest.json": {
+      "bytes": 6480,
+      "sha256": "46a04c763496f56c18a31861766839522a589ce51656b0b59d6b9511a79ff559"
+    },
+    "checkpoints/checkpoint_nr65_nz128_t001.manifest.json.sha256": {
+      "bytes": 65,
+      "sha256": "b22ef3b2c9ceb0d49a30b43ae030376958b3e33a95041bafb2c1710a27ba7604"
+    },
+    "checkpoints/checkpoint_nr65_nz128_t001.npz": {
+      "bytes": 141459,
+      "sha256": "a55e577e64fa726f0d65ba13ae44742b69c999322eaa84370115700bee8d3cd9"
+    },
+    "checkpoints/checkpoint_nr65_nz128_t002.manifest.json": {
+      "bytes": 6478,
+      "sha256": "4035dfa014c9694f942e91032331dd99a5131c42898e7bc3db2b9bfa822baed1"
+    },
+    "checkpoints/checkpoint_nr65_nz128_t002.manifest.json.sha256": {
+      "bytes": 65,
+      "sha256": "e7a1840a077abea419d70fbc2bca0482275217b3c55a8f103ed53553b468903f"
+    },
+    "checkpoints/checkpoint_nr65_nz128_t002.npz": {
+      "bytes": 142049,
+      "sha256": "a7d9a63c54abf086bf09c67041330956765327b339258e97d6a5528ffe003663"
+    },
+    "checkpoints/checkpoint_nr65_nz128_t003.manifest.json": {
+      "bytes": 6480,
+      "sha256": "3d9b962c42b19f5adf6621b5be9eda3819d0b0452c1f161cdccc3926ef2403ad"
+    },
+    "checkpoints/checkpoint_nr65_nz128_t003.manifest.json.sha256": {
+      "bytes": 65,
+      "sha256": "6dcb8ecd3d51cdbe6a66701fa2192056b9f91843f4e1f3272098eef7ae9ce974"
+    },
+    "checkpoints/checkpoint_nr65_nz128_t003.npz": {
+      "bytes": 141798,
+      "sha256": "3b596a6c95b47e3b83ddef1f3eb0d1bc65c0f4d43a913bcbb3b0490a3ebfd967"
+    },
+    "checkpoints/checkpoint_nr65_nz128_t004.manifest.json": {
+      "bytes": 6489,
+      "sha256": "872d488fd8320bf69a1bc5f9f7cc6513211a93757af1350b5813c3d3980a5bad"
+    },
+    "checkpoints/checkpoint_nr65_nz128_t004.manifest.json.sha256": {
+      "bytes": 65,
+      "sha256": "549b718fa22523c8d428f85ef7a1303355cf87af017cda8db99ac7205bb818cf"
+    },
+    "checkpoints/checkpoint_nr65_nz128_t004.npz": {
+      "bytes": 142604,
+      "sha256": "1f9376e110f9ae1d23a08ac677bdd62457b8511491937139d252991c22b31c43"
+    },
+    "config.snapshot.json": {
+      "bytes": 2049,
+      "sha256": "ce7494bfd50dc06bd715133c8e6deb5fff10fd704fef9ba4dfcf20d02a21cd6d"
+    },
+    "diagnostics.csv": {
+      "bytes": 99575,
+      "sha256": "4072ba642aa984822af8d38f0bf79992f52f6d9a9d39877ce23421f3ccb5e0e4"
+    },
+    "snapshots.csv": {
+      "bytes": 1929,
+      "sha256": "41cc931ffaae999a089c6b4ea6df8e3f1e0307b7fdc234eb160a7ea09b25d7b1"
+    },
+    "summary.json": {
+      "bytes": 12392,
+      "sha256": "efe0432341b302effe042e8b23bddc8791e0f39ea64b306646b30bd048d33c27"
+    },
+    "trajectories.npz": {
+      "bytes": 2008851,
+      "sha256": "151d6005d43398f6e6eb9a3b97b8da7e296c24e7d75599fa2dc9e683d0d80495"
+    }
+  },
+  "schema_version": 1
+}

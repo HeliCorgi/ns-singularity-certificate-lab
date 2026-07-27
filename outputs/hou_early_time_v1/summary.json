@@ -1,0 +1,279 @@
+{
+  "acceptance_checks": {
+    "all_diagnostics_finite": true,
+    "all_resolutions_completed": true,
+    "circulation_max_principle": true,
+    "cross_solver_elliptic_agreement_recorded": true,
+    "early_swirl_maximum_decreases": true,
+    "energy_non_increasing": true,
+    "initial_norms_match_e29b": true,
+    "odd_symmetry_preserved": true
+  },
+  "accepted_as_early_time_observation": true,
+  "derived_reference_norms": {
+    "max_abs_u1": 3265.9863,
+    "max_cartesian_vorticity": 7569.62,
+    "source": "E-29b (derived by this repository, absent from the paper)"
+  },
+  "experiment_id": "hou_early_time_v1",
+  "interpretation": "Early-time numerical observation of the E-29 initial datum on uniform fixed grids. It is not a reproduction of any published amplification value, not a singularity candidate, and not a proof.",
+  "limitations": [
+    "A uniform fixed grid cannot resolve the adaptive mesh scales (minimum spacing of order 1e-8) used by the source calculation; every quantity reported here is resolution limited.",
+    "This is a numerical observation, not a reproduction claim and not evidence of singularity formation.",
+    "The full z period is integrated and the odd symmetry of E-28 is monitored as a diagnostic rather than imposed.",
+    "Solver A and solver B share the same second-order accuracy class, so their agreement bounds discretization consistency, not continuum error.",
+    "The wall vorticity uses the repository's E-31 discretization, which the source calculation does not print; no filter of any kind is applied.",
+    "Floating-point arithmetic only: there is no interval enclosure and no certified bound anywhere in this pipeline."
+  ],
+  "method": {
+    "equations": "E-11, E-12, E-13, E-14",
+    "independent_cross_check": "solver B: finite_cylinder_poisson non-divergence radial stencil, re-solved at every snapshot",
+    "initial_data": "E-29 with amplitude 12000 times amplitude_scale",
+    "poisson_solver": "solver A: Fourier-z / r^3-flux finite volume with homogeneous outer Dirichlet data",
+    "symmetry": "full z period, odd symmetry monitored not imposed",
+    "time_integrator": "explicit Heun/RK2",
+    "time_step_rule": "adaptive min(C dr/max|u^r|, C dz/max|u^z|, C min(dr,dz)^2/(4 nu)) capped by max_time_step",
+    "viscosity_protocol": "E-30 two-stage piecewise-constant schedule",
+    "wall_conditions": "E-27 with the second-order Thom form E-31"
+  },
+  "reproducibility": {
+    "command": "python experiments/run_hou_early_time.py --config configs/hou_early_time.json --output-dir outputs/hou_early_time",
+    "config_sha256": "ce7494bfd50dc06bd715133c8e6deb5fff10fd704fef9ba4dfcf20d02a21cd6d",
+    "runtime_provenance": {
+      "architecture": "64bit",
+      "byteorder": "little",
+      "git_dirty": false,
+      "git_head": "43e07ce2c2c990a5b090f8ed7f743b2706070810",
+      "machine": "AMD64",
+      "numpy_build_config": {
+        "configuration": {
+          "Build Dependencies": {
+            "blas": {
+              "detection method": "pkgconfig",
+              "found": true,
+              "include directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-6ukx7exl/cp311-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+              "lib directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-6ukx7exl/cp311-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+              "name": "scipy-openblas",
+              "openblas configuration": "OpenBLAS 0.3.31.188.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+              "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+              "version": "0.3.31.188.0"
+            },
+            "lapack": {
+              "detection method": "pkgconfig",
+              "found": true,
+              "include directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-6ukx7exl/cp311-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+              "lib directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-6ukx7exl/cp311-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+              "name": "scipy-openblas",
+              "openblas configuration": "OpenBLAS 0.3.31.188.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+              "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+              "version": "0.3.31.188.0"
+            }
+          },
+          "Compilers": {
+            "c": {
+              "commands": "cl",
+              "linker": "link",
+              "name": "msvc",
+              "version": "19.44.35226"
+            },
+            "c++": {
+              "commands": "cl",
+              "linker": "link",
+              "name": "msvc",
+              "version": "19.44.35226"
+            },
+            "cython": {
+              "commands": "cython",
+              "linker": "cython",
+              "name": "cython",
+              "version": "3.2.4"
+            }
+          },
+          "Machine Information": {
+            "build": {
+              "cpu": "x86_64",
+              "endian": "little",
+              "family": "x86_64",
+              "system": "windows"
+            },
+            "host": {
+              "cpu": "x86_64",
+              "endian": "little",
+              "family": "x86_64",
+              "system": "windows"
+            }
+          },
+          "Python Information": {
+            "path": "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\build-env-jxn7bo0g\\Scripts\\python.exe",
+            "version": "3.11"
+          },
+          "SIMD Extensions": {
+            "baseline": [
+              "X86_V2"
+            ],
+            "found": [
+              "X86_V3"
+            ]
+          }
+        },
+        "source": "numpy.__config__.CONFIG"
+      },
+      "numpy_build_config_sha256": "590aa5b174e7f5606bf918092dca9ad7de2fd7714006b456b5e12c5a71101a0a",
+      "numpy_version": "2.4.6",
+      "platform": "Windows-10-10.0.26200-SP0",
+      "python_implementation": "CPython",
+      "python_version": "3.11.9",
+      "schema": "ns-certificate-lab/runtime-provenance/v2",
+      "source_fingerprint_algorithm": "sha256-path-and-content-v1",
+      "source_fingerprint_file_count": 38,
+      "source_fingerprint_scope": [
+        "pyproject.toml",
+        "Dockerfile",
+        ".dockerignore",
+        "requirements",
+        "src",
+        "experiments",
+        "configs",
+        "scripts"
+      ],
+      "source_fingerprint_sha256": "f19b06d017a43a5e4f831db7a56e06b8b0ad9f74688730890df40d083cf084b3",
+      "thread_environment": {
+        "BLIS_NUM_THREADS": null,
+        "MKL_DYNAMIC": null,
+        "MKL_NUM_THREADS": null,
+        "NUMEXPR_NUM_THREADS": null,
+        "OMP_DYNAMIC": null,
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "VECLIB_MAXIMUM_THREADS": null
+      }
+    },
+    "seed": 20260728
+  },
+  "resolutions": [
+    {
+      "all_diagnostics_finite": true,
+      "completed": true,
+      "dr": 0.015625,
+      "dz": 0.0078125,
+      "early_swirl_maximum_decreases": true,
+      "failure": null,
+      "final_amplification": 6.114768458177527,
+      "final_argmax_u1_r": 0.046875,
+      "final_argmax_u1_z": 0.015625,
+      "final_circulation_max": 63.63185093402364,
+      "final_energy": 3966.202630413645,
+      "final_max_abs_u1": 7605.088538790181,
+      "final_time": 0.002191729,
+      "initial_circulation_max": 64.88057619110188,
+      "initial_energy": 4008.11113236055,
+      "initial_max_abs_u1": 3265.5332310870513,
+      "initial_max_abs_u1_measured": 3265.5332310870513,
+      "initial_max_cartesian_vorticity_measured": 7494.3062310458845,
+      "initial_norm_relative_errors": {
+        "max_abs_u1": 0.00013872345788736636,
+        "max_cartesian_vorticity": 0.009949478171178396
+      },
+      "maximum_advective_cfl": 0.024763226735387753,
+      "maximum_amplification": 6.114768458177527,
+      "maximum_axis_parity_defect": 3496045.539995987,
+      "maximum_circulation_growth_ratio": 0.0007586499056340124,
+      "maximum_divergence_residual": 1072.4871803815731,
+      "maximum_energy_growth_ratio": 0.0,
+      "maximum_odd_symmetry_defect": 4.4022378858947245e-07,
+      "maximum_odd_symmetry_defect_ratio": 5.7885425836147246e-11,
+      "maximum_wall_u1_abs": 0.0,
+      "minimum_dt": 7.290000000065994e-07,
+      "minimum_max_abs_u1": 2011.4871433773117,
+      "nr": 65,
+      "nz": 128,
+      "snapshot_cross_solver_psi_max_abs_difference": 1.1562491765266287,
+      "snapshot_cross_solver_psi_relative_difference": 0.0119338635240496,
+      "step_count": 2192,
+      "viscosity_switch_times": []
+    },
+    {
+      "all_diagnostics_finite": true,
+      "completed": true,
+      "dr": 0.0078125,
+      "dz": 0.00390625,
+      "early_swirl_maximum_decreases": true,
+      "failure": null,
+      "final_amplification": 12.695695243738214,
+      "final_argmax_u1_r": 0.0390625,
+      "final_argmax_u1_z": 0.01171875,
+      "final_circulation_max": 64.58587734789944,
+      "final_energy": 3991.2392773354522,
+      "final_max_abs_u1": 14742.936697949202,
+      "final_time": 0.002191729,
+      "initial_circulation_max": 64.92298851688702,
+      "initial_energy": 4008.1058608193503,
+      "initial_max_abs_u1": 3265.5332310870513,
+      "initial_max_abs_u1_measured": 3265.5332310870513,
+      "initial_max_cartesian_vorticity_measured": 7554.609461872975,
+      "initial_norm_relative_errors": {
+        "max_abs_u1": 0.00013872345788736636,
+        "max_cartesian_vorticity": 0.0019829975780851655
+      },
+      "maximum_advective_cfl": 0.06843401963076283,
+      "maximum_amplification": 12.695695243738214,
+      "maximum_axis_parity_defect": 2734343.0701825693,
+      "maximum_circulation_growth_ratio": 0.000218289216396661,
+      "maximum_divergence_residual": 1764.1310621189623,
+      "maximum_energy_growth_ratio": 0.0,
+      "maximum_odd_symmetry_defect": 6.344191778306283e-06,
+      "maximum_odd_symmetry_defect_ratio": 4.303207636500795e-10,
+      "maximum_wall_u1_abs": 0.0,
+      "minimum_dt": 7.290000000065994e-07,
+      "minimum_max_abs_u1": 2024.3896258399159,
+      "nr": 129,
+      "nz": 256,
+      "snapshot_cross_solver_psi_max_abs_difference": 1.0504642878046582,
+      "snapshot_cross_solver_psi_relative_difference": 0.007775706868491351,
+      "step_count": 2192,
+      "viscosity_switch_times": []
+    },
+    {
+      "all_diagnostics_finite": true,
+      "completed": true,
+      "dr": 0.005208333333333333,
+      "dz": 0.0026041666666666665,
+      "early_swirl_maximum_decreases": true,
+      "failure": null,
+      "final_amplification": 15.627954940635405,
+      "final_argmax_u1_r": 0.03125,
+      "final_argmax_u1_z": 0.010416666666666666,
+      "final_circulation_max": 64.76235813240015,
+      "final_energy": 3997.866294539037,
+      "final_max_abs_u1": 18718.097999802423,
+      "final_time": 0.002191729,
+      "initial_circulation_max": 64.94519473172839,
+      "initial_energy": 4008.105579707902,
+      "initial_max_abs_u1": 3265.5882935410696,
+      "initial_max_abs_u1_measured": 3265.5882935410696,
+      "initial_max_cartesian_vorticity_measured": 7561.484634978418,
+      "initial_norm_relative_errors": {
+        "max_abs_u1": 0.00012186409322368177,
+        "max_cartesian_vorticity": 0.0010747388933105616
+      },
+      "maximum_advective_cfl": 0.10022676304450114,
+      "maximum_amplification": 15.627954940635405,
+      "maximum_axis_parity_defect": 2204016.0754824243,
+      "maximum_circulation_growth_ratio": 4.455465927488689e-05,
+      "maximum_divergence_residual": 1373.8225480106157,
+      "maximum_energy_growth_ratio": 0.0,
+      "maximum_odd_symmetry_defect": 3.777785301486142e-05,
+      "maximum_odd_symmetry_defect_ratio": 2.0182527634624085e-09,
+      "maximum_wall_u1_abs": 0.0,
+      "minimum_dt": 2.7586570871878865e-07,
+      "minimum_max_abs_u1": 2025.037427573867,
+      "nr": 193,
+      "nz": 384,
+      "snapshot_cross_solver_psi_max_abs_difference": 0.7246116684269737,
+      "snapshot_cross_solver_psi_relative_difference": 0.004610324521945893,
+      "step_count": 2205,
+      "viscosity_switch_times": []
+    }
+  ],
+  "schema_version": 1
+}

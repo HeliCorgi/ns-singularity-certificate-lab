@@ -1,7 +1,118 @@
 # Project status
 
-最終更新: 2026-07-27
-状態: **数学式監査、独立Cartesian監査、空間・時間収束を持つ非特異対照を完了。未知候補探索は未開始。**
+最終更新: 2026-07-28(branch `fable5-mainline`)
+状態: **Poisson ゲート統合・2 実装相互検証、Hou 設定の一次資料監査、壁付き非線形 production ソルバ、早期 Hou 実行までを完了。未知候補探索は未開始。**
+
+## 2026-07-28 セッションの追加結果(fable5-mainline)
+
+### 照合と統合
+
+- ユーザ展開の Poisson バンドルは未統合(未追跡)だったため、全 6 ファイルの
+  byte-identity を検証して正規パスへ統合した。パッチの二重適用はしていない。
+  パッケージング残骸は `archive/poisson_gate_packaging/` に provenance 込みで
+  保存。バンドル同梱の旧 snapshot 証拠は
+  `outputs/poisson_gate_v1_bundle_snapshot/` として保存した。
+- 統合直後の全テスト: **119 passed**(Python 3.11.9, Windows)。
+- Poisson ゲート新規実行 `outputs/poisson_gate_fable5`: 全 7 受入検査合格、
+  観測次数 1.9569/1.9782、manifest と全 payload の SHA-256 検証合格。
+  バンドル記録と有効数字 10 桁一致(ビット単位では環境差)。
+
+### Poisson 2 実装の相互監査と相互検証テスト
+
+- `poisson.py`(\(r^3\)-flux 有限体積)と `finite_cylinder_poisson.py`
+  (非発散形直接差分)の規約は完全一致(負作用素、軸係数 8、外側 Dirichlet
+  の意味論)。数学的中核に欠陥なし。
+- **独立性は部分的**: radial 離散化と Thomas 解法は真に独立、
+  z 方向 Fourier 処理(`numpy.fft.fftfreq` の波数配列がビット同一)と
+  `AxisymmetricGrid` は共有の単一障害点。この限定を文書と PLAN に明記した。
+- `tests/test_poisson_cross_validation.py`: CV-1(同一入力での
+  \(O(\Delta r^2)\) 実測一致 \(D\approx0.115\Delta r^2\)、独立性が崩れると
+  発火する下限クローズ付き)、CV-2(radially exact 場での丸め一致
+  \(\le4\times10^{-15}\) — FFT 規約・Nyquist・符号・軸係数のピン留め)、
+  CV-3(対故障注入)、import 独立性ガード。
+- 監査で検出した周辺欠陥を修正: B の複素入力の暗黙切り捨て(D2)、
+  `run_poisson_gate` の config 未検証・provenance 欠如・解像度数規則
+  (D3/D6/D7)と実験テスト不在(D4)、B の行列が row 1 で M-matrix で
+  ないことの明文化+構造ピン留めテスト(D1)。
+- この時点の全テスト: **146 passed**。
+
+### Hou (arXiv:2107.06509) 一次資料監査
+
+- v1・v2 の LaTeX 原文と、数値手法の委譲先 Hou–Huang (arXiv:2102.06663) を
+  取得して監査した(`docs/hou_setup_audit.md`)。式 (2.1a–d) は E-11–E-14 と
+  符号込みで一致。
+- 新規監査エントリ E-27–E-31(壁条件 \(\psi_1=0\)・\(u_1=0\)・Thom 型
+  \(\omega_1=-\psi_{1,rr}\)、半周期奇対称、初期値式 (2.2)、二段階粘性
+  \(5\times10^{-4}\to5\times10^{-3}\) at \(t_0=0.00227375\)、壁渦度の
+  2 次離散式)。
+- 導出値 \(\|\omega(0)\|_\infty=24000\pi\cdot37^{-1/2}(36/37)^{18}
+  \approx7569.62\)、\(\|u_1(0)\|_\infty\approx3265.99\)(論文は比のみ記載の
+  ため再現換算に必須。数値最大化で独立検証済み)。
+- v1(非爆発の主張)→ v2(potentially singular)の**結論反転**を記録。
+  計算設定は両版で同一であり、変わったのは解釈のみ。判定量は後期の
+  \(R/Z\) と \(\int\|\omega\|_{L^2}^4\)。
+- 論文の誤植 4 箇所、取得不能事項(絶対値時系列、filter 保持の曖昧さ等)を
+  記録し、FoCM 出版版の入手をユーザへ依頼した。
+
+### 非線形 production ソルバ(`nonlinear_cylinder.py`)
+
+- 設計は `docs/nonlinear_solver_design.md` に確定(前提はすべて監査済み式)。
+- 実装: Heun/RK2、段ごとの拘束順序(u1 壁ピン → \(\psi_1(1,z)=0\) の楕円
+  solve → E-31 Thom 壁渦度 → E-14 速度回復)、壁行は代数拘束として発展
+  させない、適応 CFL(0.1、軸係数 4 の拡散余裕)+`max_time_step`、
+  二段階粘性 schedule、schema v2 checkpoint と restart。
+- テスト 39 件+実験テスト 28 件: manufactured 空間次数(u1: 1.990/1.998、
+  ψ1: 2.005/2.003、ω1: 1.845/1.902 — sup 誤差は E-31 壁行に乗り 2 へ下から
+  接近)、時間次数 ≈2.0、E-31 単体 1.950/1.975、零場不動点、小振幅の線形
+  拡散極限、z 奇対称保存(丸めレベル 1.2e-15 相対)、軸 parity defect の
+  閉形式 \(O(\Delta r^3)\) 一致、循環・エネルギー単調性、故障注入 5 種
+  (検出比 18.7〜4865)、restart 忠実性。
+- **既知の前登録済み注意**: 全振幅 12000 では離散循環最大原理が
+  \(O(10^{-4})\) 相対で破れる(中心差分移流+陽的 RK2 の離散化 artifact、
+  細分で 2 次超で消失)。受入閾値 1e-3 は前登録値であり、超過時は
+  acceptance 失敗として正直に報告される。
+- この時点の全テスト: **193 passed**。
+
+### 早期 Hou 実行(`outputs/hou_early_time_v1`)
+
+E-29 初期値(振幅 12000)、\(\nu=5\times10^{-4}\)(E-30 第 1 段のみ、
+\(t_0\) 前なので切替なし)、フル周期 \(z\)、\(t\in[0,T_1=0.002191729]\)、
+CFL 0.1、`max_time_step` 1e-6。全 8 受入検査合格。manifest+全 50 payload
+の SHA-256 検証合格。
+
+| 格子 | steps | \(\min\Delta t\) | 増幅率 \(\|\omega\|_\infty/\|\omega(0)\|_\infty\) at \(T_1\) | \(\max\|u_1\|\) at \(T_1\) | argmax \(u_1\) at \(T_1\) |
+|---|---:|---:|---:|---:|---|
+| 65×128 | 2192 | 7.29e-7 | 6.1148 | 7605.1 | (0.0469, 0.0156) |
+| 129×256 | 2192 | 7.29e-7 | 12.6957 | 14742.9 | (0.0391, 0.0117) |
+| 193×384 | 2205 | 2.76e-7 | 15.6280 | 18718.1 | (0.0312, 0.0104) |
+
+観察(すべて **numerical observation** の語彙水準):
+
+- 増幅率は解像度で単調増加し、Hou の 1536² 適応格子公表値 20.5235 へ
+  **下から接近**する。grid-scale での飽和はない。ただし隣接差
+  (6.58, 2.93)から見かけの収束次数は 1 未満であり、**収束していない**。
+  外挿で 20.52 への一致を主張することはできない。
+- ごく早期の \(\|u_1\|_\infty\) 減少([Hou21, §2] の定性ターゲット)を全
+  解像度で確認: 3265.6 → 最小 2011〜2025 → その後成長し \(T_1\) で初期値の
+  4.7〜5.7 倍。
+- \(u_1\) の argmax は軸付近・\(z\) 小の領域へ移動(原点方向への伝播と
+  定性的に整合)。ただし \(T_1\) での front 位置 \(r\approx0.031\)(193 格子で
+  軸から約 6 セル)であり、解像度は限界的。
+- エネルギー増加 0.0(全解像度)。循環最大原理の破れは
+  7.6e-4 → 2.2e-4 → 4.5e-5 と細分で減少し、前登録閾値 1e-3 以内。
+- z 奇対称 defect 比 ≤ 2.0e-9(課さずに監視、保存された)。
+- 独立 solver B との \(\psi_1\) cross-check 相対差:
+  1.19e-2 → 7.78e-3 → 4.61e-3。急峻化する front 上では見かけの次数が
+  2 を下回る(記録のみ、gate ではない)。
+- E-02 発散残差最大は 1072〜1764 で単調減少せず、front の解像度不足を
+  反映する。初期ノルムの E-29b 一致は 9.95e-3 / 1.98e-3 / 1.07e-3(相対)。
+
+限界: 一様固定格子は Hou の適応最小格子幅 \(O(10^{-8})\) に遠く及ばず、
+これは公表増幅率の再現主張ではない。FABLE5_HANDOFF §7.2 の受入基準
+(3 空間解像度+3 時間刻み+peak 位置・振幅傾向の一致等)のうち、
+時間刻み系列と published-diagnostic 比較の大部分は未実施である。
+中成長段(§7.1 stage 2)へ進む前に、より高解像度または適応格子・
+半周期 sine 実装の設計判断を行う(「次に行うべき最小の一手」参照)。
 
 一様 \(x,y,z\) 格子上の独立な3成分発散、full curl、vector Laplacian、
 primitive PDE項別残差を追加した。保存候補のchecksum検証付き再読込から、
@@ -169,15 +280,18 @@ Crank–Nicolson法で計算した。
 
 - 元の3次元 Navier–Stokes 方程式に有限時間特異点が存在するか。
 - 非自明な候補profile、軌道、または滑らかな初期データからの接続。
-- 非線形production solverと、その候補固有の独立な空間・時間収束系列。
+- Hou の公表増幅率(1536² 適応格子)と本実装(一様固定格子)の定量一致。
+  一様格子は Hou の最小格子幅 \(O(10^{-8})\) に遠く及ばない。
+- 適応 mesh、半周期 sine 対称実装、非 Fourier の独立 z 方向経路。
 - 全空間の領域打切り誤差、楕円Green tail、スペクトル尾部の厳密評価。
 - 圧力回復、射影、または原始変数時間発展を別実装すること。
-- 有限円柱上の独立 \(-\mathcal L_5\) Poisson solver、その条件数・境界誤差・
-  全空間tail。旧試作からは移植していない。
 - 候補近傍の非線形安定性、不安定方向、finite physical time、物理ノルム発散。
-- 区間演算、validated inverse、radii polynomial、形式証明。
+- 区間演算、validated inverse、radii polynomial、形式証明
+  (`docs/formalization_map.md` に Lean 化対応表を開始済み)。
 - 古典的な軸対称旋回なし定理の原ロシア語関数空間を、現在のSobolev記法へ
   完全に逐語対応させる作業。
+- 二段階粘性を含む Hou プロトコルの \(t_0\) 以後(第 2 粘性段)の再現、
+  および壁依存性実験(壁半径を広げた系列)。
 
 ## 実装したもの
 
@@ -209,6 +323,17 @@ Crank–Nicolson法で計算した。
 - Python 3.10/3.12でテストと3実験を再生するGitHub Actions workflow。
 
 ## 実行した主なコマンド
+
+2026-07-28 セッション(venv `.venv`、Python 3.11.9、Windows 11):
+
+```text
+PYTHONPATH=src PYTHONDONTWRITEBYTECODE=1 .venv/Scripts/python.exe -m pytest -q
+  -> 119 passed(統合直後)/ 146 passed(CV 追加後)/ 193 passed(非線形ソルバ追加後)
+PYTHONPATH=src .venv/Scripts/python.exe -m experiments.run_poisson_gate --config configs/poisson_gate.json --output-dir outputs/poisson_gate_fable5
+PYTHONPATH=src .venv/Scripts/python.exe -m experiments.run_hou_early_time --config configs/hou_early_time.json --output-dir outputs/hou_early_time_v1
+```
+
+それ以前(2026-07-27 まで):
 
 ```text
 $env:PYTHONPATH='src'; $env:PYTHONDONTWRITEBYTECODE='1'; python -m pytest -q
@@ -256,6 +381,18 @@ baseline manifestの全7 payload、time-convergence manifestの全5 payloadに
 - `config.snapshot.json`
 - `manifest.json` とmanifest SHA-256 sidecar
 
+2026-07-28 追加成果物:
+
+- `outputs/poisson_gate_fable5/` — 統合ツリーでの Poisson ゲート新規実行
+  (全 7 受入合格、manifest+payload SHA-256 検証済み)
+- `outputs/poisson_gate_v1_bundle_snapshot/` — バンドル同梱の旧 snapshot
+  証拠(改変なし保存)
+- `outputs/hou_early_time_v1/` — 早期 Hou 実行(summary、diagnostics.csv、
+  snapshots.csv、trajectories.npz、3 解像度×5 checkpoint、manifest+
+  全 50 payload SHA-256 検証済み)
+- `archive/poisson_gate_packaging/` — 統合済みバンドルのパッケージング残骸
+  (provenance 用 README 付き)
+
 `outputs/manufactured/`, `outputs/baseline/`, `outputs/*_v2/`,
 `outputs/*_v3/`, `outputs/*_v4/` は、途中段階の結果を隠さないため保存している。最初の
 `manufactured/` はlegacy v1でprovenanceを持たず、現行成果物には用いない。
@@ -288,16 +425,24 @@ baseline manifestの全7 payload、time-convergence manifestの全5 payloadに
 
 ## 次に行うべき最小の一手
 
-未知候補探索へ進む前に、有限円柱上の
-\(-\mathcal L_5\psi_1=\omega_1\) を解く独立Poisson solverを、旧コードの
-コピーではなく本流規約から新規実装する。
+早期 Hou 実行の複数解像度結果を評価した上で、次の順に進める。
 
-最初の小さな受入系列は、周期 \(z\)・明示的外側Dirichlet条件に限定し、
-軸行の係数8、全体符号、境界行を直接testする。非零解析境界を持つ
-manufactured解を少なくとも3解像度で検査し、matrix residualと解析解誤差を
-別経路で保存する。条件数、領域半径感度、重み付き安定性は未確認として
-分離する。
+1. **中成長段の再現判断**: 早期実行で解像度整合な成長傾向が得られた場合に
+   限り、\(t_0=0.00227375\) の粘性切替を跨ぐ第 2 段と、より高解像度
+   (例 257×512)を別実験として前登録・実行する。得られない場合は
+   一様格子の限界として記録し、適応 mesh または半周期 sine 対称実装を
+   先に設計する。
+2. **壁依存性実験の前登録**: FABLE5_HANDOFF §8.1 の入れ子壁半径系列
+   (core を固定解像度で保ちながら \(r_{\max}\) を拡大)の設計と受入基準を
+   `docs/` に前登録する。Hou 機構が壁依存かどうかは Clay 目標への
+   適用可能性を左右する分岐点である。
+3. **非 Fourier の独立 z 経路**: Poisson 相互検証で残った共有単一障害点
+   (axial Fourier、grid)を潰す第三経路(実空間差分または sine 基底)を
+   検証側に追加する。
+4. **formalization_map の更新**: 非線形マイルストーンで確定した命題
+   (E-27–E-31 の恒等式群、E-31 の収束次数)を段階 1 形式化候補として
+   追記する。
 
-この楕円gateが通っても、長時間探索、AI最適化、特異点fitへ自動的には
-進まない。次の研究判断では、全空間tailと候補用production time integratorの
-証明可能な離散化設計を先に再評価する。
+これらが通っても、長時間探索、AI最適化、特異点fitへ自動的には進まない。
+動的再スケーリング探索の前に、全空間tailと候補用離散化の証明可能な設計を
+再評価する(PO-05〜PO-07)。

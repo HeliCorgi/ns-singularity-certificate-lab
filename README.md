@@ -31,9 +31,23 @@
 - 独立なCrank–Nicolson実装で、非特異な旋回拡散対照を実行する。
 - 空間格子を固定し、\(\Delta t,\Delta t/2,\Delta t/4\) の解析解誤差、
   step-doubling次数、エネルギー、最大渦度、境界感度を保存する。
+- 有限円柱 \(-\mathcal L_5\psi_1=\omega_1\) を **2 つの独立実装**
+  (`poisson.py` の \(r^3\)-flux 有限体積と
+  `finite_cylinder_poisson.py` の非発散形直接差分)で解き、相互検証
+  テスト(CV-1/2/3)で \(O(\Delta r^2)\) 一致・規約一致・故障検出を
+  検査する。両者の z 方向 Fourier 処理と grid は共有であり、その範囲の
+  独立性はない(明文化済み)。
+- Hou (arXiv:2107.06509) の壁付き有限円柱で、完全非線形
+  \((u_1,\omega_1,\psi_1)\) 系を Heun/RK2・Thom 型壁渦度条件(E-31)・
+  二段階粘性(E-30)付きで時間発展させる(`nonlinear_cylinder.py`)。
+  強制 manufactured・時間細分・対称性保存・循環最大原理・故障注入 5 種・
+  restart のテストを持つ。
+- E-29 初期値の早期 Hou 実行を複数解像度で行い、独立楕円 solver B との
+  cross-check、E-02 発散残差、奇対称 defect、増幅率軌跡を保存する
+  (`run_hou_early_time.py`)。
 
-非線形の本番時間発展、候補探索、動的再スケーリング、区間演算、厳密な
-打切り誤差評価、有限円柱の独立Poissonソルバーはまだ実装していません。
+候補探索、動的再スケーリング、区間演算、厳密な打切り誤差評価、全空間
+(\(\mathbb R^3\))楕円処理、圧力回復の独立実装はまだありません。
 
 ## 数学的対象
 
@@ -140,6 +154,23 @@ python -m experiments.run_time_convergence --config configs/baseline_time_conver
 エネルギー、最大物理渦度、有限領域境界感度をJSON/CSV/NPZへ保存します。
 これは滑らかな負の対照の時間離散化試験であり、特異点の証拠ではありません。
 
+### 6. 独立 Poisson ゲート
+
+```console
+python -m experiments.run_poisson_gate --config configs/poisson_gate.json --output-dir outputs/poisson_gate_replay
+python -m experiments.run_poisson_manufactured --config configs/poisson_manufactured.json --output-dir outputs/poisson_manufactured_replay
+```
+
+### 7. 早期 Hou 実行(数十分〜数時間)
+
+```console
+python -m experiments.run_hou_early_time --config configs/hou_early_time.json --output-dir outputs/hou_early_time_replay
+```
+
+E-29 監査済み初期値・二段階粘性で \(t=T_1=0.002191729\) まで 3 解像度を
+実行します。これは一様固定格子上の解像度制限つき数値観察であり、Hou の
+適応格子計算の再現主張ではありません。
+
 より厳密な再現プロトコルは [docs/reproducibility.md](docs/reproducibility.md)
 を参照してください。
 
@@ -197,17 +228,22 @@ RMS/maxが \(9.369950\times10^{-3}/2.975832\times10^{-2}\) でした。
 | パス | 内容 |
 |---|---|
 | `SPEC.md` | 数学的対象、変数、解・特異点の定義 |
-| `docs/equation_audit.md` | 符号・係数・境界・同値性の式別監査 |
+| `LEAN4_VERIFICATION_POLICY.md` | Lean 4 / mathlib4 による最終検証の必須規約 |
+| `docs/equation_audit.md` | 符号・係数・境界・同値性の式別監査(E-01–E-31) |
+| `docs/hou_setup_audit.md` | Hou (arXiv:2107.06509) v1/v2 LaTeX 原文の一次資料監査 |
+| `docs/nonlinear_solver_design.md` | production 非線形ソルバの設計と受入条件 |
+| `docs/formalization_map.md` | 各マイルストーンの Lean 化対応表 |
 | `docs/legacy_reuse_review.md` | 旧試作の限定的なread-only監査と非移植判断 |
 | `docs/known_obstructions.md` | 既知の非存在・正則性・継続定理 |
 | `docs/threat_model.md` | 偽特異点の原因、検出試験、停止規則 |
 | `docs/future_search.md` | Type II・動的再スケーリング探索設計 |
 | `docs/proof_obligations.md` | 数値候補から反例までの証明義務 |
 | `src/ns_certificate_lab/` | 小さなNumPy数値・保存・診断基盤 |
-| `tests/` | manufactured、round-trip、故障注入 |
-| `experiments/` | 安価な監査・非特異対照 |
+| `tests/` | manufactured、round-trip、故障注入、相互検証 |
+| `experiments/` | 安価な監査・非特異対照・早期 Hou 実行 |
 | `configs/` | 固定された実験入力 |
-| `outputs/` | 初回の機械可読診断とグラフ |
+| `outputs/` | 機械可読診断・checkpoint・グラフ |
+| `archive/` | 統合済みバンドルのパッケージング残骸(provenance 用) |
 | `certificates/` | 将来の明示候補証明書用（現在候補なし） |
 
 ## 研究上のゲート
