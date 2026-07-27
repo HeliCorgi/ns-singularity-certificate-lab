@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "experiment_id": "hou_early_time_v1",
+  "description": "Early-time integration of the E-29 initial datum in the Hou finite cylinder on uniform fixed grids, with the E-30 two-stage viscosity protocol and independent elliptic cross-checks at every snapshot",
+  "interpretation": "This is a resolution-limited numerical observation. It is not a reproduction of any published amplification value, not a singularity candidate, and not a proof.",
+  "coordinate_system": "axisymmetric cylindrical half-plane (r,z), r in [0,1], z periodic with period 1",
+  "normalization_description": "Hou finite-cylinder normalization: u1 = u^theta/r, omega1 = omega^theta/r, psi1 = psi^theta/r; the E-29 amplitude 12000 is part of the audited equation and is multiplied by amplitude_scale, which exists only so that reduced-amplitude smoke runs can reuse this schema",
+  "units": {
+    "r": "dimensionless length",
+    "z": "dimensionless length",
+    "time": "dimensionless time",
+    "u1": "dimensionless inverse time",
+    "omega1": "dimensionless inverse length inverse time",
+    "psi1": "dimensionless length inverse time",
+    "viscosity": "dimensionless kinematic viscosity",
+    "energy": "dimensionless kinetic energy on the finite cylinder",
+    "vorticity": "dimensionless inverse time"
+  },
+  "seed": 20260728,
+  "r_max": 1.0,
+  "z_period": 1.0,
+  "resolutions": [
+    [65, 128],
+    [129, 256],
+    [193, 384]
+  ],
+  "amplitude_scale": 1.0,
+  "viscosity_schedule": [
+    [0.0, 0.0005],
+    [0.00227375, 0.005]
+  ],
+  "t_final": 0.002191729,
+  "snapshot_times": [
+    0.0,
+    0.0005,
+    0.001,
+    0.0015,
+    0.002191729
+  ],
+  "cfl_coefficient": 0.1,
+  "max_time_step": 1e-06,
+  "max_steps": 200000,
+  "diagnostic_stride": 25,
+  "acceptance": {
+    "maximum_circulation_growth_ratio": 0.001,
+    "maximum_energy_growth_ratio": 1e-10,
+    "maximum_initial_norm_relative_error": 0.01,
+    "maximum_odd_symmetry_defect_ratio": 1e-08
+  }
+}
