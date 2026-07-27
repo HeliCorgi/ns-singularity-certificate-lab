@@ -1,0 +1,50 @@
+{
+  "acceptance": {
+    "energy_relative_increase_tolerance": 1e-11,
+    "maximum_finest_relative_l2_error": 0.0001,
+    "minimum_observed_temporal_order": 1.8,
+    "stability_peak_factor": 1.0000000001
+  },
+  "amplitude": 1.0,
+  "base_time_step": 0.5,
+  "boundary_sensitivity": {
+    "compare_radius": 1.5,
+    "maximum_allowed_difference": 5e-08,
+    "points_per_unit": 32,
+    "radii": [
+      3.0,
+      4.0
+    ],
+    "role": "auxiliary boundary-radius test on R=3 and R=4 cylinders; not a direct boundary-error proof for the main R=5 domain"
+  },
+  "coordinate_system": "axisymmetric cylindrical (r,z), finite periodic-z control cylinder",
+  "description": "Fixed-spatial-grid temporal convergence control for the non-singular Gaussian swirl benchmark",
+  "experiment_id": "smooth_swirl_fixed_grid_time_convergence",
+  "final_time": 1.0,
+  "normalization": {
+    "length_scale_L0": 1.0,
+    "velocity_scale_U0": 1.0
+  },
+  "normalization_description": "dimensionless with reference length and velocity equal to one",
+  "nr": 513,
+  "r_max": 5.0,
+  "sample_count": 17,
+  "schema_version": 1,
+  "seed": 20260727,
+  "sigma": 1.0,
+  "time_step_divisors": [
+    1,
+    2,
+    4
+  ],
+  "units": {
+    "energy_per_unit_z": "dimensionless kinetic energy per dimensionless z length",
+    "r": "dimensionless length",
+    "time": "dimensionless time",
+    "u1": "dimensionless transformed swirl u^theta/r",
+    "vorticity": "dimensionless inverse time",
+    "z": "dimensionless length"
+  },
+  "viscosity": 0.05,
+  "z_period": 6.283185307179586
+}

@@ -1,0 +1,169 @@
+{
+  "acceptance_checks": {
+    "all_values_finite": true,
+    "analytic_errors_decrease": true,
+    "auxiliary_boundary_radius_all_time_test_passes": true,
+    "auxiliary_boundary_radius_final_time_test_passes": true,
+    "energy_nonincreasing_with_tolerance": true,
+    "finest_error_passes": true,
+    "observed_temporal_order_passes": true,
+    "spatial_grid_identical": true,
+    "stable_peak_vorticity": true,
+    "step_doubling_order_passes": true,
+    "time_steps_are_dt_dt_over_2_dt_over_4": true
+  },
+  "accepted_as_temporal_control": true,
+  "auxiliary_boundary_radius_test": {
+    "compare_radius": 1.5,
+    "inner_differences_by_dt": [
+      {
+        "all_time_max_difference": 2.155502114298269e-08,
+        "dt": 0.5,
+        "final_time_difference": 2.155502114298269e-08
+      },
+      {
+        "all_time_max_difference": 5.382547879628774e-09,
+        "dt": 0.25,
+        "final_time_difference": 5.382547879628774e-09
+      },
+      {
+        "all_time_max_difference": 2.0319332189044914e-09,
+        "dt": 0.125,
+        "final_time_difference": 2.0319332189044914e-09
+      }
+    ],
+    "limitation": "The auxiliary R=3 versus R=4 comparison does not directly measure or prove the truncation error on the main R=5 domain.",
+    "main_domain_r_max": 5.0,
+    "points_per_unit": 32,
+    "radii": [
+      3.0,
+      4.0
+    ],
+    "scope": "auxiliary boundary-radius test on R=3 and R=4 cylinders; not a direct boundary-error proof for the main R=5 domain"
+  },
+  "energy_and_vorticity": [
+    {
+      "dt": 0.5,
+      "final_energy_per_unit_z": 0.27255048623923284,
+      "final_vorticity": 1.3856349981077594,
+      "initial_energy_per_unit_z": 0.39269908193685094,
+      "maximum_relative_energy_increase": 0.0,
+      "maximum_vorticity_over_time": 2.0,
+      "peak_vorticity_factor": 1.0
+    },
+    {
+      "dt": 0.25,
+      "final_energy_per_unit_z": 0.2726696353854122,
+      "final_vorticity": 1.3881123155021595,
+      "initial_energy_per_unit_z": 0.39269908193685094,
+      "maximum_relative_energy_increase": 0.0,
+      "maximum_vorticity_over_time": 2.0,
+      "peak_vorticity_factor": 1.0
+    },
+    {
+      "dt": 0.125,
+      "final_energy_per_unit_z": 0.27269927411349326,
+      "final_vorticity": 1.3887190094147086,
+      "initial_energy_per_unit_z": 0.39269908193685094,
+      "maximum_relative_energy_increase": 0.0,
+      "maximum_vorticity_over_time": 2.0,
+      "peak_vorticity_factor": 1.0
+    }
+  ],
+  "experiment_id": "smooth_swirl_fixed_grid_time_convergence",
+  "interpretation": "Fixed-grid temporal convergence of a smooth non-singular control. This is neither a singularity candidate nor a mathematical proof.",
+  "method": {
+    "auxiliary_boundary_radius_test": "homogeneous outer Dirichlet traces on auxiliary R=3 and R=4 cylinders; this is not a direct boundary-error proof for the main R=5 convergence domain",
+    "equation": "u1_t = nu * (u1_rr + 3*u1_r/r)",
+    "fixed_spatial_grid": {
+      "dr": 0.009765625,
+      "nr": 513,
+      "r_max": 5.0
+    },
+    "outer_boundary_for_analytic_error": "analytic Dirichlet trace",
+    "spatial_operator": "independent second-order centered radial stencil",
+    "time_integrator": "Crank-Nicolson, theta=1/2",
+    "time_step_sequence": "dt, dt/2, dt/4"
+  },
+  "physical_interpretation": {
+    "coordinate_system": "axisymmetric cylindrical (r,z), finite periodic-z control cylinder",
+    "normalization": {
+      "length_scale_L0": 1.0,
+      "reynolds_number_U0_L0_over_nu": 20.0,
+      "time_scale_L0_over_U0": 1.0,
+      "velocity_scale_U0": 1.0
+    },
+    "units": {
+      "energy_per_unit_z": "dimensionless kinetic energy per dimensionless z length",
+      "r": "dimensionless length",
+      "time": "dimensionless time",
+      "u1": "dimensionless transformed swirl u^theta/r",
+      "vorticity": "dimensionless inverse time",
+      "z": "dimensionless length"
+    }
+  },
+  "reproducibility": {
+    "config_sha256": "f2b49a1751ce693829904cbb1b6ce156cf0a89f96006e7f0a3ada1767ab061d4",
+    "runtime_provenance": {
+      "git_dirty": true,
+      "git_head": "1af29b9767fa532bd09c810dff9cfb601dbb260d",
+      "numpy_version": "1.26.4",
+      "platform": "Windows-10-10.0.26200-SP0",
+      "python_implementation": "CPython",
+      "python_version": "3.11.9",
+      "schema": "ns-certificate-lab/runtime-provenance/v1",
+      "source_fingerprint_algorithm": "sha256-path-and-content-v1",
+      "source_fingerprint_file_count": 22,
+      "source_fingerprint_scope": [
+        "pyproject.toml",
+        "src",
+        "experiments",
+        "configs"
+      ],
+      "source_fingerprint_sha256": "bac2077ff5e7333e6c0201d4ebcc319c2fb93604fdd2c8c721bad6e01f8333cf"
+    },
+    "seed": 20260727
+  },
+  "schema_version": 1,
+  "temporal_convergence": {
+    "actual_time_steps": [
+      0.5,
+      0.25,
+      0.125
+    ],
+    "analytic_error_observed_orders": [
+      2.0671193891440116,
+      2.225127510865974
+    ],
+    "analytic_error_order_definition": "log(E_dt/E_dt_over_2) / log(dt/(dt/2)), where E is the raw weighted-L2 error against the analytic solution",
+    "maximum_absolute_errors": [
+      0.001626945390564849,
+      0.00038828669336476995,
+      8.493973709022828e-05
+    ],
+    "relative_l2_errors": [
+      0.0008586075859717447,
+      0.00020489425454542644,
+      4.382275285253025e-05
+    ],
+    "requested_time_steps": [
+      0.5,
+      0.25,
+      0.125
+    ],
+    "spatial_error_note": "Raw analytic errors include the fixed spatial error and can eventually plateau. Step-doubling differences are also reported because their common spatial error largely cancels.",
+    "step_counts": [
+      2,
+      4,
+      8
+    ],
+    "step_doubling_observed_orders": [
+      2.020029026341283
+    ],
+    "step_doubling_order_definition": "log(||u_dt-u_dt_over_2||/||u_dt_over_2-u_dt_over_4||) / log(2), with all profiles on the identical radial grid",
+    "step_doubling_relative_differences": [
+      0.0006537257689976145,
+      0.00016117819042736408
+    ]
+  }
+}

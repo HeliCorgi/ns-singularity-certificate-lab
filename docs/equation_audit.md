@@ -514,6 +514,9 @@ E-05 に \(u^\theta=\Gamma/r\) を代入。軸正則性から \(\Gamma=O(r^2)\)�
 6. 物理エネルギーは E-20 の \(r\,dr\,dz\) 測度で計算する。
 7. 候補保存物から E-18 の3次元 Cartesian 場を再構成できる。
 8. 符号反転した楕円式、壊した E-02、壊した E-16 を必ずテストで拒否する。
+9. 既存の円柱差分を共有しない一様 Cartesian \(x,y,z\) 実装で、E-01 の
+   3成分発散、full curl、vector Laplacian、primitive momentum residualを
+   再計算し、局所的な故障もRMSと最大誤差の双方で拒否する。
 
 **現在の実装状態。** 条件 1–4, 6, 8 は production finite-difference
 経路と故障注入で実装・テスト済み。条件 7 は保存候補をchecksum検証後に
@@ -524,10 +527,31 @@ Cartesian成分を円柱半径方向へ再投影し、production \(L_5\) を呼�
 manufactured fieldで defect は解像度とともに4次で減少し、誤った
 \(\omega_1\) 符号を拒否する。
 
-従って、ここに列挙した条件 1–8 の初期受入状態は **導出済み・数値テスト
-済み** である。ただしこれは一様Cartesian \(x,y,z\) 格子上の独立な3成分
-divergence、full curl、primitive momentum PDE residualではない。その強い
-独立監査は **未確認** のままであり、将来の未知候補に対する上位ゲートとする。
+条件 9 は `cartesian_validation.py` の一様 \(x,y,z\) 格子と、このmoduleだけが
+所有する2次差分で実装した。ここで計算する
+
+\[
+\nabla\cdot u,\qquad \nabla\times u,\qquad
+u_t+(u\cdot\nabla)u+\nabla p-\nu\Delta u-f
+\]
+
+は既存 `operators.py`、`pde.py`、円柱差分結果を呼ばない。周期解析場を
+\(12^3,24^3,48^3\) と細分した数値試験では、各微分、各運動量項、全残差の
+誤差が約2次で減少した。非周期片側closureも二次多項式の閉形式微分で
+全境界を含めて検査済みである。
+
+artifact-level試験では、candidateを保存しchecksum検証付きで再読込した後、
+`cartesian_candidate_adapter.py` 固有の2次 \(r,z\) stencilとbilinear補間から
+E-18a, E-18bを一様Cartesian格子へ写す。checkerはCartesian配列だけを受け取り、
+物理3次元発散とfull curlを再計算する。adapterの出力は別途、閉形式
+manufactured oracleへ直接照合し、円柱radial符号、成分写像、渦度符号、
+発散汚染、局所一点、周期seamの故障を拒否する。
+
+従って、ここに列挙した条件 1–9 の初期受入状態は **導出済み・数値テスト
+済み** である。ただし、これは有限格子・binary64・許容差付きの独立監査で
+あり、E-01 の連続体解、全空間の境界条件、離散化誤差上界、または特異点を
+証明しない。将来の未知候補には、候補固有の圧力・時間微分・境界・精度検査を
+改めて適用しなければならない。
 
 ## 13. 一次資料
 

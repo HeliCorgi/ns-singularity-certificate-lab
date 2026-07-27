@@ -17,6 +17,11 @@
   軸正則性を検査する。
 - 保存候補からCartesian速度成分を復元し、production作用素と別の4次
   \(r,z\) stencilでazimuthal curlを照合する。
+- 既存の円柱差分を呼ばない一様 \((x,y,z)\) 格子実装で、3成分divergence、
+  full curl、vector Laplacian、元のprimitive Navier--Stokes方程式の
+  3成分項別残差を検査する。
+- candidateをいったん保存・再読込し、専用の独立stencilと補間だけで
+  Cartesian物理場へ復元して、divergenceとfull curlをend-to-endで照合する。
 - 実装と独立な解析微分を持つ manufactured solution で収束次数を測る。
 - 明示的canonical `<f8` 配列を candidate v2 NPZ、単位・無次元化・物理時刻・
   粘性・基底規約・runtime/source provenance付きmanifest、設定、seed、
@@ -24,9 +29,11 @@
 - 改変した診断、壊れた発散、楕円符号反転、軸条件破壊などを自動テストで
   拒否する。
 - 独立なCrank–Nicolson実装で、非特異な旋回拡散対照を実行する。
+- 空間格子を固定し、\(\Delta t,\Delta t/2,\Delta t/4\) の解析解誤差、
+  step-doubling次数、エネルギー、最大渦度、境界感度を保存する。
 
 非線形の本番時間発展、候補探索、動的再スケーリング、区間演算、厳密な
-打切り誤差評価はまだ実装していません。
+打切り誤差評価、有限円柱の独立Poissonソルバーはまだ実装していません。
 
 ## 数学的対象
 
@@ -121,10 +128,22 @@ python experiments/run_baseline.py --config configs/baseline.json --output-dir o
 スクリプトは非空の証拠ディレクトリを上書きしません。再実行には別名を使って
 ください。
 
+### 5. 固定空間格子での時間収束
+
+```console
+python -m experiments.run_time_convergence --config configs/baseline_time_convergence.json --output-dir outputs/time_convergence_replay
+```
+
+同一の \(513\) 点半径格子で時間刻みだけを
+\(0.5,0.25,0.125\) と変えます。解析解への重み付き相対 \(L^2\) 誤差と
+隣接次数に加え、共通の空間誤差を概ね相殺するstep-doubling差、各刻みの
+エネルギー、最大物理渦度、有限領域境界感度をJSON/CSV/NPZへ保存します。
+これは滑らかな負の対照の時間離散化試験であり、特異点の証拠ではありません。
+
 より厳密な再現プロトコルは [docs/reproducibility.md](docs/reproducibility.md)
 を参照してください。
 
-## 初回結果
+## 現行の小規模結果
 
 Manufactured solution の \(17/33/65\) radial refinement で得た隣接観測次数:
 
@@ -133,9 +152,18 @@ Manufactured solution の \(17/33/65\) radial refinement で得た隣接観測�
 | 速度回復 | 2.148, 2.103 |
 | 物理3D発散 | 2.255, 2.214 |
 | 楕円関係 | 2.118, 2.074 |
-| Cartesian復元後の独立curl | 3.973, 3.988 |
+| 円柱samplingからCartesian復元後の独立azimuthal curl | 3.973, 3.988 |
 | \(u_1\) 強制付き残差 | 2.015, 2.010 |
 | \(\omega_1\) 強制付き残差 | 2.018, 2.017 |
+
+これとは別に、一様Cartesian格子上の解析的manufactured fieldでは、
+3成分divergence、full curl、vector Laplacian、移流、圧力勾配、粘性項、
+primitive残差がすべて約2次で収束しました。保存・再読込した軸対称候補の
+end-to-end検査では、divergence RMS/maxが
+\(2.613327\times10^{-3}/6.328976\times10^{-3}\)、full-curl defect
+RMS/maxが \(9.369950\times10^{-3}/2.975832\times10^{-2}\) でした。
+これらは有限格子上の許容差付き数値検査であり、恒等式の厳密証明では
+ありません。
 
 非特異基準実験の \(33/65/129\) refinement では、相対 \(L^2\) 誤差
 
@@ -146,10 +174,23 @@ Manufactured solution の \(17/33/65\) radial refinement で得た隣接観測�
 と観測次数 \(1.994,1.998\) を得ました。エネルギーは減少し、内側領域の
 境界半径感度は \(8.94\times10^{-11}\)、発散時刻fitは成長条件を満たさない
 ため実行されませんでした。詳細は [STATUS.md](STATUS.md) と
-[`outputs/baseline_v4/summary.json`](outputs/baseline_v4/summary.json) に
+[`outputs/baseline_v5/summary.json`](outputs/baseline_v5/summary.json) に
 あります。現行manufactured成果物は
-[`outputs/manufactured_v4/diagnostics.json`](outputs/manufactured_v4/diagnostics.json)
-です。以前の出力は、途中結果を隠さないためそのまま保存しています。
+[`outputs/manufactured_v5/diagnostics.json`](outputs/manufactured_v5/diagnostics.json)
+です。
+
+固定空間格子の時間収束では、\(\Delta t=0.5,0.25,0.125\) に対する
+重み付き相対 \(L^2\) 誤差がそれぞれ
+\(8.586076\times10^{-4},2.048943\times10^{-4},4.382275\times10^{-5}\)、
+解析解に対する観測次数が \(2.0671,2.2251\)、step-doubling次数が
+\(2.0200\) でした。各runでエネルギーは減少し、最大物理渦度は初期値
+\(2.0\) を超えず、内側領域の境界感度は
+\(2.16\times10^{-8},5.38\times10^{-9},2.03\times10^{-9}\) でした。
+この境界感度は補助的な \(R=3,4\) 比較であり、主計算 \(R=5\) の
+打切り誤差を直接評価するものではありません。
+機械可読な詳細は
+[`outputs/time_convergence_v1/summary.json`](outputs/time_convergence_v1/summary.json)
+にあります。以前の出力は、途中結果を隠さないためそのまま保存しています。
 
 ## リポジトリ構成
 
@@ -157,6 +198,7 @@ Manufactured solution の \(17/33/65\) radial refinement で得た隣接観測�
 |---|---|
 | `SPEC.md` | 数学的対象、変数、解・特異点の定義 |
 | `docs/equation_audit.md` | 符号・係数・境界・同値性の式別監査 |
+| `docs/legacy_reuse_review.md` | 旧試作の限定的なread-only監査と非移植判断 |
 | `docs/known_obstructions.md` | 既知の非存在・正則性・継続定理 |
 | `docs/threat_model.md` | 偽特異点の原因、検出試験、停止規則 |
 | `docs/future_search.md` | Type II・動的再スケーリング探索設計 |

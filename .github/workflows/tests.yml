@@ -43,3 +43,9 @@ jobs:
           python experiments/run_baseline.py
           --config configs/baseline.json
           --output-dir outputs/ci-baseline
+
+      - name: Replay fixed-grid time convergence
+        run: >-
+          python -m experiments.run_time_convergence
+          --config configs/baseline_time_convergence.json
+          --output-dir outputs/ci-time-convergence

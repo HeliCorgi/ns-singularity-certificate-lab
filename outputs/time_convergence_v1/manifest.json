@@ -1,0 +1,26 @@
+{
+  "experiment_id": "smooth_swirl_fixed_grid_time_convergence",
+  "files": {
+    "config.snapshot.json": {
+      "bytes": 1592,
+      "sha256": "f2b49a1751ce693829904cbb1b6ce156cf0a89f96006e7f0a3ada1767ab061d4"
+    },
+    "final_profiles.npz": {
+      "bytes": 17450,
+      "sha256": "7e1a84f180a005783404e376c46818eb9a1b1f0557069b34ba081cc642cc0ba7"
+    },
+    "summary.json": {
+      "bytes": 6143,
+      "sha256": "9848070722de844ac720d60ce6ad693f0ec1fbc963202acdadc15adbbdc8d72d"
+    },
+    "time_convergence.csv": {
+      "bytes": 1026,
+      "sha256": "2f0b6434375fdbff62159d499dfdf2a8ad0751f193bd2221c60dbd768f79d4a8"
+    },
+    "time_diagnostics.csv": {
+      "bytes": 821,
+      "sha256": "3d9224acbf0f07357cec1ebfcde15102f4756b08400c55adc9006416e77fcebc"
+    }
+  },
+  "schema_version": 1
+}

@@ -77,10 +77,54 @@ classified as bounded or decaying.  This guard can catch a simple false
 positive; it cannot prove regularity and is not sufficient to validate a
 future singularity candidate.
 
+## Fixed-grid temporal convergence
+
+`experiments/run_time_convergence.py` isolates the Crank--Nicolson time error
+from a changing spatial grid.  The radial grid is fixed at
+\(n_r=513\), \(R=5\), and the final time is \(1\); the requested and actual
+time steps are exactly \(0.5,0.25,0.125\), corresponding to \(2,4,8\) steps.
+The analytic outer trace is used for the convergence comparison.
+
+The weighted relative \(L^2\) norm uses the physical swirl-energy weight
+\(r^3\,dr\).  The recorded values are:
+
+| \(\Delta t\) | relative \(L^2\) error | maximum absolute error | final energy per unit \(z\) | final max vorticity | auxiliary inner boundary sensitivity |
+|---:|---:|---:|---:|---:|---:|
+| 0.5 | \(8.586076\times10^{-4}\) | \(1.626945\times10^{-3}\) | 0.2725504862 | 1.3856349981 | \(2.155502\times10^{-8}\) |
+| 0.25 | \(2.048943\times10^{-4}\) | \(3.882867\times10^{-4}\) | 0.2726696354 | 1.3881123155 | \(5.382548\times10^{-9}\) |
+| 0.125 | \(4.382275\times10^{-5}\) | \(8.493974\times10^{-5}\) | 0.2726992741 | 1.3887190094 | \(2.031933\times10^{-9}\) |
+
+The adjacent analytic-error orders are \(2.067119\) and \(2.225128\).
+On the same grid,
+
+\[
+\frac{\lVert u_{\Delta t}-u_{\Delta t/2}\rVert}
+     {\lVert u_{\Delta t/2}-u_{\Delta t/4}\rVert}
+\]
+
+gives order \(2.020029\); the corresponding normalized differences are
+\(6.537258\times10^{-4}\) and \(1.611782\times10^{-4}\).
+Raw analytic errors still contain the fixed spatial discretization error and
+can eventually plateau, so the raw order is not interpreted as a standalone
+continuum result.
+
+The initial energy per unit \(z\) is \(0.3926990819\) for every run and
+decreases in every recorded history.  The maximum physical-vorticity value
+over each complete history is its initial value \(2.0\); there is no growth
+signal.  Auxiliary boundary sensitivity is measured independently with
+homogeneous outer traces on radii \(3\) and \(4\), compared only inside
+\(r\leq1.5\).  The all-recorded-time maximum happens at the final time here,
+so both saved metrics have the tabulated value.  This auxiliary comparison
+does not directly bound the boundary error of the main \(R=5\) run.
+These checks establish the expected finite-grid behavior of this smooth
+control only.  They neither prove regularity of general solutions nor bear
+evidence of a singularity.
+
 ## Run
 
 ```console
 python experiments/run_baseline.py --config configs/baseline.json --output-dir outputs/baseline_replay
+python -m experiments.run_time_convergence --config configs/baseline_time_convergence.json --output-dir outputs/time_convergence_replay
 ```
 
 The script refuses to overwrite a non-empty evidence directory.  Use a new

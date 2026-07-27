@@ -63,6 +63,15 @@ report and RMS values for every signed PDE term, forced residual error, and
 independent Cartesian-reconstruction/curl defect.  The test suite deliberately
 modifies a recorded value and requires the read to fail.
 
+The fixed-grid temporal control uses a directory-level evidence bundle rather
+than the candidate schema.  It contains the exact config snapshot,
+`summary.json`, per-step and per-run CSV files, and explicit final profiles in
+an `allow_pickle=False` NPZ.  `manifest.json` fixes the expected five payload
+files by SHA-256 and byte length, while `manifest.json.sha256` protects the
+manifest.  Its auxiliary \(R=3,4\) boundary-radius comparison is labelled
+separately because it is not a direct truncation-error bound for the main
+\(R=5\) run.
+
 ## Security and proof limitations
 
 SHA-256 detects accidental or deliberate mutation relative to the recorded
