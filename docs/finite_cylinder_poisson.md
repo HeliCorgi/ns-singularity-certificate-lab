@@ -87,6 +87,26 @@ outer identity row. This supplies a second residual path. The continuum error
 is measured independently against an analytic polynomial-times-cosine
 manufactured solution with nonzero outer boundary data.
 
+### Scope of the A/B independence claim
+
+This solver (B) and `ns_certificate_lab.poisson` (A) differ **only** in their
+radial stencils. Their axial treatment is identical: both diagonalize `z` with
+NumPy's discrete Fourier transform, both take the axial wavenumbers from the
+same NumPy sample-frequency helper, and both invert the resulting radial
+systems with a locally written Thomas elimination. A defect in the wavenumber
+convention, the Nyquist mode, the real/imaginary bookkeeping, or the
+tridiagonal elimination would move A and B identically and would not be
+detected by `tests/test_poisson_cross_validation.py`. The A/B cross-validation
+must therefore be described as a *radial-stencil* cross-validation, not as a
+full independence result.
+
+`ns_certificate_lab.realspace_poisson` (solver C) is a third path added to
+break that common mode: three-point periodic finite differences in `z` and a
+matrix-free preconditioned conjugate-gradient solve, with no transform and no
+tridiagonal elimination anywhere. It shares the `r^3`-flux radial mathematics
+with solver A, so it does **not** replace the A/B radial comparison. See
+`docs/realspace_poisson.md`.
+
 ## Acceptance gate
 
 The initial gate requires:
