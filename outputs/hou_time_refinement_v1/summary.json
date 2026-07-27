@@ -1,0 +1,739 @@
+{
+  "acceptance_checks": {
+    "all_diagnostics_finite": true,
+    "all_time_steps_completed": true,
+    "circulation_max_principle": true,
+    "cross_solver_elliptic_agreement_recorded": true,
+    "effective_time_steps_halve_exactly": true,
+    "energy_non_increasing": true,
+    "fixed_step_within_adaptive_cfl_bound": true,
+    "step_doubling_differences_decrease": true,
+    "temporal_order_second_order_or_below_floor": true
+  },
+  "accepted_as_temporal_refinement_study": true,
+  "cfl_policy": {
+    "accepted_effective_cfl_bound": 0.10500000000000001,
+    "cfl_coefficient": 0.1,
+    "cfl_excess_tolerance": 0.05,
+    "cfl_excess_tolerance_source": "default 0.05",
+    "effective_cfl_definition": "advective_cfl = dt * max(max|u^r| / dr, max|u^z| / dz) and viscous_cfl = 4 nu dt / min(dr, dz)^2, both evaluated on the state AFTER the step",
+    "equivalence": "the adaptive advective bound is C / max(|u^r|/dr, |u^z|/dz) and the recorded advective_cfl is dt * max(|u^r|/dr, |u^z|/dz), so dt <= bound is exactly advective_cfl <= C; the viscous bound C min(dr,dz)^2 / (4 nu) and viscous_cfl = 4 nu dt / min(dr,dz)^2 are related the same way",
+    "exceedance_policy": "an exceedance is recorded as a failed acceptance check (fixed_step_within_adaptive_cfl_bound), never raised",
+    "maximum_effective_advective_cfl": 0.014881526945453064,
+    "maximum_effective_advective_cfl_excess_ratio": -0.8511847305454694,
+    "maximum_effective_viscous_cfl": 1.966016312285035e-05,
+    "maximum_effective_viscous_cfl_excess_ratio": -0.9998033983687715,
+    "mode": "fixed uniform time step; no adaptive selection is performed",
+    "monitoring_only": true,
+    "rule": "the fixed dt is accepted when the recorded effective CFL numbers stay at or below cfl_coefficient * (1 + cfl_excess_tolerance)"
+  },
+  "derived_reference_norms": {
+    "max_abs_u1": 3265.9863,
+    "max_abs_u1_relative_error": 0.00013872345788736636,
+    "max_cartesian_vorticity": 7569.62,
+    "max_cartesian_vorticity_relative_error": 0.009949478171178396,
+    "measured_max_abs_u1": 3265.5332310870513,
+    "measured_max_cartesian_vorticity": 7494.3062310458845,
+    "source": "E-29b (derived by this repository, absent from the paper)"
+  },
+  "experiment_id": "hou_time_refinement_v1",
+  "interpretation": "Fixed-grid, fixed-step temporal refinement of the E-29 initial datum at the audited early time T_1. It measures the temporal discretization error of the shipped Heun integrator and nothing else: it is not a reproduction of any published amplification value, not a singularity candidate, and not a proof.",
+  "known_gaps": [
+    "The solver-B cross-check helper duplicates the private _cross_check_snapshot of experiments/run_hou_early_time.py because that helper is not part of the module's public surface; the two must be kept in step by hand."
+  ],
+  "limitations": [
+    "This measures the temporal discretization error of the shipped Heun integrator on one fixed uniform grid. It says nothing about the continuum limit of the spatial discretization.",
+    "A uniform fixed grid cannot resolve the adaptive mesh scales (minimum spacing of order 1e-8) used by the source calculation; every quantity reported here is resolution limited.",
+    "This is a numerical observation, not a reproduction claim and not evidence of singularity formation.",
+    "Step doubling estimates the temporal error of the coarser member; it is not a bound on the total error, which is dominated by the fixed spatial discretization at this resolution.",
+    "Solver A and solver B share the same second-order accuracy class, so their agreement bounds discretization consistency, not continuum error.",
+    "Floating-point arithmetic only: there is no interval enclosure and no certified bound anywhere in this pipeline."
+  ],
+  "method": {
+    "constraint_relativization": "the E-02 divergence residual and the E-16c axis parity defect are reported both absolutely and divided by their own cancellation scales (TM-09); the relative numbers are recorded and no acceptance check reads them",
+    "equations": "E-11, E-12, E-13, E-14",
+    "fixed_spatial_grid": {
+      "dr": 0.015625,
+      "dz": 0.0078125,
+      "nr": 65,
+      "nz": 128,
+      "r_max": 1.0,
+      "z_period": 1.0
+    },
+    "independent_cross_check": "solver B: finite_cylinder_poisson non-divergence radial stencil, re-solved on the final state of every member",
+    "initial_data": "E-29 with amplitude 12000 times amplitude_scale",
+    "poisson_solver": "solver A: Fourier-z / r^3-flux finite volume with homogeneous outer Dirichlet data",
+    "relativized_diagnostic_fields": [
+      "divergence_relative_denominator",
+      "divergence_residual_relative",
+      "divergence_residual_argmax_r",
+      "divergence_residual_argmax_z",
+      "divergence_pointwise_ratio_max",
+      "divergence_pointwise_ratio_argmax_r",
+      "divergence_pointwise_ratio_argmax_z",
+      "axis_parity_defect_u1",
+      "axis_parity_defect_omega1",
+      "axis_parity_relative_u1",
+      "axis_parity_relative_omega1",
+      "axis_parity_relative_denominator_u1",
+      "axis_parity_relative_denominator_omega1",
+      "axis_parity_argmax_z_u1",
+      "axis_parity_argmax_z_omega1"
+    ],
+    "symmetry": "full z period, odd symmetry monitored not imposed",
+    "time_integrator": "explicit Heun/RK2 (nominal order 2)",
+    "time_step_rule": "fixed uniform dt per member; the ladder is dt, dt/2, dt/4 with step counts n, 2n, 4n landing exactly on t_final",
+    "viscosity_protocol": "single E-30 stage: t_final = T_1 lies below the switch time t_0 = 0.00227375, so no viscosity switch occurs",
+    "wall_conditions": "E-27 with the second-order Thom form E-31"
+  },
+  "reproducibility": {
+    "command": "python experiments/run_hou_time_refinement.py --config configs/hou_time_refinement.json --output-dir outputs/hou_time_refinement",
+    "config_sha256": "5d964629f64c5168d5dc5b0cb33f82ebf39cc1a538082ceeb1a8f223718c6fc3",
+    "runtime_provenance": {
+      "architecture": "64bit",
+      "byteorder": "little",
+      "git_dirty": true,
+      "git_head": "e4c072c06f562983806521f4dd02ae73b69e4248",
+      "machine": "AMD64",
+      "numpy_build_config": {
+        "configuration": {
+          "Build Dependencies": {
+            "blas": {
+              "detection method": "pkgconfig",
+              "found": true,
+              "include directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-6ukx7exl/cp311-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+              "lib directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-6ukx7exl/cp311-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+              "name": "scipy-openblas",
+              "openblas configuration": "OpenBLAS 0.3.31.188.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+              "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+              "version": "0.3.31.188.0"
+            },
+            "lapack": {
+              "detection method": "pkgconfig",
+              "found": true,
+              "include directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-6ukx7exl/cp311-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+              "lib directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-6ukx7exl/cp311-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+              "name": "scipy-openblas",
+              "openblas configuration": "OpenBLAS 0.3.31.188.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+              "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+              "version": "0.3.31.188.0"
+            }
+          },
+          "Compilers": {
+            "c": {
+              "commands": "cl",
+              "linker": "link",
+              "name": "msvc",
+              "version": "19.44.35226"
+            },
+            "c++": {
+              "commands": "cl",
+              "linker": "link",
+              "name": "msvc",
+              "version": "19.44.35226"
+            },
+            "cython": {
+              "commands": "cython",
+              "linker": "cython",
+              "name": "cython",
+              "version": "3.2.4"
+            }
+          },
+          "Machine Information": {
+            "build": {
+              "cpu": "x86_64",
+              "endian": "little",
+              "family": "x86_64",
+              "system": "windows"
+            },
+            "host": {
+              "cpu": "x86_64",
+              "endian": "little",
+              "family": "x86_64",
+              "system": "windows"
+            }
+          },
+          "Python Information": {
+            "path": "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\build-env-jxn7bo0g\\Scripts\\python.exe",
+            "version": "3.11"
+          },
+          "SIMD Extensions": {
+            "baseline": [
+              "X86_V2"
+            ],
+            "found": [
+              "X86_V3"
+            ]
+          }
+        },
+        "source": "numpy.__config__.CONFIG"
+      },
+      "numpy_build_config_sha256": "590aa5b174e7f5606bf918092dca9ad7de2fd7714006b456b5e12c5a71101a0a",
+      "numpy_version": "2.4.6",
+      "platform": "Windows-10-10.0.26200-SP0",
+      "python_implementation": "CPython",
+      "python_version": "3.11.9",
+      "schema": "ns-certificate-lab/runtime-provenance/v2",
+      "source_fingerprint_algorithm": "sha256-path-and-content-v1",
+      "source_fingerprint_file_count": 44,
+      "source_fingerprint_scope": [
+        "pyproject.toml",
+        "Dockerfile",
+        ".dockerignore",
+        "requirements",
+        "src",
+        "experiments",
+        "configs",
+        "scripts"
+      ],
+      "source_fingerprint_sha256": "17f3a064bc240d959c1f4cf393eb1f5b8ade3fd031c0c7037bc88d269b307591",
+      "thread_environment": {
+        "BLIS_NUM_THREADS": null,
+        "MKL_DYNAMIC": null,
+        "MKL_NUM_THREADS": null,
+        "NUMEXPR_NUM_THREADS": null,
+        "OMP_DYNAMIC": null,
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "VECLIB_MAXIMUM_THREADS": null
+      }
+    },
+    "seed": 20260728
+  },
+  "schema_version": 1,
+  "temporal_analysis": {
+    "all_quantities_below_measurement_floor": false,
+    "argmax_locations": {
+      "argmax_cartesian_vorticity": {
+        "agree_within_one_grid_cell": true,
+        "dr": 0.015625,
+        "dz": 0.0078125,
+        "identical_across_the_ladder": true,
+        "maximum_axial_separation": 0.0,
+        "maximum_radial_separation": 0.0,
+        "r": [
+          0.0625,
+          0.0625,
+          0.0625
+        ],
+        "status": "recorded",
+        "z": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "argmax_u1": {
+        "agree_within_one_grid_cell": true,
+        "dr": 0.015625,
+        "dz": 0.0078125,
+        "identical_across_the_ladder": true,
+        "maximum_axial_separation": 0.0,
+        "maximum_radial_separation": 0.0,
+        "r": [
+          0.046875,
+          0.046875,
+          0.046875
+        ],
+        "status": "recorded",
+        "z": [
+          0.015625,
+          0.015625,
+          0.015625
+        ]
+      }
+    },
+    "constraint_metric_trends": {
+      "final_axis_parity_relative_omega1": {
+        "absolute_spread": 2.659407308536199e-06,
+        "monotone_in_dt": true,
+        "relative_spread": 1.0272729622575693e-05,
+        "status": "recorded",
+        "values": [
+          0.25887763884290504,
+          0.258879767792663,
+          0.2588802982502136
+        ]
+      },
+      "final_axis_parity_relative_u1": {
+        "absolute_spread": 1.754318587066095e-07,
+        "monotone_in_dt": true,
+        "relative_spread": 2.483549740367649e-07,
+        "status": "recorded",
+        "values": [
+          0.7063752832720193,
+          0.7063754224877704,
+          0.706375458703878
+        ]
+      },
+      "final_cross_solver_psi_relative_difference": {
+        "absolute_spread": 1.0712112008190444e-08,
+        "monotone_in_dt": true,
+        "relative_spread": 8.976207993408807e-07,
+        "status": "recorded",
+        "values": [
+          0.011933883885758612,
+          0.011933892459054851,
+          0.01193389459787062
+        ]
+      },
+      "final_divergence_pointwise_ratio_max": {
+        "absolute_spread": 0.0,
+        "monotone_in_dt": true,
+        "relative_spread": 0.0,
+        "status": "recorded",
+        "values": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "final_divergence_residual_relative": {
+        "absolute_spread": 1.1133990299172503e-07,
+        "monotone_in_dt": true,
+        "relative_spread": 2.6230607500757862e-06,
+        "status": "recorded",
+        "values": [
+          0.04244655903928575,
+          0.042446469986526056,
+          0.04244644769938276
+        ]
+      },
+      "maximum_circulation_growth_ratio": {
+        "absolute_spread": 3.9567971121812207e-10,
+        "monotone_in_dt": true,
+        "relative_spread": 5.163127578289709e-07,
+        "status": "recorded",
+        "values": [
+          0.0007663566418190104,
+          0.0007663563241357974,
+          0.0007663562461392992
+        ]
+      }
+    },
+    "effective_time_steps_halve_exactly": true,
+    "measured_quantity_count": 4,
+    "measurement_floor_definition": "acceptance.temporal_error_floor_relative * |Q(dt/4)|; a quantity whose step-doubling differences fall at or below it is recorded as temporal_error_below_measurement_floor and is an accepted outcome with an explanation, not a failure",
+    "members_share_final_time": true,
+    "quantities_below_measurement_floor": [],
+    "quantities_required_within_the_band": 2,
+    "quantities_within_the_order_band": [
+      "final_amplification",
+      "final_max_abs_u1",
+      "final_energy",
+      "final_max_abs_omega1"
+    ],
+    "step_plans": [
+      {
+        "effective_dt": 5.999805639200657e-07,
+        "effective_dt_relative_adjustment": 3.2393466557126584e-05,
+        "requested_dt": 6e-07,
+        "requested_dt_divides_t_final": false,
+        "step_count": 3653
+      },
+      {
+        "effective_dt": 2.9999028196003285e-07,
+        "effective_dt_relative_adjustment": 3.2393466557126584e-05,
+        "requested_dt": 3e-07,
+        "requested_dt_divides_t_final": false,
+        "step_count": 7306
+      },
+      {
+        "effective_dt": 1.4999514098001642e-07,
+        "effective_dt_relative_adjustment": 3.2393466557126584e-05,
+        "requested_dt": 1.5e-07,
+        "requested_dt_divides_t_final": false,
+        "step_count": 14612
+      }
+    ],
+    "temporal_order": {
+      "final_amplification": {
+        "coarse_value": 6.114705324709833,
+        "diagnostic_key": "amplification",
+        "difference_coarse_middle": 2.671607633164541e-05,
+        "difference_middle_fine": 6.689694616035524e-06,
+        "differences_decrease": true,
+        "fine_value": 6.114671918938885,
+        "measurement_floor": 6.114671918938886e-10,
+        "middle_value": 6.114678608633501,
+        "observed_order": 1.9976958827427007,
+        "status": "measured"
+      },
+      "final_energy": {
+        "coarse_value": 3966.2026002841053,
+        "diagnostic_key": "energy",
+        "difference_coarse_middle": 1.2335546671238262e-05,
+        "difference_middle_fine": 3.012721208506264e-06,
+        "differences_decrease": true,
+        "fine_value": 3966.2025849358374,
+        "measurement_floor": 3.966202584935838e-07,
+        "middle_value": 3966.2025879485586,
+        "observed_order": 2.0336825726334897,
+        "status": "measured"
+      },
+      "final_max_abs_omega1": {
+        "coarse_value": 528682.7173657912,
+        "diagnostic_key": "max_abs_omega1",
+        "difference_coarse_middle": 0.1970611180877313,
+        "difference_middle_fine": 0.049288146663457155,
+        "differences_decrease": true,
+        "fine_value": 528682.4710165265,
+        "measurement_floor": 5.2868247101652646e-05,
+        "middle_value": 528682.5203046731,
+        "observed_order": 1.9993305090742064,
+        "status": "measured"
+      },
+      "final_max_abs_u1": {
+        "coarse_value": 7605.070684270334,
+        "diagnostic_key": "max_abs_u1",
+        "difference_coarse_middle": 0.007550155111857748,
+        "difference_middle_fine": 0.0018925060576293617,
+        "differences_decrease": true,
+        "fine_value": 7605.061241609164,
+        "measurement_floor": 7.605061241609165e-07,
+        "middle_value": 7605.063134115222,
+        "observed_order": 1.996208365680355,
+        "status": "measured"
+      }
+    },
+    "temporal_order_band": [
+      1.6,
+      2.4
+    ],
+    "temporal_order_definition": "log2(|Q(dt) - Q(dt/2)| / |Q(dt/2) - Q(dt/4)|) with all three members on the identical spatial grid and identical t_final"
+  },
+  "temporal_vs_spatial_separation": {
+    "constraint_metrics_expected_spatially_dominated": {
+      "expectation": "The relative divergence residual, the relative axis parity defect, the circulation max-principle violation and the solver-B cross-check difference are all set by the spatial stencils, so they should be essentially independent of dt. Their spread across the ladder is recorded here; a small spread confirms the separation and is itself the temporal/spatial separation statement for those metrics.",
+      "gated": false,
+      "metrics": {
+        "final_axis_parity_relative_omega1": {
+          "absolute_spread": 2.659407308536199e-06,
+          "monotone_in_dt": true,
+          "relative_spread": 1.0272729622575693e-05,
+          "status": "recorded",
+          "values": [
+            0.25887763884290504,
+            0.258879767792663,
+            0.2588802982502136
+          ]
+        },
+        "final_axis_parity_relative_u1": {
+          "absolute_spread": 1.754318587066095e-07,
+          "monotone_in_dt": true,
+          "relative_spread": 2.483549740367649e-07,
+          "status": "recorded",
+          "values": [
+            0.7063752832720193,
+            0.7063754224877704,
+            0.706375458703878
+          ]
+        },
+        "final_cross_solver_psi_relative_difference": {
+          "absolute_spread": 1.0712112008190444e-08,
+          "monotone_in_dt": true,
+          "relative_spread": 8.976207993408807e-07,
+          "status": "recorded",
+          "values": [
+            0.011933883885758612,
+            0.011933892459054851,
+            0.01193389459787062
+          ]
+        },
+        "final_divergence_pointwise_ratio_max": {
+          "absolute_spread": 0.0,
+          "monotone_in_dt": true,
+          "relative_spread": 0.0,
+          "status": "recorded",
+          "values": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "final_divergence_residual_relative": {
+          "absolute_spread": 1.1133990299172503e-07,
+          "monotone_in_dt": true,
+          "relative_spread": 2.6230607500757862e-06,
+          "status": "recorded",
+          "values": [
+            0.04244655903928575,
+            0.042446469986526056,
+            0.04244644769938276
+          ]
+        },
+        "maximum_circulation_growth_ratio": {
+          "absolute_spread": 3.9567971121812207e-10,
+          "monotone_in_dt": true,
+          "relative_spread": 5.163127578289709e-07,
+          "status": "recorded",
+          "values": [
+            0.0007663566418190104,
+            0.0007663563241357974,
+            0.0007663562461392992
+          ]
+        }
+      }
+    },
+    "dominant_error_source": "spatial",
+    "fixed_resolution": "65x128",
+    "spatial": {
+      "consecutive_differences": [
+        6.580926785560687,
+        2.932259696897191,
+        1.630823399552991
+      ],
+      "final_amplifications": [
+        6.114768458177527,
+        12.695695243738214,
+        15.627954940635405,
+        17.258778340188396
+      ],
+      "largest_consecutive_difference": 6.580926785560687,
+      "matches_recorded_reference": true,
+      "rungs": [
+        {
+          "final_amplification": 6.114768458177527,
+          "final_amplification_read": 6.114768458177527,
+          "nr": 65,
+          "nz": 128,
+          "read_from_summary": true,
+          "summary": "outputs/hou_early_time_v1/summary.json"
+        },
+        {
+          "final_amplification": 12.695695243738214,
+          "final_amplification_read": 12.695695243738214,
+          "nr": 129,
+          "nz": 256,
+          "read_from_summary": true,
+          "summary": "outputs/hou_early_time_v1/summary.json"
+        },
+        {
+          "final_amplification": 15.627954940635405,
+          "final_amplification_read": 15.627954940635405,
+          "nr": 193,
+          "nz": 384,
+          "read_from_summary": true,
+          "summary": "outputs/hou_early_time_v1/summary.json"
+        },
+        {
+          "final_amplification": 17.258778340188396,
+          "final_amplification_read": 17.258778340188396,
+          "nr": 257,
+          "nz": 512,
+          "read_from_summary": true,
+          "summary": "outputs/hou_early_time_v2_hires/summary.json"
+        }
+      ],
+      "smallest_consecutive_difference": 1.630823399552991,
+      "source_summaries": [
+        "outputs/hou_early_time_v1/summary.json",
+        "outputs/hou_early_time_v2_hires/summary.json"
+      ],
+      "summaries_missing": [],
+      "summaries_read": [
+        "outputs/hou_early_time_v1/summary.json",
+        "outputs/hou_early_time_v2_hires/summary.json"
+      ]
+    },
+    "spatial_to_temporal_ratio": 731344.3257830461,
+    "spatial_to_temporal_ratio_definition": "smallest consecutive spatial-ladder amplification difference divided by the Richardson temporal error estimate at the finest dt",
+    "statement": "The three members share one spatial grid and one final time, so their mutual differences contain no spatial error at all: they are a pure measurement of the temporal discretization. The spatial error is measured separately by the resolution ladder of the early-time runs at the identical t_final.",
+    "temporal": {
+      "measurement_floor": 6.114671918938886e-10,
+      "quantity": "final_amplification",
+      "richardson_definition": "|Q(dt/2) - Q(dt/4)| / (2^p - 1) with p = 2 (Heun); the standard estimate of the temporal error remaining in Q(dt/4)",
+      "richardson_error_estimate_at_finest_dt": 2.2298982053451746e-06,
+      "status": "measured",
+      "step_doubling_difference_dt_over_2_to_dt_over_4": 6.689694616035524e-06
+    }
+  },
+  "time_steps": [
+    {
+      "all_diagnostics_finite": true,
+      "checkpoint": "checkpoint_dt00_n3653.npz",
+      "completed": true,
+      "diagnostic_record_count": 148,
+      "dr": 0.015625,
+      "dz": 0.0078125,
+      "effective_dt": 5.999805639200657e-07,
+      "effective_dt_relative_adjustment": 3.2393466557126584e-05,
+      "failure": null,
+      "final_amplification": 6.114705324709833,
+      "final_argmax_cartesian_vorticity_r": 0.0625,
+      "final_argmax_cartesian_vorticity_z": 0.0,
+      "final_argmax_u1_r": 0.046875,
+      "final_argmax_u1_z": 0.015625,
+      "final_axis_parity_defect_omega1": 3496094.4849564377,
+      "final_axis_parity_defect_u1": 110360.4638482543,
+      "final_axis_parity_relative_denominator_omega1": 13504814.47753769,
+      "final_axis_parity_relative_denominator_u1": 156234.88882149264,
+      "final_axis_parity_relative_omega1": 0.25887763884290504,
+      "final_axis_parity_relative_u1": 0.7063752832720193,
+      "final_circulation_max": 63.63182863507521,
+      "final_cross_solver_psi_argmax_r": 0.015625,
+      "final_cross_solver_psi_argmax_z": 0.0234375,
+      "final_cross_solver_psi_max_abs_difference": 1.1562510915098585,
+      "final_cross_solver_psi_relative_denominator": 96.88807957061483,
+      "final_cross_solver_psi_relative_difference": 0.011933883885758612,
+      "final_divergence_pointwise_ratio_max": 1.0,
+      "final_divergence_relative_denominator": 25266.621541608583,
+      "final_divergence_residual_argmax_r": 0.0,
+      "final_divergence_residual_argmax_z": 0.0,
+      "final_divergence_residual_max": 1072.481142989178,
+      "final_divergence_residual_relative": 0.04244655903928575,
+      "final_energy": 3966.2026002841053,
+      "final_enstrophy": 3256672.442274038,
+      "final_max_abs_omega1": 528682.7173657912,
+      "final_max_abs_psi1": 96.88807957061483,
+      "final_max_abs_u1": 7605.070684270334,
+      "final_max_cartesian_vorticity": 45825.47421598235,
+      "final_odd_symmetry_defect": 1.463009003825397e-07,
+      "final_recorded_dt": 5.999805640518295e-07,
+      "final_solver_b_boundary_error_max": 0.0,
+      "final_solver_b_physical_defect_max": 50375.96068104211,
+      "final_step_relative_deviation": 2.1961346404168382e-10,
+      "final_time": 0.002191729,
+      "initial_circulation_max": 64.88057619110188,
+      "initial_energy": 4008.11113236055,
+      "level_index": 0,
+      "maximum_advective_cfl": 0.014881526945453064,
+      "maximum_advective_cfl_excess_ratio": -0.8511847305454694,
+      "maximum_circulation_growth_ratio": 0.0007663566418190104,
+      "maximum_energy_growth_ratio": 0.0,
+      "maximum_viscous_cfl": 1.966016312285035e-05,
+      "maximum_viscous_cfl_excess_ratio": -0.9998033983687715,
+      "maximum_wall_u1_abs": 0.0,
+      "nr": 65,
+      "nz": 128,
+      "observed_step_count": 3653,
+      "requested_dt": 6e-07,
+      "requested_dt_divides_t_final": false,
+      "step_count": 3653
+    },
+    {
+      "all_diagnostics_finite": true,
+      "checkpoint": "checkpoint_dt01_n7306.npz",
+      "completed": true,
+      "diagnostic_record_count": 294,
+      "dr": 0.015625,
+      "dz": 0.0078125,
+      "effective_dt": 2.9999028196003285e-07,
+      "effective_dt_relative_adjustment": 3.2393466557126584e-05,
+      "failure": null,
+      "final_amplification": 6.114678608633501,
+      "final_argmax_cartesian_vorticity_r": 0.0625,
+      "final_argmax_cartesian_vorticity_z": 0.0,
+      "final_argmax_u1_r": 0.046875,
+      "final_argmax_u1_z": 0.015625,
+      "final_axis_parity_defect_omega1": 3496115.0529690385,
+      "final_axis_parity_defect_u1": 110360.56906865464,
+      "final_axis_parity_relative_denominator_omega1": 13504782.86804197,
+      "final_axis_parity_relative_denominator_u1": 156235.0069881789,
+      "final_axis_parity_relative_omega1": 0.258879767792663,
+      "final_axis_parity_relative_u1": 0.7063754224877704,
+      "final_circulation_max": 63.63181926889668,
+      "final_cross_solver_psi_argmax_r": 0.015625,
+      "final_cross_solver_psi_argmax_z": 0.0234375,
+      "final_cross_solver_psi_max_abs_difference": 1.156251897742976,
+      "final_cross_solver_psi_relative_denominator": 96.88807752458578,
+      "final_cross_solver_psi_relative_difference": 0.011933892459054851,
+      "final_divergence_pointwise_ratio_max": 1.0,
+      "final_divergence_relative_denominator": 25266.614402661704,
+      "final_divergence_residual_argmax_r": 0.0,
+      "final_divergence_residual_argmax_z": 0.0,
+      "final_divergence_residual_max": 1072.478589903707,
+      "final_divergence_residual_relative": 0.042446469986526056,
+      "final_energy": 3966.2025879485586,
+      "final_enstrophy": 3256669.10613984,
+      "final_max_abs_omega1": 528682.5203046731,
+      "final_max_abs_psi1": 96.88807752458578,
+      "final_max_abs_u1": 7605.063134115222,
+      "final_max_cartesian_vorticity": 45825.27399752503,
+      "final_odd_symmetry_defect": 2.623334918409061e-07,
+      "final_recorded_dt": 2.9999028199100344e-07,
+      "final_solver_b_boundary_error_max": 0.0,
+      "final_solver_b_physical_defect_max": 50375.59129547508,
+      "final_step_relative_deviation": 1.032386610782851e-10,
+      "final_time": 0.002191729,
+      "initial_circulation_max": 64.88057619110188,
+      "initial_energy": 4008.11113236055,
+      "level_index": 1,
+      "maximum_advective_cfl": 0.007440763314730673,
+      "maximum_advective_cfl_excess_ratio": -0.9255923668526933,
+      "maximum_circulation_growth_ratio": 0.0007663563241357974,
+      "maximum_energy_growth_ratio": 0.0,
+      "maximum_viscous_cfl": 9.8300815602812e-06,
+      "maximum_viscous_cfl_excess_ratio": -0.9999016991843972,
+      "maximum_wall_u1_abs": 0.0,
+      "nr": 65,
+      "nz": 128,
+      "observed_step_count": 7306,
+      "requested_dt": 3e-07,
+      "requested_dt_divides_t_final": false,
+      "step_count": 7306
+    },
+    {
+      "all_diagnostics_finite": true,
+      "checkpoint": "checkpoint_dt02_n14612.npz",
+      "completed": true,
+      "diagnostic_record_count": 586,
+      "dr": 0.015625,
+      "dz": 0.0078125,
+      "effective_dt": 1.4999514098001642e-07,
+      "effective_dt_relative_adjustment": 3.2393466557126584e-05,
+      "failure": null,
+      "final_amplification": 6.114671918938885,
+      "final_argmax_cartesian_vorticity_r": 0.0625,
+      "final_argmax_cartesian_vorticity_z": 0.0,
+      "final_argmax_u1_r": 0.046875,
+      "final_argmax_u1_z": 0.015625,
+      "final_axis_parity_defect_omega1": 3496120.1733915545,
+      "final_axis_parity_defect_u1": 110360.59560661335,
+      "final_axis_parity_relative_denominator_omega1": 13504774.975237692,
+      "final_axis_parity_relative_denominator_u1": 156235.03654715442,
+      "final_axis_parity_relative_omega1": 0.2588802982502136,
+      "final_axis_parity_relative_u1": 0.706375458703878,
+      "final_circulation_max": 63.631816934664435,
+      "final_cross_solver_psi_argmax_r": 0.015625,
+      "final_cross_solver_psi_argmax_z": 0.0234375,
+      "final_cross_solver_psi_max_abs_difference": 1.1562520988618274,
+      "final_cross_solver_psi_relative_denominator": 96.88807701285873,
+      "final_cross_solver_psi_relative_difference": 0.01193389459787062,
+      "final_divergence_pointwise_ratio_max": 1.0,
+      "final_divergence_relative_denominator": 25266.61261782096,
+      "final_divergence_residual_argmax_r": 0.0,
+      "final_divergence_residual_argmax_z": 0.0,
+      "final_divergence_residual_max": 1072.4779510229018,
+      "final_divergence_residual_relative": 0.04244644769938276,
+      "final_energy": 3966.2025849358374,
+      "final_enstrophy": 3256668.2722011916,
+      "final_max_abs_omega1": 528682.4710165265,
+      "final_max_abs_psi1": 96.88807701285873,
+      "final_max_abs_u1": 7605.061241609164,
+      "final_max_cartesian_vorticity": 45825.22386290498,
+      "final_odd_symmetry_defect": 4.974463226323181e-07,
+      "final_recorded_dt": 1.4999514034086045e-07,
+      "final_solver_b_boundary_error_max": 0.0,
+      "final_solver_b_physical_defect_max": 50375.49883565848,
+      "final_step_relative_deviation": 4.26117786248073e-09,
+      "final_time": 0.002191729,
+      "initial_circulation_max": 64.88057619110188,
+      "initial_energy": 4008.11113236055,
+      "level_index": 2,
+      "maximum_advective_cfl": 0.0037203816214783593,
+      "maximum_advective_cfl_excess_ratio": -0.9627961837852164,
+      "maximum_circulation_growth_ratio": 0.0007663562461392992,
+      "maximum_energy_growth_ratio": 0.0,
+      "maximum_viscous_cfl": 4.9150407796331785e-06,
+      "maximum_viscous_cfl_excess_ratio": -0.9999508495922037,
+      "maximum_wall_u1_abs": 0.0,
+      "nr": 65,
+      "nz": 128,
+      "observed_step_count": 14612,
+      "requested_dt": 1.5e-07,
+      "requested_dt_divides_t_final": false,
+      "step_count": 14612
+    }
+  ]
+}

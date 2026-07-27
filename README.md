@@ -171,6 +171,24 @@ E-29 監査済み初期値・二段階粘性で \(t=T_1=0.002191729\) まで 3 �
 実行します。これは一様固定格子上の解像度制限つき数値観察であり、Hou の
 適応格子計算の再現主張ではありません。
 
+### 8. 保存 snapshot の独立 Cartesian 検査
+
+```console
+python experiments/run_hou_snapshot_cartesian_audit.py --config configs/hou_snapshot_cartesian_audit.json --output-dir outputs/hou_snapshot_cartesian_audit_replay
+```
+
+円柱演算子を使わない独立経路で、保存 checkpoint の発散・full curl・
+渦度一致を相対化指標付きで検査します。
+
+### 9. 時間刻み収束(強非線形 Hou 実行)
+
+```console
+python -m experiments.run_hou_time_refinement --config configs/hou_time_refinement.json --output-dir outputs/hou_time_refinement_replay
+```
+
+同一空間格子・同一終了時刻で固定 \(\Delta t,\Delta t/2,\Delta t/4\) を
+比較し、時間誤差と空間誤差を分離します。
+
 より厳密な再現プロトコルは [docs/reproducibility.md](docs/reproducibility.md)
 を参照してください。
 
