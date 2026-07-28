@@ -1,6 +1,7 @@
 import NSSingularity.ClayStatement
 import NSSingularity.VelocityRecovery
 import NSSingularity.FiniteTime
+import NSSingularity.GalerkinNoBlowup
 
 /-!
 # Axiom audit (P0 Lean gate)
@@ -30,3 +31,11 @@ open NSSingularity
 #print axioms NSSingularity.physicalTime_lt_blowupTime
 #print axioms NSSingularity.exists_finite_blowupTime
 #print axioms NSSingularity.tendsto_physicalTime_atTop
+
+-- F-6: an energy-neutral dissipative quadratic system has no finite-time
+-- blow-up (the Track-F finite-mode obstruction).
+#print axioms NSSingularity.norm_le_of_energy_inequality
+#print axioms NSSingularity.inner_galerkin_le
+#print axioms NSSingularity.galerkin_norm_le
+#print axioms NSSingularity.galerkin_norm_le_of_mem
+#print axioms NSSingularity.galerkin_not_tendsto_atTop

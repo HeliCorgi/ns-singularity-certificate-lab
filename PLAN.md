@@ -150,6 +150,39 @@ Exit gate: Gates 1–3 measured and recorded (pass or documented failure);
 Gate 4 implemented and passed.  Until then the Hou mechanism is not called
 an \(\mathbb R^3\) candidate.
 
+## Phase 2.9 — Track F finite-mode class closed (completed, 2026-07-29)
+
+`START_NEW_SESSION_NAVIER_STOKES.md` section 6 "candidate A" proposed a symbolic
+search over low-order divergence-free Fourier ansaetze for a residual force that
+stays smooth across a finite-time singularity (Clay statements (C)/(D)).  **That
+search space is provably empty and the search was therefore not run.**
+
+- `docs/research_notes/track_f_finite_mode_nogo.md` proves: if the velocity of a
+  Track-F ansatz stays inside a fixed finite-dimensional divergence-free space
+  and the residual force is in \(L^1_tL^2_x\), then the energy identity bounds
+  every norm of the ansatz and the projected ODE continues it smoothly past the
+  putative singular time.  Contrapositive: **a Clay (C)/(D) counterexample must
+  have unbounded Fourier bandwidth as \(t	o T^-\).**
+- The one algebraic input, \(\int u\cdot(u\cdot
+abla)u = 0\), is verified in
+  **exact integer arithmetic** for each scanned mode set by
+  `src/ns_certificate_lab/galerkin_obstruction.py` (every monomial coefficient of
+  the cubic form over \(\mathbb Z[i]\)); no floating point is involved.
+- The a priori bound itself is proved in Lean 4 as **F-6**
+  (`formal/NSSingularity/GalerkinNoBlowup.lean`, no `sorry`/`admit`/axiom).
+- Two necessary conditions for *any* Track-F counterexample follow without
+  finite-dimensionality: bounded energy and finite total dissipation up to `T`.
+  Clay condition (7) is therefore automatic, and a design that expects the
+  energy to diverge is wrong from the start.
+- The evidence run is `outputs/track_f_finite_mode_scan_v1` (10 families, all
+  rejected, all 11 preregistered acceptance checks passed).
+
+Open remainder: the ODE continuation step is proved on paper only (**F-7**), and
+nothing here constrains ansaetze whose bandwidth grows as \(t	o T^-\).
+
+Status: reached.  This is an exclusion theorem for a search class, not a step
+toward a singularity.
+
 ## Phase 3 — preregistered candidate discovery (future)
 
 - Implement dynamically rescaled Type-II-compatible coordinates with separate

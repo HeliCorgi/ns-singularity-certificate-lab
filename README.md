@@ -189,6 +189,20 @@ python -m experiments.run_hou_time_refinement --config configs/hou_time_refineme
 同一空間格子・同一終了時刻で固定 \(\Delta t,\Delta t/2,\Delta t/4\) を
 比較し、時間誤差と空間誤差を分離します。
 
+### 10. Track F 有限モード除外証明書(数秒)
+
+```console
+python -m experiments.run_track_f_finite_mode_scan --config configs/track_f_finite_mode_scan.json --output-dir outputs/track_f_finite_mode_scan_replay
+```
+
+滑らかな外力を使う Clay (C)/(D) 反例の「有限モード ansatz」族について、
+三線型形式の相殺 \(\langle u,(u\cdot
+abla)u
+angle=0\) を**厳密整数演算**で
+検証し(浮動小数点を一切使わない)、除外判定を出力します。これは探索の
+陰性結果ではなく**除外定理**です
+([docs/research_notes/track_f_finite_mode_nogo.md](docs/research_notes/track_f_finite_mode_nogo.md))。
+
 より厳密な再現プロトコルは [docs/reproducibility.md](docs/reproducibility.md)
 を参照してください。
 

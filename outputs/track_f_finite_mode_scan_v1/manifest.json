@@ -1,0 +1,17 @@
+{
+  "payloads": {
+    "certificates.csv": {
+      "bytes": 1808,
+      "sha256": "adc4d8c05859f708275fc988455d9169d6e091298ec6466638dde04f2f7bd1d6"
+    },
+    "config.snapshot.json": {
+      "bytes": 2520,
+      "sha256": "cc726a8e20606fffb4d12b06c3e4eea2e36d56137d44046aac9e79e7438524b9"
+    },
+    "summary.json": {
+      "bytes": 13808,
+      "sha256": "4d2921b143c1fe5130eaa39181e12a3baddd35f97ee88080713845c7d1f32f4f"
+    }
+  },
+  "schema_version": 1
+}

@@ -1,0 +1,11 @@
+label,mode_count,dimension,max_wavenumber,variable_count,resonant_triples,monomials_accumulated,surviving_monomials,transverse_defect,sobolev_amplification_h1,sobolev_amplification_h3,gradient_amplification,verdict,fault_injection_surviving_monomials,fault_injection_verdict
+single_mode,2,4,1.0,4,0,0,0,0,6.362265131567328,257.5344249052244,8.885765876316732,rejected_as_clay_cd_candidate,0,certificate_failed
+planar_triad,6,12,1.4142135623730951,12,12,160,0,0,8.94185859923511,714.9627144786715,21.765592370810612,rejected_as_clay_cd_candidate,32,certificate_failed
+oblique_triad,8,16,1.4142135623730951,16,12,576,0,0,8.94185859923511,714.9627144786715,25.13274122871835,rejected_as_clay_cd_candidate,40,certificate_failed
+taylor_green,8,16,1.7320508075688772,16,0,0,0,0,10.92864368588675,1305.2653215278701,30.781195923884738,rejected_as_clay_cd_candidate,0,certificate_failed
+with_zero_mode,7,15,1.4142135623730951,15,31,192,0,0,8.94185859923511,714.9627144786715,23.509526717077996,rejected_as_clay_cd_candidate,46,certificate_failed
+anisotropic_ladder,10,20,3.3166247903554,20,24,608,0,0,20.86294786572434,9080.860799176757,65.89860344862642,rejected_as_clay_cd_candidate,96,certificate_failed
+ball_one,6,12,1.0,12,0,0,0,0,6.362265131567328,257.5344249052244,15.390597961942367,rejected_as_clay_cd_candidate,0,certificate_failed
+ball_two,18,36,1.4142135623730951,36,120,3264,0,0,8.94185859923511,714.9627144786715,37.69911184307752,rejected_as_clay_cd_candidate,352,certificate_failed
+ball_three,26,52,1.7320508075688772,52,264,7872,0,0,10.92864368588675,1305.2653215278701,55.491590111834775,rejected_as_clay_cd_candidate,992,certificate_failed
+ball_four,32,64,2.0,64,426,11136,0,0,12.606096557516516,2003.281073591475,71.08612701053386,rejected_as_clay_cd_candidate,1506,certificate_failed

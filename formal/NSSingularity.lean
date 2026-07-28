@@ -3,3 +3,4 @@
 import NSSingularity.ClayStatement
 import NSSingularity.VelocityRecovery
 import NSSingularity.FiniteTime
+import NSSingularity.GalerkinNoBlowup

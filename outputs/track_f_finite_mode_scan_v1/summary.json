@@ -1,0 +1,357 @@
+{
+  "acceptance": {
+    "all_passed": true,
+    "certificate_not_vacuous": true,
+    "every_family_cancels_exactly": true,
+    "every_family_rejected": true,
+    "fault_injection_breaks_every_resonant_family": true,
+    "fault_injection_breaks_the_streaming_bound": true,
+    "fault_injection_detection_ratio_above_1e9": true,
+    "forced_bound_respected": true,
+    "forced_bound_within_one_percent_of_sharp": true,
+    "inviscid_bound_respected": true,
+    "inviscid_energy_production_below_1e_12": true
+  },
+  "conclusion": "No velocity field whose Fourier support stays inside a fixed finite set can be the breakdown solution of Clay (C)/(D).  The symbolic search proposed in START_NEW_SESSION_NAVIER_STOKES.md section 6 candidate A steps 1-5 is therefore provably empty and was not run.",
+  "cross_check": {
+    "energy_production_detection_ratio": 5223606479160932.0,
+    "family": "ball_two",
+    "fault_injection_longitudinal": {
+      "bound_respected": false,
+      "completed_steps": 200,
+      "diverged": true,
+      "final_norm": null,
+      "final_time": 0.05305164769729845,
+      "initial_norm": 200.0,
+      "max_bound_excess": null,
+      "max_bound_ratio": null,
+      "max_norm": 1.1672623075237057e+36,
+      "max_relative_energy_production": 1.6342897912053085,
+      "steps": 2000,
+      "time_step": 2.6525823848649224e-05
+    },
+    "inviscid_unforced": {
+      "bound_respected": true,
+      "completed_steps": 2000,
+      "diverged": false,
+      "final_norm": 199.99999994958776,
+      "final_time": 0.05305164769729845,
+      "initial_norm": 199.99999999999994,
+      "max_bound_excess": -1.973723811943273e-06,
+      "max_bound_ratio": 0.9999999901313811,
+      "max_norm": 200.00000002627613,
+      "max_relative_energy_production": 3.1286617736714053e-16,
+      "steps": 2000,
+      "time_step": 2.6525823848649224e-05
+    },
+    "viscous_forced": {
+      "bound_respected": true,
+      "completed_steps": 3000,
+      "diverged": false,
+      "final_norm": 3.8635884685536577,
+      "final_time": 3.0,
+      "initial_norm": 0.009999999999999998,
+      "max_bound_excess": -7.323196302630453e-07,
+      "max_bound_ratio": 0.9999476914923444,
+      "max_norm": 3.8635884685536577,
+      "max_relative_energy_production": 2.291949783792203e-16,
+      "steps": 3000,
+      "time_step": 0.001
+    }
+  },
+  "experiment": "track_f_finite_mode_scan",
+  "formalization": "formal/NSSingularity/GalerkinNoBlowup.lean (F-6): the a priori bound is proved in Lean 4; Lemma 1 and the ODE continuation are not",
+  "limitations": [
+    "the exact certificates cover only the listed finite mode sets; the general statement is the two-line proof of Lemma 1, not this scan",
+    "the streaming cross-checks are binary64 without outward rounding",
+    "the ODE continuation of Theorem 1(iii) is proved on paper only",
+    "the Ladyzhenskaya-Prodi-Serrin consequence in section 5 of the note is a citation, neither proved here nor formalized",
+    "nothing here bounds ansaetze whose Fourier bandwidth grows as t -> T"
+  ],
+  "reproducibility": {
+    "runtime_provenance": {
+      "architecture": "64bit",
+      "byteorder": "little",
+      "git_dirty": true,
+      "git_head": "fa6c2a5a94bb5d2fce676a649f930e2645543738",
+      "machine": "AMD64",
+      "numpy_build_config": {
+        "configuration": {
+          "Build Dependencies": {
+            "blas": {
+              "detection method": "pkgconfig",
+              "found": true,
+              "include directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-6ukx7exl/cp311-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+              "lib directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-6ukx7exl/cp311-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+              "name": "scipy-openblas",
+              "openblas configuration": "OpenBLAS 0.3.31.188.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+              "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+              "version": "0.3.31.188.0"
+            },
+            "lapack": {
+              "detection method": "pkgconfig",
+              "found": true,
+              "include directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-6ukx7exl/cp311-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+              "lib directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-6ukx7exl/cp311-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+              "name": "scipy-openblas",
+              "openblas configuration": "OpenBLAS 0.3.31.188.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+              "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+              "version": "0.3.31.188.0"
+            }
+          },
+          "Compilers": {
+            "c": {
+              "commands": "cl",
+              "linker": "link",
+              "name": "msvc",
+              "version": "19.44.35226"
+            },
+            "c++": {
+              "commands": "cl",
+              "linker": "link",
+              "name": "msvc",
+              "version": "19.44.35226"
+            },
+            "cython": {
+              "commands": "cython",
+              "linker": "cython",
+              "name": "cython",
+              "version": "3.2.4"
+            }
+          },
+          "Machine Information": {
+            "build": {
+              "cpu": "x86_64",
+              "endian": "little",
+              "family": "x86_64",
+              "system": "windows"
+            },
+            "host": {
+              "cpu": "x86_64",
+              "endian": "little",
+              "family": "x86_64",
+              "system": "windows"
+            }
+          },
+          "Python Information": {
+            "path": "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\build-env-jxn7bo0g\\Scripts\\python.exe",
+            "version": "3.11"
+          },
+          "SIMD Extensions": {
+            "baseline": [
+              "X86_V2"
+            ],
+            "found": [
+              "X86_V3"
+            ]
+          }
+        },
+        "source": "numpy.__config__.CONFIG"
+      },
+      "numpy_build_config_sha256": "590aa5b174e7f5606bf918092dca9ad7de2fd7714006b456b5e12c5a71101a0a",
+      "numpy_version": "2.4.6",
+      "platform": "Windows-10-10.0.26200-SP0",
+      "python_implementation": "CPython",
+      "python_version": "3.11.9",
+      "schema": "ns-certificate-lab/runtime-provenance/v2",
+      "source_fingerprint_algorithm": "sha256-path-and-content-v1",
+      "source_fingerprint_file_count": 80,
+      "source_fingerprint_scope": [
+        "pyproject.toml",
+        "Dockerfile",
+        ".dockerignore",
+        "requirements",
+        "src",
+        "experiments",
+        "configs",
+        "scripts"
+      ],
+      "source_fingerprint_sha256": "0b575c78f60bc9530160b7e55f252461db97b538af3700e1caff3dcc261509b9",
+      "thread_environment": {
+        "BLIS_NUM_THREADS": null,
+        "MKL_DYNAMIC": null,
+        "MKL_NUM_THREADS": null,
+        "NUMEXPR_NUM_THREADS": null,
+        "OMP_DYNAMIC": null,
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "VECLIB_MAXIMUM_THREADS": null
+      }
+    }
+  },
+  "rows": [
+    {
+      "dimension": 4,
+      "fault_injection_surviving_monomials": 0,
+      "fault_injection_verdict": "certificate_failed",
+      "gradient_amplification": 8.885765876316732,
+      "label": "single_mode",
+      "max_wavenumber": 1.0,
+      "mode_count": 2,
+      "monomials_accumulated": 0,
+      "resonant_triples": 0,
+      "sobolev_amplification_h1": 6.362265131567328,
+      "sobolev_amplification_h3": 257.5344249052244,
+      "surviving_monomials": 0,
+      "transverse_defect": 0,
+      "variable_count": 4,
+      "verdict": "rejected_as_clay_cd_candidate"
+    },
+    {
+      "dimension": 12,
+      "fault_injection_surviving_monomials": 32,
+      "fault_injection_verdict": "certificate_failed",
+      "gradient_amplification": 21.765592370810612,
+      "label": "planar_triad",
+      "max_wavenumber": 1.4142135623730951,
+      "mode_count": 6,
+      "monomials_accumulated": 160,
+      "resonant_triples": 12,
+      "sobolev_amplification_h1": 8.94185859923511,
+      "sobolev_amplification_h3": 714.9627144786715,
+      "surviving_monomials": 0,
+      "transverse_defect": 0,
+      "variable_count": 12,
+      "verdict": "rejected_as_clay_cd_candidate"
+    },
+    {
+      "dimension": 16,
+      "fault_injection_surviving_monomials": 40,
+      "fault_injection_verdict": "certificate_failed",
+      "gradient_amplification": 25.13274122871835,
+      "label": "oblique_triad",
+      "max_wavenumber": 1.4142135623730951,
+      "mode_count": 8,
+      "monomials_accumulated": 576,
+      "resonant_triples": 12,
+      "sobolev_amplification_h1": 8.94185859923511,
+      "sobolev_amplification_h3": 714.9627144786715,
+      "surviving_monomials": 0,
+      "transverse_defect": 0,
+      "variable_count": 16,
+      "verdict": "rejected_as_clay_cd_candidate"
+    },
+    {
+      "dimension": 16,
+      "fault_injection_surviving_monomials": 0,
+      "fault_injection_verdict": "certificate_failed",
+      "gradient_amplification": 30.781195923884738,
+      "label": "taylor_green",
+      "max_wavenumber": 1.7320508075688772,
+      "mode_count": 8,
+      "monomials_accumulated": 0,
+      "resonant_triples": 0,
+      "sobolev_amplification_h1": 10.92864368588675,
+      "sobolev_amplification_h3": 1305.2653215278701,
+      "surviving_monomials": 0,
+      "transverse_defect": 0,
+      "variable_count": 16,
+      "verdict": "rejected_as_clay_cd_candidate"
+    },
+    {
+      "dimension": 15,
+      "fault_injection_surviving_monomials": 46,
+      "fault_injection_verdict": "certificate_failed",
+      "gradient_amplification": 23.509526717077996,
+      "label": "with_zero_mode",
+      "max_wavenumber": 1.4142135623730951,
+      "mode_count": 7,
+      "monomials_accumulated": 192,
+      "resonant_triples": 31,
+      "sobolev_amplification_h1": 8.94185859923511,
+      "sobolev_amplification_h3": 714.9627144786715,
+      "surviving_monomials": 0,
+      "transverse_defect": 0,
+      "variable_count": 15,
+      "verdict": "rejected_as_clay_cd_candidate"
+    },
+    {
+      "dimension": 20,
+      "fault_injection_surviving_monomials": 96,
+      "fault_injection_verdict": "certificate_failed",
+      "gradient_amplification": 65.89860344862642,
+      "label": "anisotropic_ladder",
+      "max_wavenumber": 3.3166247903554,
+      "mode_count": 10,
+      "monomials_accumulated": 608,
+      "resonant_triples": 24,
+      "sobolev_amplification_h1": 20.86294786572434,
+      "sobolev_amplification_h3": 9080.860799176757,
+      "surviving_monomials": 0,
+      "transverse_defect": 0,
+      "variable_count": 20,
+      "verdict": "rejected_as_clay_cd_candidate"
+    },
+    {
+      "dimension": 12,
+      "fault_injection_surviving_monomials": 0,
+      "fault_injection_verdict": "certificate_failed",
+      "gradient_amplification": 15.390597961942367,
+      "label": "ball_one",
+      "max_wavenumber": 1.0,
+      "mode_count": 6,
+      "monomials_accumulated": 0,
+      "resonant_triples": 0,
+      "sobolev_amplification_h1": 6.362265131567328,
+      "sobolev_amplification_h3": 257.5344249052244,
+      "surviving_monomials": 0,
+      "transverse_defect": 0,
+      "variable_count": 12,
+      "verdict": "rejected_as_clay_cd_candidate"
+    },
+    {
+      "dimension": 36,
+      "fault_injection_surviving_monomials": 352,
+      "fault_injection_verdict": "certificate_failed",
+      "gradient_amplification": 37.69911184307752,
+      "label": "ball_two",
+      "max_wavenumber": 1.4142135623730951,
+      "mode_count": 18,
+      "monomials_accumulated": 3264,
+      "resonant_triples": 120,
+      "sobolev_amplification_h1": 8.94185859923511,
+      "sobolev_amplification_h3": 714.9627144786715,
+      "surviving_monomials": 0,
+      "transverse_defect": 0,
+      "variable_count": 36,
+      "verdict": "rejected_as_clay_cd_candidate"
+    },
+    {
+      "dimension": 52,
+      "fault_injection_surviving_monomials": 992,
+      "fault_injection_verdict": "certificate_failed",
+      "gradient_amplification": 55.491590111834775,
+      "label": "ball_three",
+      "max_wavenumber": 1.7320508075688772,
+      "mode_count": 26,
+      "monomials_accumulated": 7872,
+      "resonant_triples": 264,
+      "sobolev_amplification_h1": 10.92864368588675,
+      "sobolev_amplification_h3": 1305.2653215278701,
+      "surviving_monomials": 0,
+      "transverse_defect": 0,
+      "variable_count": 52,
+      "verdict": "rejected_as_clay_cd_candidate"
+    },
+    {
+      "dimension": 64,
+      "fault_injection_surviving_monomials": 1506,
+      "fault_injection_verdict": "certificate_failed",
+      "gradient_amplification": 71.08612701053386,
+      "label": "ball_four",
+      "max_wavenumber": 2.0,
+      "mode_count": 32,
+      "monomials_accumulated": 11136,
+      "resonant_triples": 426,
+      "sobolev_amplification_h1": 12.606096557516516,
+      "sobolev_amplification_h3": 2003.281073591475,
+      "surviving_monomials": 0,
+      "transverse_defect": 0,
+      "variable_count": 64,
+      "verdict": "rejected_as_clay_cd_candidate"
+    }
+  ],
+  "schema_version": 1,
+  "statement": "exact rejection certificates for the Track-F finite-mode ansatz class; an exclusion theorem for a search class, not a singularity",
+  "theorem": "docs/research_notes/track_f_finite_mode_nogo.md, Theorem 1"
+}

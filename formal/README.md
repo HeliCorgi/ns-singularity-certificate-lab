@@ -61,11 +61,13 @@ formal/
 └── NSSingularity/
     ├── ClayStatement.lean      # 段階 0(定義のみ、sorry なし)
     ├── VelocityRecovery.lean   # 段階 1 / F-3(E-14/E-15、証明あり、sorry なし)
-    └── FiniteTime.lean         # 段階 1 / F-2(有限物理時間、証明あり、sorry なし)
+    ├── FiniteTime.lean         # 段階 1 / F-2(有限物理時間、証明あり、sorry なし)
+    └── GalerkinNoBlowup.lean   # 段階 1 / F-6(Galerkin エネルギー上界、証明あり、sorry なし)
 ```
 
-以降の段階(1: 有限次元恒等式 F-1〜F-4、2: 解析的な橋、3: 数値証明書、
-4: 最終定理)は `docs/formalization_map.md` を参照。
+以降の段階(1: 有限次元恒等式、2: 解析的な橋、3: 数値証明書、4: 最終定理)は
+`docs/formalization_map.md` を参照。Lean 識別子 `F-1`〜`F-11` の確定登録簿は
+`docs/final_target.md` §4 にある(外部ノート由来の採番衝突はそこで解消済み)。
 
 ## 段階 1 — F-3: 速度回復式と発散ゼロ(`NSSingularity/VelocityRecovery.lean`)
 
@@ -187,3 +189,56 @@ blowupTime  t₀ s₀ L     = t₀ + ∫ σ in Set.Ioi s₀, scaleRate L σ
    形式化(未着手)を要する。
 5. `hasDerivAt_physicalTime` は `Continuous L` を仮定する。主定理群は連続性を
    使わないので、この補題は定義の妥当性確認のためだけに存在する。
+
+## 段階 1 — F-6: Galerkin エネルギー上界(`NSSingularity/GalerkinNoBlowup.lean`)
+
+### Lean で証明したこと
+
+Track F(滑らかな外力による Clay (C)/(D) 反例)の有限モード ansatz 族を
+閉じる除外定理の中核。数学的な全体像は
+`docs/research_notes/track_f_finite_mode_nogo.md` にある。
+
+実 inner product 空間 `E`(有限次元性は**仮定していない**)上で、
+
+```text
+EnergyNeutral B  :=  ∀ x, ⟪x, B x x⟫ = 0        -- ∫ u·(u·∇)u = 0 に対応
+Dissipative  A   :=  ∀ x, ⟪x, A x⟫ ≤ 0          -- ⟪u, νΔu⟫ = -ν‖∇u‖² ≤ 0
+```
+
+と定義し、次を証明した。
+
+| 定理 | 主張 |
+|---|---|
+| `norm_le_of_energy_inequality` | `⟪u t, u' t⟫ ≤ ‖u t‖ · F t`(`Ioo 0 b` 上)ならば `‖u b‖ ≤ ‖u 0‖ + ∫₀ᵇ F`。解析的中核 |
+| `inner_galerkin_le` | `EnergyNeutral B`・`Dissipative A` のとき `⟪x, g + B x x + A x⟫ ≤ ‖x‖·‖g‖`。PDE 構造が入る唯一の箇所 |
+| `galerkin_norm_le` | `u' = g + B(u,u) + A u`、`‖g t‖ ≤ F t` の軌道は `‖u b‖ ≤ ‖u 0‖ + ∫₀ᵇ F` を満たす |
+| `galerkin_norm_le_of_mem` | 同じ軌道は `[0,T]` 全体で単一の定数 `‖u 0‖ + ∫₀ᵀ F` に抑えられる |
+| `galerkin_not_tendsto_atTop` | ゆえに `‖u t‖` は `t → T⁻` で `+∞` へ発散しない(**有限時間爆発の不可能性**) |
+
+証明は `t ↦ √(⟪u t, u t⟫ + ε) − ∫₀ᵗ F` の単調減少性から得る。正則化 `ε > 0`
+は装飾ではない: `‖·‖` は原点で微分不能で、軌道は零点を通ってよい。
+`F` の非負性は `‖g t‖ ≤ F t` から従うので仮定していない。
+
+`sorry`・`admit`・新規 `axiom` はない。本ファイルの全 5 定理について
+`#print axioms` は `[propext, Classical.choice, Quot.sound]`。
+
+主に使用した mathlib 補題: `HasDerivAt.inner`、`HasDerivAt.sqrt`、
+`antitoneOn_of_deriv_nonpos`、`intervalIntegral.integral_hasDerivAt_right`、
+`intervalIntegral.continuousOn_primitive_interval`、
+`intervalIntegral.integral_mono_interval`、`real_inner_le_norm`。
+
+### Lean で証明していないこと(重要な限界)
+
+1. **Navier–Stokes の非線形項が `EnergyNeutral` であることは形式化していない。**
+   それは `track_f_finite_mode_nogo.md` の Lemma 1 であり、紙上では 2 行、
+   個別のモード集合については `src/ns_certificate_lab/galerkin_obstruction.py`
+   が厳密整数演算(`ℤ[i]` 係数の全単項式検査、浮動小数点なし)で機械検証する。
+   Lean 側は仮定として受け取るだけである。
+2. **常微分方程式の延長(Theorem 1(iii))は未形式化**である(`F-7`)。
+   本ファイルはノルムの有界性までしか言わない。有界性から `T` を越える
+   滑らかな延長を出すには mathlib の Picard–Lindelöf が要る。
+3. 有限次元性を使う部分(全ノルムの同値、`‖u‖_{H^s}` と `‖u‖_{L^∞}` の評価)は
+   Lean にない。Python 側に定数を実装してあるだけである。
+4. `ClayStatement.lean` との接続はない。したがって本ファイルは
+   Clay 命題について何も主張しない。除外できるのは、明示的に限定された
+   ansatz クラスだけである。

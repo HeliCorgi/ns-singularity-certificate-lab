@@ -10,7 +10,10 @@
 validated numerical object / connected physical solution /
 finite-time breakdown theorem / Clay-complete result)を用いる。
 
-最終更新: 2026-07-28(branch `fable5-mainline`)
+最終更新: 2026-07-29(branch `fable5-mainline`、第 3 便)
+
+**Lean 識別子 `F-1`〜`F-11` の確定登録簿は `docs/final_target.md` §4 にある。**
+外部ノート由来の採番衝突はそこで解消済みで、本書の節見出しはその登録簿に従う。
 
 ---
 
@@ -247,6 +250,55 @@ M0 (Clay命題固定)
 - **区間証明書へ:** \(Y,Z,K\) の数値を二進有理数上界として出力する
   発見コード側の変換器(独立実装、未着手)。
 
+### F-6 Galerkin エネルギー上界 — **形式化済み**(2026-07-29)
+
+- **状態:** Lean 4 で証明完了。`formal/NSSingularity/GalerkinNoBlowup.lean`
+  (`lake build` 成功、`sorry`・`admit`・新規 `axiom` なし)。
+- **役割:** Track F(滑らかな外力による Clay (C)/(D) 反例)の**有限モード
+  ansatz 族を閉じる除外定理**の中核。数学的全体像は
+  `docs/research_notes/track_f_finite_mode_nogo.md`。
+- **命題:** 実 inner product 空間 `E` 上の可微分曲線 `u` が
+  `⟪u t, u' t⟫ ≤ ‖u t‖ F t` を満たせば `‖u b‖ ≤ ‖u 0‖ + ∫₀ᵇ F`。
+  とくに `u' = g + B(u,u) + A u` で `⟪x,B x x⟫ = 0`(エネルギー中立)、
+  `⟪x,A x⟫ ≤ 0`(散逸)、`‖g t‖ ≤ F t` なら、`‖u‖` は `[0,T]` 上
+  `‖u 0‖ + ∫₀ᵀ F` で一様に抑えられ、`t → T⁻` で `+∞` へ発散しない。
+- **Lean 定理名:**
+  - `NSSingularity.norm_le_of_energy_inequality` — 解析的中核(Grönwall)
+  - `NSSingularity.inner_galerkin_le` — PDE 構造(`EnergyNeutral`+`Dissipative`)
+    が入る唯一の箇所
+  - `NSSingularity.galerkin_norm_le` — **F-6 本体**
+  - `NSSingularity.galerkin_norm_le_of_mem` — `[0,T]` 上の一様上界
+  - `NSSingularity.galerkin_not_tendsto_atTop` — 有限時間爆発の不可能性
+- **定義:** `EnergyNeutral B := ∀ x, ⟪x, B x x⟫ = 0`、
+  `Dissipative A := ∀ x, ⟪x, A x⟫ ≤ 0`。
+- **仮定:** 有限次元性は**不要**(状態空間は任意の実 inner product 空間)。
+  `F` の非負性も仮定しない(`‖g t‖ ≤ F t` から従う)。
+- **依存公理:** 本ファイルの全 5 定理について `#print axioms` は
+  `[propext, Classical.choice, Quot.sound]`。
+- **mathlib 基盤(実際に使用):** `HasDerivAt.inner`、`HasDerivAt.sqrt`、
+  `antitoneOn_of_deriv_nonpos`、
+  `intervalIntegral.integral_hasDerivAt_right`、
+  `intervalIntegral.continuousOn_primitive_interval`、
+  `intervalIntegral.integral_mono_interval`、`real_inner_le_norm`、
+  `ContinuousOn.stronglyMeasurableAtFilter`。
+- **形式化していないこと:** (a) Navier–Stokes の移流項が実際に
+  `EnergyNeutral` であること(= Lemma 1。紙上 2 行、個別モード集合について
+  `galerkin_obstruction.py` が厳密整数演算で機械検証)、(b) 有界性から
+  `T` を越える滑らかな延長を導く常微分方程式の議論(= `F-7`)、
+  (c) 有限次元空間上のノルム同値、(d) `ClayStatement.lean` との接続。
+- **区間証明書へ:** 不要(この命題自体は解析的で、数値入力を持たない)。
+
+### F-7 Galerkin ODE の延長(未着手)
+
+- **命題:** `c' = g(t) + B(c,c) + A c`(`g` 連続、`B` 双線型、`A` 線型)の解が
+  `[0,T)` 上有界なら、最大解は `T` を越えて延長される。`g ∈ C^∞` なら
+  延長も `C^∞`。
+- **役割:** `F-6` の有界性を「特異でない」へ変える最後の一歩。
+  `track_f_finite_mode_nogo.md` Theorem 1(iii)。
+- **mathlib 基盤:** `Mathlib.Analysis.ODE.PicardLindelof`、
+  `ODE_solution_unique` 系。多項式右辺は局所 Lipschitz なので追加理論は不要。
+- **数値のみの部分:** なし(純粋な常微分方程式論)。
+
 ### F-5 最終 Clay 反例命題までの依存関係
 
 段階 0 として `formal/NSSingularity/ClayStatement.lean` に (A)–(D) と
@@ -283,12 +335,23 @@ F-5 (Clay命題定義)
 'NSSingularity.tendsto_physicalTime_atTop' depends on axioms: [propext, Classical.choice, Quot.sound]
 ```
 
-同日、`grep -RInE '\bsorry\b|\badmit\b|axiom ' formal` は文書コメント中の
-言及のみを返し、コード中の `sorry`/`admit`/新規 `axiom` はゼロ。
-`lake build` は 8659 jobs で成功 — これは**コンパイルジョブ数**であり、
-「8659 個の定理を証明した」ことを意味しない。証明済みの命題は本書に
-列挙されたもののみである。`lean-toolchain` は leanprover/lean4:v4.32.1、
-mathlib は v4.32.1 タグに固定。
+2026-07-29 第 3 便で F-6 の 5 定理を追記し、`lake env lean AxiomAudit.lean` は
+全 14 行について同じ古典公理のみを報告した:
+
+```text
+'NSSingularity.norm_le_of_energy_inequality' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NSSingularity.inner_galerkin_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NSSingularity.galerkin_norm_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NSSingularity.galerkin_norm_le_of_mem' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NSSingularity.galerkin_not_tendsto_atTop' depends on axioms: [propext, Classical.choice, Quot.sound]
+```
+
+同日、`git ls-files formal | xargs grep -InE '\bsorry\b|\badmit\b|^[[:space:]]*axiom '`
+は文書コメント中の言及のみを返し、コード中の `sorry`/`admit`/新規 `axiom` は
+ゼロ。`lake build` は 2026-07-28 に 8659 jobs、F-6 追加後は 8660 jobs で成功 —
+これは**コンパイルジョブ数**であり、「8660 個の定理を証明した」ことを
+意味しない。証明済みの命題は本書に列挙されたもののみである。
+`lean-toolchain` は leanprover/lean4:v4.32.1、mathlib は v4.32.1 タグに固定。
 
 ## 未解決の形式化上の論点
 

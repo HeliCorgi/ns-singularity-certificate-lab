@@ -1,7 +1,7 @@
 # Project status
 
-最終更新: 2026-07-29(branch `fable5-mainline`)
-状態: **FABLE5_NEXT_TASK_AUDIT の P0 ゲート(von Neumann 安定性監査、全 step streaming acceptance、core-width fit 前提、blind 外挿、エネルギー収支、Gate 1 積分器相互比較)を実装・実行済み。出荷済み Heun 実行は stability-unverified に再分類(時間スキーム依存の実測上界は ~6 ppm)。T₁ 増幅ラダーの収束 fit は前提不合格により機械的に禁止。Gate 4(真の全空間移行)は仕様のみで未実装。未知候補探索は未開始。**
+最終更新: 2026-07-29 第 3 便(branch `fable5-mainline`)
+状態: **FABLE5_NEXT_TASK_AUDIT の P0 ゲート(von Neumann 安定性監査、全 step streaming acceptance、core-width fit 前提、blind 外挿、エネルギー収支、Gate 1 積分器相互比較)を実装・実行済み。出荷済み Heun 実行は stability-unverified に再分類(時間スキーム依存の実測上界は ~6 ppm)。T₁ 増幅ラダーの収束 fit は前提不合格により機械的に禁止。Gate 4(真の全空間移行)は仕様のみで未実装。未知候補探索は未開始。第 3 便で Track F(滑らかな外力による Clay (C)/(D) 反例)の有限モード ansatz 族を除外定理として閉じ、その中核不等式を Lean 4(F-6)で証明した。最終目標までの単一依存グラフを `docs/final_target.md` に確定した。**
 
 ## 2026-07-28 セッションの追加結果(fable5-mainline)
 
@@ -800,6 +800,163 @@ Type-II 指数 fit 全件不合格、shell 数は増えない)と合わせて、
 項別釣合いは離散モデル上の**項の大きさの観測**であって、Euler 型特異点の
 証明でも Navier–Stokes 特異点の証明でもない。過去の結果は書き換えていない。
 
+## 2026-07-29(第 3 便): Track F 有限モード ansatz の除外定理と Lean F-6
+
+`START_NEW_SESSION_NAVIER_STOKES.md` §6 の選択基準(全空間非周期 solver が
+大規模未完成、外力あり反例の十分条件が未形式化、低次 ansatz の記号探索が
+短時間で実装可能)はいずれも現 HEAD で成立していたので **優先候補A
+(Track F)** を選んだ。ただし step 1–5 の**探索は実行していない**。
+探索空間が空であることを step 6 として直接証明したためである。
+
+### 数学的に証明したこと
+
+新規ノート
+[track_f_finite_mode_nogo.md](docs/research_notes/track_f_finite_mode_nogo.md)。
+
+- **Lemma 1(T-1)**: 任意の実数値・発散ゼロな三角多項式 `u` に対し
+  `⟨u,(u·∇)u⟩_{L²(𝕋³)} = 0`。Fourier 展開版の証明は
+  `Σ_{k+l+m=0}(a_l·m)(a_k·a_m)` で `k↔m` を入れ替えて足すと
+  `Σ(a_k·a_m)(a_l·(k+m)) = −Σ(a_k·a_m)(a_l·l) = 0`(発散ゼロ条件)。
+- **Theorem 1**: 有限対称モード集合 `S ⊂ ℤ³` に対し、`u:[0,T)→V_S` が `C¹`、
+  残差 `f = ∂_t u+(u·∇)u−νΔu+∇p` が `L¹((0,T);L²)` なら
+  (i) `‖u(t)‖_{L²} ≤ ‖u(0)‖_{L²}+∫₀ᵗ‖f‖`、
+  (ii) `sup_{t<T}‖u(t)‖_{H^s} ≤ (1+4π²R_S²)^{s/2}(‖u(0)‖+M)` および
+  `sup‖∂^α u‖_{L^∞} ≤ (2πR_S)^{|α|}√|S|(‖u(0)‖+M)`、
+  (iii) `Πf` が `T` を含む閉区間で連続なら `u` は `[0,T+δ)` へ滑らかに延長。
+  **`ν` も `S` も (i) には現れない**(散逸は助けるだけ、非線形項は Lemma 1 で無害)。
+- **Corollary 1**: 有限モード ansatz は Clay (D) 反例の破綻解になれない。
+- **Corollary 2(帯域幅)**: 台が固定有限集合に留まる限り破綻しない。対偶として
+  **Track-F 反例の速度場は `t→T⁻` で Fourier 帯域幅が非有界でなければならない**。
+- **Corollary 3**: `ℝ³`(Clay (C))でも、固定有限次元の急減衰発散ゼロ空間に
+  留まる ansatz は同じ理由で除外される。
+- **必要条件 (N-1)(N-2)**(有限次元性を使わない): 任意の Track-F 反例は
+  `sup_{t<T}‖u‖_{L²} < ∞` かつ `ν∫₀ᵀ‖∇u‖²dt < ∞`。すなわち
+  **Clay 条件 (7) は外力を付けても自動的に満たされ、破綻は劣臨界ノルムでは
+  起こり得ない**。「外力を使えば楽になる」という当初の想定は否定された。
+- 新規性の主張はしない。Theorem 1 (i) は Galerkin 近似の大域可解性
+  (Leray 1934 / Hopf 1951)の言い換えである。寄与は
+  (a) それが Track F の探索空間をちょうど空にするという接続、
+  (b) Lemma 1 の厳密算術による機械検証、(c) Theorem 1 (i) の Lean 化。
+
+### Lean 4 で証明したこと(F-6)
+
+`formal/NSSingularity/GalerkinNoBlowup.lean`(新規)。実 inner product 空間上で
+`EnergyNeutral B := ∀x, ⟪x,B x x⟫ = 0`、`Dissipative A := ∀x, ⟪x,A x⟫ ≤ 0` と
+定義し、5 定理を証明した。
+
+| 定理 | 主張 |
+|---|---|
+| `norm_le_of_energy_inequality` | `⟪u,u'⟫ ≤ ‖u‖F` ⟹ `‖u b‖ ≤ ‖u 0‖+∫₀ᵇF` |
+| `inner_galerkin_le` | `⟪x, g+B x x+A x⟫ ≤ ‖x‖‖g‖`(PDE 構造が入る唯一の箇所) |
+| `galerkin_norm_le` | F-6 本体 |
+| `galerkin_norm_le_of_mem` | `[0,T]` 上の一様上界 |
+| `galerkin_not_tendsto_atTop` | `t→T⁻` で `‖u t‖ → +∞` は起こらない |
+
+有限次元性は仮定していない。`F ≥ 0` も仮定していない(`‖g t‖ ≤ F t` から従う)。
+証明は `t ↦ √(⟪u,u⟫+ε) − ∫₀ᵗF` の単調減少性による(`ε>0` の正則化は必須:
+`‖·‖` は原点で微分不能で軌道は零点を通ってよい)。
+
+`lake build` は **8660 jobs で成功**。`sorry`・`admit`・新規 `axiom` はゼロ。
+`lake env lean AxiomAudit.lean` は全 14 定理について
+`[propext, Classical.choice, Quot.sound]` のみを報告した。
+
+**Lean 化していないこと**: (a) NS の移流項が実際に `EnergyNeutral` である
+こと(= Lemma 1)、(b) 常微分方程式の延長(= Theorem 1(iii)、新規義務 `F-7`)、
+(c) 有限次元空間上のノルム同値、(d) `ClayStatement.lean` との接続。
+
+### 厳密算術で検証したこと(浮動小数点なし)
+
+`src/ns_certificate_lab/galerkin_obstruction.py`(新規、`verify_trilinear_cancellation`)。
+各 `k ∈ S` の `k^⊥` を **整数**基底(`k × e_i` の独立な 2 本)で座標付けし、
+`Σ_{k+l+m=0}(a_l·m)(a_k·a_m)` を `ℤ[i]` 係数の 3 次多項式へ完全展開して
+**全単項式係数がゼロ**であることを確認する。実験 `outputs/track_f_finite_mode_scan_v1`
+での実測(10 族、全件合格):
+
+| 族 | モード数 | 実次元 | 共鳴三つ組 | 展開単項式 | 残存単項式 | 判定 |
+|---|---:|---:|---:|---:|---:|---|
+| single_mode | 2 | 4 | 0 | 0 | 0 | rejected |
+| planar_triad | 6 | 12 | 12 | 160 | 0 | rejected |
+| oblique_triad | 8 | 16 | 12 | 576 | 0 | rejected |
+| taylor_green | 8 | 16 | 0 | 0 | 0 | rejected |
+| with_zero_mode | 7 | 15 | 31 | 192 | 0 | rejected |
+| anisotropic_ladder | 10 | 20 | 24 | 608 | 0 | rejected |
+| ball_one (\|k\|²≤1) | 6 | 12 | 0 | 0 | 0 | rejected |
+| ball_two (\|k\|²≤2) | 18 | 36 | 120 | 3264 | 0 | rejected |
+| ball_three (\|k\|²≤3) | 26 | 52 | 264 | 7872 | 0 | rejected |
+| ball_four (\|k\|²≤4) | 32 | 64 | 426 | 11136 | 0 | rejected |
+
+**故障注入**: 発散ゼロ拘束を外して `k` 自身を横断基底へ加えると、共鳴を持つ
+全族で残存単項式が生じる(planar_triad 32、ball_two 352、ball_three 992、
+ball_four 1506)。検出は `k·t = 0` 監査とは独立に、単項式検査だけで成立する。
+
+### 数値的に観測したこと(浮動小数点クロスチェック。証明ではない)
+
+`stream_apriori_bound`(RK4、全 step 監視)。`ball_two`(36 次元):
+
+- **非粘性・無外力・振幅 200**(爆発を狙う設定): 2000 step 全てで上界を遵守。
+  終端ノルム 199.99999995(相対 2.5e-10 の減少)、
+  相対エネルギー生成 max **3.13e-16**、`bound_respected = true`。
+- **粘性 1e-3・定方向外力 |f|=4**: 3000 step 全てで上界を遵守し、
+  **`max_bound_ratio = 0.99995`** — 証明した上界は空虚ではなくほぼ sharp。
+- **故障注入(縦方向成分を許す)**: 同じ設定で 200 step 目に発散
+  (max ノルム 1.17e36)、相対エネルギー生成 **1.634**。
+  クリーン実行との検出比 **5.2e15**。
+- Parseval(`‖u‖_{L²} = ‖c‖₂`)、実数性、`k·a_k = 0` はいずれも 1e-12 以下で成立。
+
+### 変更・追加したファイル
+
+- 新規: `src/ns_certificate_lab/galerkin_obstruction.py`、
+  `tests/test_galerkin_obstruction.py`(52 件)、
+  `experiments/run_track_f_finite_mode_scan.py`、
+  `configs/track_f_finite_mode_scan.json`、
+  `outputs/track_f_finite_mode_scan_v1/`(summary/CSV/config snapshot/manifest+SHA-256)、
+  `docs/research_notes/track_f_finite_mode_nogo.md`、
+  `docs/final_target.md`、`formal/NSSingularity/GalerkinNoBlowup.lean`。
+- 更新: `formal/NSSingularity.lean`、`formal/AxiomAudit.lean`、`formal/README.md`、
+  `docs/formalization_map.md`(F-6/F-7 追加、公理監査更新)、
+  `docs/known_obstructions.md`(§8.5 と O-FD/O-FE フィルター)、
+  `docs/research_notes/README.md`(**Lean 識別子の採番衝突を解消**)、
+  `PLAN.md`(Phase 2.9)、`README.md`(再現コマンド 10)、本書。
+
+### Lean 識別子の採番衝突を解消
+
+外部ノート `critical_l3_obstruction.md` §9 が提案していた `F-4`〜`F-7` と、
+本リポジトリ既存の `F-4`(証明書不等式)/`F-5`(Clay 命題定義)の衝突を、
+ノート本文を改変せずに `docs/final_target.md` §4 の登録簿で確定した:
+ノートの `F-4`→`F-8`、`F-5`→`F-9`、`F-6`→`F-10`、`F-7`→`F-11`。
+本セッションの 2 件は `F-6`(Galerkin 上界、形式化済み)と
+`F-7`(ODE 延長、未着手)。以後 `docs/final_target.md` §4 が唯一の権威である。
+
+### テスト結果
+
+```text
+PYTHONPATH=src .venv/Scripts/python.exe -m pytest -q
+  -> 755 passed, 1 skipped(セッション開始時、HEAD fa6c2a5 で再確認)
+  -> 807 passed, 1 skipped(本便追加後)
+```
+
+skip は `scipy.special` 依存の照合テスト 1 件(scipy は本リポジトリの依存ではない)。
+
+### 未解決の証明義務・限界
+
+- Corollary 2 の対偶は「帯域幅が非有界でなければならない」と言うだけで、
+  そのような ansatz の**存在は何も示さない**。残る Track F の探索空間は
+  Track U の動的再スケーリングと同じ困難を持つ。
+- (N-3)(Ladyzhenskaya–Prodi–Serrin による臨界ノルム発散の必要性)は
+  **引用**であり、本セッションで証明も形式化もしていない。
+- Theorem 1(iii) の常微分方程式延長は紙上のみ(`F-7`)。
+- Corollary 3(全空間版)は紙上のみ。部分積分の境界項評価は自明だが未形式化。
+- 厳密算術の証明書は列挙した有限個のモード集合を覆うだけである。
+  すべての `S` に対する主張は Lemma 1 の 2 行の証明であって、この scan ではない。
+
+### Clay 問題について
+
+**本便は Navier–Stokes ミレニアム問題を解決していない。** 有限モード除外は
+特異点の**構成ではなく候補クラスの除外**であり、しかも証明した内容は
+Galerkin 近似の大域可解性という古典的事実の言い換えである。
+Track F が容易な近道ではないことが確定した、というのが実質的な成果である。
+過去の結果は書き換えていない。
+
 ## 数学的に確認できたこと
 
 - 外力なしの3次元非圧縮 Navier–Stokes 方程式から、指定した curl と
@@ -1122,13 +1279,33 @@ baseline manifestの全7 payload、time-convergence manifestの全5 payloadに
   読み出しへの移行が必要(新規 run のみ。既存証拠は不変)。
 - (2026-07-28 追加)GitHub が既定 branch に dependabot 警告 4 件
   (moderate 2、low 2)を報告している。数値結果には影響しないが未対処。
+- (2026-07-29 第 3 便追加)`galerkin_obstruction.stream_apriori_bound` の
+  上界違反は「故障」と「時間刻み未解像」を区別しない。区別には
+  刻みに依存しない診断 `max_relative_energy_production` を読む必要がある
+  (クリーン 3e-16 対 故障 1.6)。この設計上の限界は docstring に明記した。
+- (2026-07-29 第 3 便追加)厳密算術の相殺証明書は列挙した有限個の `S` を
+  覆うだけである。全 `S` に対する主張は Lemma 1 の紙上証明であって、
+  scan の合格ではない。
 
 ## 次に行うべき最小の一手
 
-〔改版 2026-07-28 第 2 セッション。FABLE5_NEXT_TASK_AUDIT の Gate 順序
-(Gate 1–4 が通るまで中後期成長・blow-up fit・AI 候補探索へ進まない)を
-最上位の拘束とする。Gate 1 は合格、Gate 2/3 は既存証拠+新監査で部分的、
-Gate 4 は未実装。〕
+〔改版 2026-07-29 第 3 便。最終目標までの単一依存グラフは
+`docs/final_target.md`(そこに Clay A–D、Track U/F の最終定理、全証明義務、
+Lean 識別子 F-1〜F-11 の確定登録簿がある)。
+FABLE5_NEXT_TASK_AUDIT の Gate 順序(Gate 1–4 が通るまで中後期成長・
+blow-up fit・AI 候補探索へ進まない)を引き続き最上位の拘束とする。
+Gate 1 は合格、Gate 2/3 は既存証拠+新監査で部分的、Gate 4 は未実装。
+
+**第 3 便で閉じた項目**: Track F の有限モード ansatz 族は除外定理として
+閉鎖した(`docs/research_notes/track_f_finite_mode_nogo.md`、Lean `F-6`)。
+`START_NEW_SESSION_NAVIER_STOKES.md` §6「優先候補A」の step 1–5
+(低次 Fourier ansatz の記号探索)は**証明により空なので実行しない**。
+今後この探索を再登録してはならない。〕
+
+0. **F-7 の形式化(最も安く、最も接続が明確)**: `c' = g+B(c,c)+Ac` の解が
+   有界なら最大解が `T` を越える、を mathlib の Picard–Lindelöf で閉じる。
+   これで Theorem 1(iii) が Lean 化され、`F-6` と合わせて有限モード除外が
+   Lean だけで閉じる(残る仮定は Lemma 1 のみ)。
 
 1. **Gate 4 の実装(最優先)**: 非周期 \(z\) の有限 box、\(z\) 方向も
    \(C^\infty\) compact な初期値族、free-space 楕円経路(W-1 の \(z\)

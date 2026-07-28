@@ -49,3 +49,9 @@ jobs:
           python -m experiments.run_time_convergence
           --config configs/baseline_time_convergence.json
           --output-dir outputs/ci-time-convergence
+
+      - name: Replay Track-F finite-mode exclusion certificates
+        run: >-
+          python -m experiments.run_track_f_finite_mode_scan
+          --config configs/track_f_finite_mode_scan.json
+          --output-dir outputs/ci-track-f-finite-mode-scan
