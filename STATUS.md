@@ -1,6 +1,6 @@
 # Project status
 
-最終更新: 2026-07-28 第 2 セッション(branch `fable5-mainline`)
+最終更新: 2026-07-29(branch `fable5-mainline`)
 状態: **FABLE5_NEXT_TASK_AUDIT の P0 ゲート(von Neumann 安定性監査、全 step streaming acceptance、core-width fit 前提、blind 外挿、エネルギー収支、Gate 1 積分器相互比較)を実装・実行済み。出荷済み Heun 実行は stability-unverified に再分類(時間スキーム依存の実測上界は ~6 ppm)。T₁ 増幅ラダーの収束 fit は前提不合格により機械的に禁止。Gate 4(真の全空間移行)は仕様のみで未実装。未知候補探索は未開始。**
 
 ## 2026-07-28 セッションの追加結果(fable5-mainline)
@@ -620,6 +620,119 @@ argmax 1 セル以内。
 (記録は `docs/formalization_map.md`)。sorry/admit/新規 axiom ゼロ、
 toolchain/mathlib は v4.32.1 固定を再確認。「8659 jobs = 8659 定理」
 という読みの禁止を明文化。
+
+## 2026-07-29: 外部セッション成果物の統合(臨界 \(L^3\)・Type-II・自由空間 Poisson)
+
+外部セッション(ChatGPT)が作成した 3 バンドル(ZIP+patch+文書+参照出力)を
+`fable5-mainline` へ統合した。**統合作業のみで、新規計算・設計変更・
+数学的内容の改変は行っていない。** 3 つの patch はいずれも現行ツリーへ
+競合なく適用でき、ZIP 内実装と patch は同一内容(ハッシュ照合済み)。
+
+統合物: `critical_l3.py` / `scaling_constraints.py` / `scaling_fit.py` /
+`free_space_poisson.py` / `wall_sensitivity.py`、対応する 5 テストファイル、
+5 実験スクリプト、6 文書、参照出力。統合後の全テスト
+**747 passed, 1 skipped**(統合前 711 passed。skip は scipy backend の
+照合テストで、scipy はこのリポジトリの依存に含まれない — 下記のとおり
+scipy-free オラクルによる同等の照合を別途追加した)。
+
+### 数学的に証明されたこと(紙上の導出。Lean 未形式化)
+
+- **臨界 \(L^3\) 障害**(`docs/research_notes/critical_l3_obstruction.md`):
+  等方的動的再スケーリング \(u(x,t)=L^{-1}U((x-x_*)/L,s)\) の下で
+  \(\|u(t)\|_{L^3}=\|U(s(t))\|_{L^3}\) は**厳密な恒等式**(変数変換)。
+  よって \(\sup_s\|U(s)\|_{L^3}<\infty\) なら
+  \(u\in L^\infty_tL^3_x\) となり、Escauriaza–Seregin–Šverák の端点正則性
+  定理により \(T\) は特異時刻ではない。
+  **帰結(除外定理)**: 一様に \(L^3\) 有界な一スケール再スケーリング候補
+  (定常 profile、周期軌道、準周期軌道、有界な Type-I core)は
+  \(\mathbb R^3\) の有限時間爆発を与えない。これは**爆発の構成ではなく
+  探索クラスの除外**である。
+- **異方的版**: \(\|u(t)\|_{L^3}^3=A^3L_r^2L_z\|U(s)\|_{L^3}^3\)。
+  したがって \(U\) が \(L^3\) 有界なら、特異点の必要条件は
+  \(A^3L_r^2L_z\to\infty\)。標準等方放物型 \(A=L^{-1},L_r=L_z=L\) では
+  この積は恒等的に 1 なので**除外される**。
+- **有限円柱の壁補正の閉形式**(`docs/free_space_l5_poisson.md`):
+  軸方向モード \(k\) ごとに
+  \(\psi_R-\psi_\infty=-\psi_\infty(R)\,[I_1(kr)/r]/[I_1(kR)/R]\)(\(k>0\))、
+  \(k=0\) では定数 \(-\psi_\infty(R)\) で、compact support 源に対し
+  \(\psi_\infty(R)=(2R^2)^{-1}\int\rho^3f\,d\rho\)。既存 E-33 と整合し、
+  ゼロモードの \(R^{-2}\) 代数尾部を独立に再導出している。
+
+### 数値的に観測されたこと(すべて有限周期円柱上の浮動小数点観測)
+
+- **早期 Hou 窓は臨界位相で陰性**
+  (`docs/hou_early_critical_l3_result.md`、
+  `outputs/imported_chatgpt_results/critical_l3_old_uploaded_snapshot/`):
+  193×384 で \(t=0\to T_1\) に \(\max|u|\) は 327.8→679.1 と増加する一方、
+  表現領域の \(L^3\) ノルムは 118.57→107.94(**8.96% 減少**)、臨界密度の
+  RMS 幅は \(L_r\) 0.2085→0.2584、\(L_z\) 0.1399→0.1664 と**拡大**、
+  実効 shell 数は 1.915→1.814 と微減、外側 radial 臨界質量は 3.4e-8。
+  すなわち critical mass の増大・スケールの増殖・外側尾部蓄積の
+  いずれも観測されない。\(Q=A^3L_r^2L_z\) の 16 倍増は幅の収縮ではなく
+  振幅増加が支配しており、Type-II 濃縮の証拠ではない。
+- **候補特異時刻の走査は全滅**(`docs/early_hou_scaling_gate_result.md`):
+  \(T\in[T_{\rm last}+10^{-6},T_{\rm last}+2\times10^{-3}]\) と 3 点以上の
+  全 suffix 窓を走査して、3 解像度いずれも gate 通過 fit **0 件**。
+  最良 fit でも \(\beta_r,\beta_z<0\)(幅が拡大)、\(\alpha\le0.139<1/2\)
+  で Serrin 正則域内。
+- **自由空間 radial Green solver の manufactured gate**
+  (`docs/free_space_l5_poisson.md`): 5 次元 Gauss 試験の内部相対 \(L^2\)
+  誤差は z padding 1/2/4 で 1.189e-2 → 4.643e-3 → 4.195e-3。最初の倍化で
+  2.56 倍改善し、その後は radial 求積と source 打切りが支配。
+  radial 壁は解析的に除去されるが、**\(z\) は zero padding 後も周期のまま**
+  なので、これは period-image 診断であって自由空間 \(z\) の厳密証明ではない。
+- **低波数壁 gate**(`docs/low_frequency_wall_obstruction.md`):
+  軸周期を伸ばして \(kR\) を下げると、\(r\le2\) の有限壁相対誤差は
+  9.06e-4(\(kR=25.1\))→ 2.25e-4(6.28)→ 6.35e-3(3.14)→ 3.29e-2(1.57)、
+  ゼロモードで 9.13e-2。**短周期での壁感度の小ささは Fourier スペクトル
+  ギャップで説明される**という、当方の P0-E の結論(periodic-z radial-wall
+  sensitivity observation)を独立経路で裏づける。
+- 統合時に追加した唯一のテスト: `free_space_poisson` の cephes Bessel 多項式
+  は scipy 依存のため常に skip されていたので、当リポジトリの scipy-free
+  オラクル `bessel_reference` との照合を追加した(相対 3e-7 で一致、
+  ビット一致しないことも assert)。取り込んだ数学には手を触れていない。
+
+### 条件付きのスケーリング分類(解ではなく探索領域)
+
+`docs/type_ii_scaling_constraints.md`。有限エネルギー、有限散逸、臨界ノルム
+増大、単一の最薄微分スケール、先頭項の非相殺を**仮定**した局所冪則 core に
+対し、生き残る 3 族(\(B=2\beta_r+\beta_z\)、\(\gamma=\max(\beta_r,\beta_z)\)):
+
+1. Euler 型 Type-II: \(2/5\le\gamma<1/2\)、\(\alpha=1-\gamma\)、
+   \(2-2\gamma\le B\le3\gamma\)
+2. 異方的放物型: \(\alpha=\gamma=1/2\)、\(1<B<3/2\)
+3. 準定常粘性–慣性型: \(1/2<\gamma<1\)、\(\alpha=\gamma\)、
+   \(4\gamma-1<B<3\gamma\)
+
+走査結果は 20181 格子点中 438 点が条件付き実行可能
+(`outputs/imported_chatgpt_results/type_ii_scaling/`)。
+**これらは条件付き漸近スケーリング点であって Navier–Stokes の解ではない。**
+除外されていない escape route(先頭相殺、成分別スケール、多重 core、
+shell cascade、外場が担う \(L^3\) 増大、対数補正、非冪則)も明記されている。
+
+### 未解決の証明義務・限界
+
+- 上記の除外定理は ESS 端点定理を**引用**している。Lean 最終経路へ載せる
+  なら忠実な形式化か明示的に監査された定理インタフェースが必要で、
+  未証明の project 固有 axiom として挿入してはならない。
+- ノートが提案する Lean 識別子 `F-4`〜`F-7` は、当リポジトリで既に
+  `F-4`(証明書の有限次元不等式)を使用済みのため**採番が衝突**する。
+  形式化着手時に `docs/formalization_map.md` 側で振り直す(未実施)。
+- 参照出力は**古いリポジトリ snapshot** に対する外部計算であり、
+  `257x512` を含まない。現行 `fable5-mainline` での再計算は未実施
+  (`outputs/imported_chatgpt_results/README.md` に provenance 限界を明記)。
+- 自由空間 solver はまだ非線形時間発展に接続されていない。Gate 4
+  (非周期 \(z\)、\(R_{\max}\)/\(Z_{\max}\) 独立拡大、四方向収束表)は
+  依然として未実装である。
+- 臨界 \(L^3\) 診断は full-step streaming ではなく checkpoint 後処理のまま。
+
+### Clay 問題について
+
+**これらの統合物は Navier–Stokes ミレニアム問題を解決していない。**
+臨界 \(L^3\) 障害は特異点の**構成ではなく候補クラスの除外**であり、
+早期 Hou 窓の結果は**陰性の診断**である。後期 Hou 発展の正則性を
+証明したわけでも、特異点を発見したわけでもない。過去の結果は
+書き換えていない。
 
 ## 数学的に確認できたこと
 

@@ -1,0 +1,54 @@
+{
+  "interpretation": "Fixed nonzero Fourier modes have exponentially weak radial-wall influence when kR is large.  As the axial period grows, k falls and the wall error rises.  The zero mode has an algebraic R^-2 tail.",
+  "nonzero_modes": [
+    {
+      "free_boundary_amplitude": 1.9197092301615577e-08,
+      "k": 6.283185307179586,
+      "kR": 25.132741228718345,
+      "modal_correction_prediction_defect": 0.9999999998616347,
+      "period": 1.0,
+      "relative_wall_error_interior": 0.0009058134998014645
+    },
+    {
+      "free_boundary_amplitude": 2.9342209297144124e-06,
+      "k": 3.141592653589793,
+      "kR": 12.566370614359172,
+      "modal_correction_prediction_defect": 0.9998912295466413,
+      "period": 2.0,
+      "relative_wall_error_interior": 0.0002763620083985964
+    },
+    {
+      "free_boundary_amplitude": 0.00017955457185791203,
+      "k": 1.5707963267948966,
+      "kR": 6.283185307179586,
+      "modal_correction_prediction_defect": 0.4426689211643248,
+      "period": 4.0,
+      "relative_wall_error_interior": 0.00022520940889416183
+    },
+    {
+      "free_boundary_amplitude": 0.001942289904437367,
+      "k": 0.7853981633974483,
+      "kR": 3.141592653589793,
+      "modal_correction_prediction_defect": 0.007946372044873116,
+      "period": 8.0,
+      "relative_wall_error_interior": 0.006354575267242452
+    },
+    {
+      "free_boundary_amplitude": 0.006396276887605647,
+      "k": 0.39269908169872414,
+      "kR": 1.5707963267948966,
+      "modal_correction_prediction_defect": 0.0011202335584360014,
+      "period": 16.0,
+      "relative_wall_error_interior": 0.032935728404895045
+    }
+  ],
+  "status": "pass",
+  "zero_mode": {
+    "free_boundary_amplitude": 0.015624970090176028,
+    "k": 0.0,
+    "kR": 0.0,
+    "modal_correction_prediction_defect": 0.00033748284400044804,
+    "period": null,
+    "relative_wall_error_interior": 0.09125584642125596
+  }
+}

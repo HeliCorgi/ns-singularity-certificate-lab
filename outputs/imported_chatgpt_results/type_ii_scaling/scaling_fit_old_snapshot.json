@@ -1,0 +1,153 @@
+{
+  "groups": {
+    "nr129_nz256": {
+      "best_passing": null,
+      "best_unconstrained": {
+        "alpha": 0.1249627190219539,
+        "amplitude_fit": {
+          "end_time": 0.002191729,
+          "exponent": -0.1249627190219539,
+          "log_rmse": 0.0011752384674308194,
+          "point_count": 3,
+          "prefactor": 109.45739710619968,
+          "r_squared": 0.9999914642312766,
+          "singular_time": 0.002192729,
+          "start_time": 0.001
+        },
+        "axial_fit": {
+          "end_time": 0.002191729,
+          "exponent": -0.008647695601954249,
+          "log_rmse": 0.018233953841324712,
+          "point_count": 3,
+          "prefactor": 0.14840295765215225,
+          "r_squared": 0.6997615679957534,
+          "singular_time": 0.002192729,
+          "start_time": 0.001
+        },
+        "beta_r": -0.0116362125928228,
+        "beta_z": -0.008647695601954249,
+        "candidate_family": "none",
+        "constraint_report": null,
+        "passes_conditional_core_gates": false,
+        "point_count": 3,
+        "radial_fit": {
+          "end_time": 0.002191729,
+          "exponent": -0.0116362125928228,
+          "log_rmse": 0.017660915364896813,
+          "point_count": 3,
+          "prefactor": 0.22087945398994285,
+          "r_squared": 0.8181232648106866,
+          "singular_time": 0.002192729,
+          "start_time": 0.001
+        },
+        "singular_time": 0.002192729,
+        "start_index": 2,
+        "total_log_mse": 0.0006457661896689378
+      },
+      "fit_count": 1200,
+      "passing_family_counts": {},
+      "passing_fit_count": 0,
+      "warning": "A fit is only an exponent diagnostic. It is not a PDE solution, and scan multiplicity makes post-selected fits especially vulnerable to false positives."
+    },
+    "nr193_nz384": {
+      "best_passing": null,
+      "best_unconstrained": {
+        "alpha": 0.1389803098588267,
+        "amplitude_fit": {
+          "end_time": 0.002191729,
+          "exponent": -0.1389803098588267,
+          "log_rmse": 0.0018193830238962,
+          "point_count": 3,
+          "prefactor": 99.53090918245269,
+          "r_squared": 0.9999834617396212,
+          "singular_time": 0.002192729,
+          "start_time": 0.001
+        },
+        "axial_fit": {
+          "end_time": 0.002191729,
+          "exponent": -0.00823941503712352,
+          "log_rmse": 0.018115709850890206,
+          "point_count": 3,
+          "prefactor": 0.1487335265746244,
+          "r_squared": 0.6818848876957002,
+          "singular_time": 0.002192729,
+          "start_time": 0.001
+        },
+        "beta_r": -0.011359772213892835,
+        "beta_z": -0.00823941503712352,
+        "candidate_family": "none",
+        "constraint_report": null,
+        "passes_conditional_core_gates": false,
+        "point_count": 3,
+        "radial_fit": {
+          "end_time": 0.002191729,
+          "exponent": -0.011359772213892835,
+          "log_rmse": 0.01762955964077291,
+          "point_count": 3,
+          "prefactor": 0.22126679883858172,
+          "r_squared": 0.8114027200507525,
+          "singular_time": 0.002192729,
+          "start_time": 0.001
+        },
+        "singular_time": 0.002192729,
+        "start_index": 2,
+        "total_log_mse": 0.0006422904711168513
+      },
+      "fit_count": 1200,
+      "passing_family_counts": {},
+      "passing_fit_count": 0,
+      "warning": "A fit is only an exponent diagnostic. It is not a PDE solution, and scan multiplicity makes post-selected fits especially vulnerable to false positives."
+    },
+    "nr65_nz128": {
+      "best_passing": null,
+      "best_unconstrained": {
+        "alpha": 0.07425867721910195,
+        "amplitude_fit": {
+          "end_time": 0.002191729,
+          "exponent": -0.07425867721910195,
+          "log_rmse": 0.0039870747089176895,
+          "point_count": 3,
+          "prefactor": 153.38016187666804,
+          "r_squared": 0.9997218693795643,
+          "singular_time": 0.002192729,
+          "start_time": 0.001
+        },
+        "axial_fit": {
+          "end_time": 0.002191729,
+          "exponent": -0.010148607078964355,
+          "log_rmse": 0.01886542705828648,
+          "point_count": 3,
+          "prefactor": 0.14730954135326607,
+          "r_squared": 0.7499149635319148,
+          "singular_time": 0.002192729,
+          "start_time": 0.001
+        },
+        "beta_r": -0.012529925817872198,
+        "beta_z": -0.010148607078964355,
+        "candidate_family": "none",
+        "constraint_report": null,
+        "passes_conditional_core_gates": false,
+        "point_count": 3,
+        "radial_fit": {
+          "end_time": 0.002191729,
+          "exponent": -0.012529925817872198,
+          "log_rmse": 0.017847010396693282,
+          "point_count": 3,
+          "prefactor": 0.21967406599859476,
+          "r_squared": 0.8362676379696596,
+          "singular_time": 0.002192729,
+          "start_time": 0.001
+        },
+        "singular_time": 0.002192729,
+        "start_index": 2,
+        "total_log_mse": 0.0006903168829256968
+      },
+      "fit_count": 1200,
+      "passing_family_counts": {},
+      "passing_fit_count": 0,
+      "warning": "A fit is only an exponent diagnostic. It is not a PDE solution, and scan multiplicity makes post-selected fits especially vulnerable to false positives."
+    }
+  },
+  "source_csv": "/mnt/data/critical_l3_snapshots_old_uploaded_snapshot.csv",
+  "warning": "Candidate time and window are scanned. Results are diagnostics only and must not be interpreted as singularity evidence without preregistered, resolved and independently converged follow-up runs."
+}

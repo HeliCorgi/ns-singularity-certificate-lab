@@ -1,0 +1,19 @@
+{
+  "conditional_feasible_count": 438,
+  "family_counts": {
+    "anisotropic_parabolic": 27,
+    "euler_like_type_ii": 71,
+    "quasi_steady_viscous_inertial": 340
+  },
+  "grid": {
+    "alpha_count": 21,
+    "alpha_max": 0.8,
+    "alpha_min": 0.4,
+    "beta_count": 31,
+    "beta_max": 0.8,
+    "beta_min": 0.2,
+    "step": 0.02,
+    "total_grid_points": 20181
+  },
+  "warning": "These are conditional asymptotic scaling points, not PDE solutions. They assume a localized nondegenerate core and no leading cancellation."
+}
