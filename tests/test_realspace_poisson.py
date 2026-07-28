@@ -643,3 +643,59 @@ def test_module_uses_no_transform_and_no_sibling_solver() -> None:
         lowered = name.lower()
         assert "tridiagonal" not in lowered
         assert "thomas" not in lowered
+
+
+def test_third_path_detects_shared_fourier_machinery_faults() -> None:
+    """Break the A/B single points of failure and show solver C catches them.
+
+    Solvers A and B share the axial Fourier machinery (``np.fft`` wavenumber
+    array, normalization, periodic indexing), so a defect there is a common
+    mode their mutual comparison can NEVER see.  This test fabricates the
+    three canonical failure modes as post-hoc corruptions of solver A's
+    solution -- exactly what a shared-FFT bug would deliver to *both* Fourier
+    solvers -- and requires the real-space third path to flag each one at
+    more than ten times the clean C-vs-A gap:
+
+    * a per-mode normalization/wavenumber-convention slip (mode-1 content
+      scaled by 0.9);
+    * a periodic-seam error (solution shifted by one z cell);
+    * Nyquist mishandling (garbage injected into the sawtooth mode at 5e-2
+      relative amplitude; measured detection is ~48x the clean gap, and 1e-2
+      injection sat at 9.5x -- the clean gap itself is the O(dz^2) axial
+      symbol difference, so the detection floor scales with resolution).
+    """
+
+    grid = _grid(33, 48)
+    _, omega, boundary = _manufactured(grid)
+    psi_a = _solve_a(grid, omega, boundary)
+    psi_c = solve_realspace_poisson(grid, omega, boundary).psi1
+    clean_gap = _max_abs(psi_c - psi_a)
+    assert clean_gap > 0.0
+
+    spectrum = np.fft.rfft(psi_a, axis=1)
+
+    # Scale the strongest nonzero axial mode (the manufactured field need not
+    # have mode-1 content; scaling an empty mode would be a vacuous fault).
+    mode_energy = np.sum(np.abs(spectrum) ** 2, axis=0)
+    dominant = 1 + int(np.argmax(mode_energy[1:]))
+    assert mode_energy[dominant] > 0.0
+    mode_slip = spectrum.copy()
+    mode_slip[:, dominant] *= 0.9
+    normalization_fault = np.fft.irfft(mode_slip, n=grid.nz, axis=1)
+
+    seam_fault = np.roll(psi_a, 1, axis=1)
+
+    nyquist = spectrum.copy()
+    nyquist[:, -1] += 5.0e-2 * float(np.max(np.abs(psi_a))) * grid.nz
+    nyquist_fault = np.fft.irfft(nyquist, n=grid.nz, axis=1)
+
+    for label, corrupted in (
+        ("normalization", normalization_fault),
+        ("seam", seam_fault),
+        ("nyquist", nyquist_fault),
+    ):
+        detection = _max_abs(psi_c - corrupted)
+        assert detection > 10.0 * clean_gap, (
+            f"third path failed to flag the {label} fault: "
+            f"{detection} vs clean gap {clean_gap}"
+        )

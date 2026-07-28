@@ -266,6 +266,30 @@ F-5 (Clay命題定義)
 `LEAN4_VERIFICATION_POLICY.md` のとおり維持する。段階 0 は定義のみで
 この制約に抵触しない。
 
+## 公理監査の記録(2026-07-28、P0 Lean gate)
+
+`formal/AxiomAudit.lean`(ライブラリ root からは import されない監査専用
+ファイル)を `lake env lean AxiomAudit.lean` で実行した記録:
+
+```text
+'NSSingularity.mixed_partial_comm' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NSSingularity.divergence_of_recovered_velocity_eq_zero'' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NSSingularity.divergence_of_recovered_velocity_eq_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NSSingularity.hasDerivAt_physicalTime' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NSSingularity.physicalTime_strictMonoOn' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NSSingularity.tendsto_physicalTime' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NSSingularity.physicalTime_lt_blowupTime' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NSSingularity.exists_finite_blowupTime' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NSSingularity.tendsto_physicalTime_atTop' depends on axioms: [propext, Classical.choice, Quot.sound]
+```
+
+同日、`grep -RInE '\bsorry\b|\badmit\b|axiom ' formal` は文書コメント中の
+言及のみを返し、コード中の `sorry`/`admit`/新規 `axiom` はゼロ。
+`lake build` は 8659 jobs で成功 — これは**コンパイルジョブ数**であり、
+「8659 個の定理を証明した」ことを意味しない。証明済みの命題は本書に
+列挙されたもののみである。`lean-toolchain` は leanprover/lean4:v4.32.1、
+mathlib は v4.32.1 タグに固定。
+
 ## 未解決の形式化上の論点
 
 1. mathlib には NS 方程式の定義も局所適切性もない。局所存在

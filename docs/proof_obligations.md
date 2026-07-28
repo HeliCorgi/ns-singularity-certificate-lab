@@ -444,23 +444,29 @@ certificate/
 
 ## 8. 現時点での次の最小の一手
 
-一様Cartesian別実装、保存候補の物理場復元、固定格子の時間刻み収束という
-PO-05/PO-14の前段は実装した。これらは浮動小数点のmanufactured検査であり、
-PO-05またはPO-14を閉じない。
+〔改版 2026-07-28。旧 §8 が求めた独立楕円 solver は実装済みである:
+solver C(`realspace_poisson.py`、実空間 z 差分 CG、FFT 非依存)を含む
+3 経路相互検証。旧文の要求 1–4 は `tests/test_realspace_poisson.py` と
+`tests/test_poisson_cross_validation.py` が満たす。〕
 
-未知候補を探す前の次の最小の一手は、有限円柱上の
+PO-05/PO-14 の**前段**として本セッションで追加したもの(いずれも浮動
+小数点検査であり、義務を閉じない):
 
-\[
--\mathcal L_5\psi_1=\omega_1
-\]
+- P0-A: 凍結係数 von Neumann 監査(`von_neumann.py`)。出荷済み Heun 実行
+  は「stability-unverified」と再分類(`docs/numerical_stability_audit.md`)。
+- P0-A: SSPRK3/RK4 交差検証積分器と Gate 1 相互比較実験。
+- P0-B/P0-C: 全 accepted step の streaming gate(`step_stream`/
+  `gate_summary`)。間引き経由の違反見逃しを合成 trajectory テストで排除。
+- P0-D: core-width/points-per-scale 前提条件
+  (`PREREGISTERED_MIN_POINTS_PER_FRONT = 7`)。現行の全 Hou snapshot は
+  収束 fit の前提を満たさない(fit 禁止が機械化された)。
+- P1-A: blind 外挿(`extrapolation.py`)。現行ラダーは
+  not_in_asymptotic_range であり、いかなる極限値も引用不可。
+- P1-C: 壁項込み離散エネルギー収支と viscosity_sign fault 棄却。
 
-を解く独立楕円solverである。旧試作のコードはコピーせず、現在の符号・軸・
-artifact規約から新規実装し、次を満たす必要がある。
-
-1. 軸行の係数8、全体の負符号、周期 \(z\)、外側Dirichlet行を直接testする。
-2. 非零解析境界を持つmanufactured解を少なくとも3解像度で検査する。
-3. matrix solve residualと解析解誤差を別経路で計算し、循環的自己検証を避ける。
-4. 条件数、領域半径感度、境界・PDE residual、失敗例を保存する。
-
-このsolverも領域打切り誤差やvalidated inverseを直ちに与えない。合格後も
-候補探索へ自動的に進まず、PO-05～PO-07の証明可能な離散化設計を再評価する。
+未知候補探索(Milestone B)の前の**次の最小の一手**は Gate 4
+(真の全空間移行、`docs/whole_space_transition.md` §7)である:
+非周期 \(z\) の有限 box、\(z\) 方向も \(C^\infty\) compact な初期値族、
+free-space 楕円経路、\(R_{\max}\)/\(Z_{\max}\) 独立拡大、低波数 stress
+test。これが通るまで、現在の Hou 機構を Clay の \(\mathbb R^3\) 候補と
+呼ばず、中後期成長・blow-up fit・AI 候補探索へ進まない。

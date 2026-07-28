@@ -1,7 +1,7 @@
 # Project status
 
-最終更新: 2026-07-28(branch `fable5-mainline`)
-状態: **Poisson ゲート統合・2 実装相互検証、Hou 設定の一次資料監査、壁付き非線形 production ソルバ、早期 Hou 実行までを完了。未知候補探索は未開始。**
+最終更新: 2026-07-28 第 2 セッション(branch `fable5-mainline`)
+状態: **FABLE5_NEXT_TASK_AUDIT の P0 ゲート(von Neumann 安定性監査、全 step streaming acceptance、core-width fit 前提、blind 外挿、エネルギー収支、Gate 1 積分器相互比較)を実装・実行済み。出荷済み Heun 実行は stability-unverified に再分類(時間スキーム依存の実測上界は ~6 ppm)。T₁ 増幅ラダーの収束 fit は前提不合格により機械的に禁止。Gate 4(真の全空間移行)は仕様のみで未実装。未知候補探索は未開始。**
 
 ## 2026-07-28 セッションの追加結果(fable5-mainline)
 
@@ -99,9 +99,12 @@ CFL 0.1、`max_time_step` 1e-6。全 8 受入検査合格。manifest+全 50 payl
 観察(すべて **numerical observation** の語彙水準):
 
 - 増幅率は解像度で単調増加し、Hou の 1536² 適応格子公表値 20.5235 へ
-  **下から接近**する。grid-scale での飽和はない。ただし隣接差
-  (6.58, 2.93)から見かけの収束次数は 1 未満であり、**収束していない**。
-  外挿で 20.52 への一致を主張することはできない。
+  **下から接近**する。ただし隣接差(6.58, 2.93)から見かけの収束次数は
+  1 未満であり、**収束していない**。外挿で 20.52 への一致を主張することは
+  できない。〔改版 2026-07-28(P0-D): 旧文の「grid-scale での飽和はない」
+  という表現を撤回する。増幅が plateau しないことは grid-scale saturation
+  の不在を意味しない。実際ピークの radial FWHM は 65/129/193 格子で約
+  4/5/6 点、ピークは軸から 3/5/6 セルであり、構造は grid-scale に近い。〕
 - ごく早期の \(\|u_1\|_\infty\) 減少([Hou21, §2] の定性ターゲット)を全
   解像度で確認: 3265.6 → 最小 2011〜2025 → その後成長し \(T_1\) で初期値の
   4.7〜5.7 倍。
@@ -126,10 +129,11 @@ CFL 0.1、`max_time_step` 1e-6。全 8 受入検査合格。manifest+全 50 payl
 - 257×512: 増幅率 **17.2588** at \(T_1\)(2298 steps、\(\min\Delta t\)
   2.85e-7)、\(\max|u_1|(T_1)=20306.5\)、argmax (0.0312, 0.0098)。
 - 4 点ラダー 6.11 → 12.70 → 15.63 → 17.26 は公表 1536² 値 20.5235 へ
-  単調接近を続け、grid-scale 飽和はない。隣接差 6.58, 2.93, 1.63 の
-  見かけの収束次数は依然 1 未満であり**未収束**。外挿による一致主張は
-  行わない。front 位置 \(r\approx0.031\) は 257 格子で約 8 セルであり
-  解像度限界が支配的。
+  単調接近を続ける。隣接差 6.58, 2.93, 1.63 の見かけの収束次数は依然
+  1 未満であり**未収束**。外挿による一致主張は行わない。front 位置
+  \(r\approx0.031\) は 257 格子で約 8 セルであり解像度限界が支配的。
+  〔改版 2026-07-28(P0-D): 旧文の「grid-scale 飽和はない」という表現を
+  撤回。plateau の不在は saturation の不在を意味しない。〕
 - 初期ノルム E-29b との相対誤差は 1.98e-3 → 4.99e-4(比 3.97、
   きれいな 2 次接近)。solver B との \(\psi_1\) cross-check 相対差は
   7.78e-3 → 2.95e-3。
@@ -413,6 +417,209 @@ primitive PDE項別残差を追加した。保存候補のchecksum検証付き�
 
 このリポジトリは有限時間特異点を発見・証明しておらず、Navier–Stokes
 ミレニアム問題を解決していない。
+
+## 2026-07-28 第 2 セッション: FABLE5_NEXT_TASK_AUDIT の P0/P1 ゲート
+
+指示書 `FABLE5_NEXT_TASK_AUDIT.md`(リポジトリルート、コミット済み)の
+記載順に実施した。開始時の確認: 作業ツリーはリモートと一致(2cb8e48)、
+全 565 テスト合格、`lake build` 成功(8659 jobs)、`formal` 内に
+sorry/admit/新規 axiom ゼロ。
+
+### P0-A: von Neumann 安定性監査(`von_neumann.py`、11 tests)
+
+- Heun+中心差分は純移流で厳密増幅(\(|G(i\alpha)|^2=1+\alpha^4/4\))。
+  凍結係数 advection–diffusion の全波数 scan、予測子段の別評価、
+  snapshot 監査 API、独立参照 propagator(シンボル経路と実配列経路の
+  相互一致 3.7e-16)を実装した。
+- **出荷済み運転点の判定は「stability-unverified」**: 出荷 v1 の記録
+  (min dt=2.76e-7、max advective CFL=0.10023)と自己整合な読みで
+  Heun worst \(|G|\) は 1.0000035(radial 支配)/ 1.0(axial 支配)/
+  1.000152(両方向同時)— tolerance 1e-12 では不合格。全波数 pass に
+  必要な dt は約 2.4e-8(出荷値の 1/11.5)。粘性 5e-4 の寄与は
+  増幅率 −6.1e-5 に留まる。詳細は `docs/numerical_stability_audit.md`。
+- 過去の Heun 実行はすべて stability-unverified に再分類。**Heun 単独の
+  増幅を候補判定に使うことを禁止**(決定規則として文書化)。
+
+### P0-A: 交差検証積分器(SSPRK3 / RK4)
+
+`take_step` に SSPRK3・古典 RK4 を追加(空間離散化・拘束順序・楕円
+solve は Heun と完全共有)。毎段 `constrain_state` 射影込みの実測時間
+次数: **Heun 1.97/2.00、SSPRK3 3.00/3.00、RK4 3.95/3.98** — 射影は
+観測次数を落とさなかった。ゼロ場不動点・小 dt 相互一致・誤差の大小
+関係(rk4 < ssprk3 < heun)をテストで固定。
+
+### P0-B/P0-C: 全 step streaming gate(`test_integrator_gates.py`、20 tests)
+
+- `IntegrationResult` に `step_stream`(全 accepted step × 28 量)と
+  `gate_summary`(streaming 極値)を追加。エネルギー増分、循環 defect、
+  奇対称相対、軸 parity 相対、相対発散、壁拘束、**solver A が実際に
+  解いた線形系の代数残差**(全 step 相対 <1e-12)、pre/predictor/post
+  CFL、粘性安定数、dt を縛った拘束の名前、エネルギー収支 defect を
+  全 step 保存。出力間引きは gate に作用しない。
+- 中間段 CFL 超過での step 棄却(`stage_cfl_limit`、dt 半減再試行)を
+  実装、受入 step の段 CFL が閾値以下であることをテストで固定。
+- **義務の合成違反テスト**: 記録行間だけの強制パルス注入→抽出で、
+  間引き history は単調減衰のみを示すが streaming は丸め床の
+  3×10¹² 倍の増加を捕捉する。
+
+### P1-C: エネルギー収支と viscosity_sign fault
+
+- E-27 壁は swirl のみ no-slip(\(u^z(1,z)\ne0\) の滑り壁)なので、
+  正しい恒等式は \(dE/dt=-\nu\int|\omega|^2dV-\nu\oint u^z\omega^\theta dS\)。
+  壁項込み/なしの両 defect と swirl エネルギーの項別仕事率
+  (移流・stretching・粘性)を全 step 記録。
+- **整合性の記録**: 初回実装は \(\int|\omega|^2dV\)(\(2\pi\) 測度)を
+  E-20 の \(\pi\) 正規化 enstrophy と取り違え、相対 defect が理論値
+  どおり厳密に 0.5 へ飽和(fault 時 1.5)。これを因子 2 の欠陥として
+  特定・修正した。修正後: 滑らか control で 5.9e-2 → 1.6e-2 → 4.2e-3
+  (空間時間同時細分で収束)。
+- 新 fault `viscosity_sign`: Hou 運転点(ν=5e-4)では項和の 3e-4 で
+  不可視(既知)だが、拡散支配 control(ν=2e-2)で相対 defect
+  clean 2.21e-2 vs 反転 **2.000**(理論値 2、比 90 倍)、エネルギー
+  単調性反転により確実に棄却される。
+
+### P0-D: core-width / points-per-scale(`core_width.py`、15 tests)
+
+- radial/axial FWHM、10–90% front thickness、subgrid 二次ピーク、
+  勾配長スケール、高周波 tail(z rfft / r DCT-II)、共通格子への
+  Catmull-Rom 補間比較、manufactured tanh front 研究を実装。
+- **前登録閾値 `PREREGISTERED_MIN_POINTS_PER_FRONT = 7`**(tanh front
+  で 10–90 幅の相対誤差 ≤2% となる最小整数点数。テストが研究を再計算し
+  定数との整合を強制するため事後調整不可)。
+- 出荷済み 193×384 の T₁ snapshot: points_per_fwhm_r 6.92、
+  **points_per_front 4.36**、ピークは軸から 6 セル、勾配スケールは
+  0.49dr / 0.98dz(1 セル未満)→ `fit_precondition` は**不合格**
+  (3 理由)。「grid-scale 飽和なし」という旧表現は撤回した(本文中に
+  改版注記)。**収束 fit は現データでは禁止**が機械化された。
+
+### P1-A: blind 外挿(`extrapolation.py`、10 tests)
+
+- 3 点厳密解・最小二乗 power law・固定次数 Richardson・全部分列感度。
+  署名は \((h, A)\) のみで外部 anchor を構造的に受け付けない
+  (`20.5235`・`20.52` の不在をテストが assert)。
+- 実ラダー (6.11, 12.70, 15.63, 17.26): 指示書の見積(全4点 27.38/0.54、
+  前 3 点 28.85/0.49、後 3 点 24.60/0.70)を独立実装+brute force で
+  すべて再現。A_inf 散らばり相対 **0.488**(前登録閾値 0.05 の 9.8 倍)、
+  p 幅 0.203 → **判定 not_in_asymptotic_range: 極限値は一切引用不可**。
+- 記録した偶然: 次数 1 固定 Richardson は 20.528(公表 20.5235 の
+  0.02% 以内)を与えるが、これは相互に矛盾する 7 外挿値の一つに
+  すぎず(次数 2 固定は 16.844)、確認としては読めない。テスト
+  docstring に非結果として明記。
+
+### Poisson 第三経路の SPOF 破壊(P0 §5、`test_realspace_poisson.py` 追加)
+
+solver A/B が共有する Fourier 機構の故障 3 種(モード正規化 slip、
+周期 seam ずれ、Nyquist 混入)を solver A 解の事後改変として合成し、
+実空間第三経路 C が **>10×**(実測 48× 等)で全て検出することを固定。
+A/B の一致を「continuum 精度」「完全独立」と呼ばない limitation は従来
+どおり。
+
+### P0-E: 語彙修正と Gate 4 仕様
+
+- `docs/whole_space_transition.md` §0 を新設: W-A と壁依存性の全結果を
+  「**periodic-z radial-wall sensitivity observation**」と固定し、
+  「whole-space validation」「R³ wall independence」の表現を禁止。
+- 同 §7 に真の全空間移行 gate(非周期 z、z 方向 C∞ compact 台、
+  free-space 楕円経路、R_max/Z_max 独立拡大、低波数 stress、
+  Cartesian 体積測度での有限エネルギー直接検査、有限円柱解との
+  同一視禁止)を**未実装の仕様**として定義。
+- STATUS/設計文書の「grid-scale 飽和なし」表現を撤回(改版注記付き)。
+
+### Gate 1 実行結果(`outputs/integrator_comparison_v1`、全 8 受入合格)
+
+65×128、E-29 datum(振幅 12000)、\(\nu=5\times10^{-4}\)、\(T_1\) まで、
+固定 dt ∈ {6e-7, 3e-7} × {heun, ssprk3, rk4}(空間離散化・拘束順序・
+楕円 solve は完全共有)。前登録許容: 増幅相対差 1e-3、対差の dt 縮小、
+argmax 1 セル以内。
+
+| dt | 対 | 増幅相対差 | 場 L∞ 相対差 | argmax 差 |
+|---|---|---:|---:|---|
+| 6e-7 | heun vs ssprk3 | 5.823e-6 | 4.39e-6 | 0 セル |
+| 6e-7 | heun vs rk4 | 5.828e-6 | 4.39e-6 | 0 セル |
+| 6e-7 | ssprk3 vs rk4 | **5.09e-9** | 4.40e-9 | 0 セル |
+| 3e-7 | heun vs ssprk3 | 1.458e-6 | 1.10e-6 | 0 セル |
+| 3e-7 | heun vs rk4 | 1.459e-6 | 1.10e-6 | 0 セル |
+| 3e-7 | ssprk3 vs rk4 | **6.35e-10** | 5.50e-10 | 0 セル |
+
+- heun と高次法の差は dt 半減で正確に 1/4(heun の \(O(dt^2)\) 誤差
+  そのもの)。ssprk3 と rk4 は互いに 5e-9 で一致。**von Neumann worst-case
+  上界(累積 ~0.8%)は実測では発現せず、時間積分スキーム依存は
+  ~6 ppm** — 現在の増幅値に対する時間離散化リスクの実測上界。
+  (これは凍結係数監査の「stability-unverified」分類を置き換えるもの
+  ではなく、補完する経験的上界である。固定 dt=6e-7 の段 CFL は最大
+  0.0149 で、適応 run の 0.1 よりはるかに安定側にある点にも注意。)
+- heun dt=6e-7 の A_grid=6.1147053247 は `hou_time_refinement_v1` の
+  粗 dt 値と**ビット単位一致**(実験間決定論再現)。
+- **P1-B 両正規化の併記**: A_grid(離散初期最大で正規化)6.1147 に対し
+  A_common(連続参照 \(24000\pi/\sqrt{37}(36/37)^{18}=7569.6227\) で
+  正規化)**6.0539** — 65×128 の離散初期最大は連続値より約 1% 低い。
+  分母の格子依存だけで増幅率が 1% 動くことが定量化された。
+- **正直な記録**: 全 step streaming の相対エネルギー収支 defect 最大は
+  **0.936**(全 6 run とも)。滑らか control では 4.2e-3 まで収束する
+  計装なので、これは E-29 front(65×128 で FWHM 約 4 点)の空間
+  未解像がエネルギー恒等式を閉じさせないという**解像度の言明**である。
+- エネルギーは**全 accepted step で単調非増加**(max step increase < 0。
+  旧「snapshot 対でゼロ」より強い)。循環 defect 7.67e-4(前登録閾値
+  1e-3 以内)、Poisson 代数残差は全 step 相対 5e-15 以下。
+
+### 出荷済み証拠への von Neumann 監査適用(`outputs/von_neumann_audit_v1`)
+
+出荷済み 3 bundle の全診断行(1470 行、stride 25、step-0 除外 8)を
+`audit_snapshot` で監査(721² scan × 2940 回、51.8 秒)。
+
+| run | 行数 | 不合格行 | worst Heun max\|G\| | 判定 |
+|---|---:|---:|---|---|
+| v1 65×128 | 88 | 0 | 1.0(厳密) | verified-at-recorded-rows |
+| v1 129×256 | 88 | 0 | 1.0(厳密) | verified-at-recorded-rows |
+| **v1 193×384** | 89 | **4** | **1.0000312** | **stability-unverified** |
+| v2 129×256 | 88 | 0 | 1.0(厳密) | verified-at-recorded-rows |
+| v2 257×512 | 92 | 0 | 1.0(厳密) | verified-at-recorded-rows |
+| refinement dt=6e-7/3e-7/1.5e-7 | 147/293/585 | 0 | 1.0(厳密) | verified-at-recorded-rows |
+
+- 不合格 4 行は 193×384 の \(T_1\) 直前(t≈2.12–2.19e-3、CFL_z≈0.1002)。
+  strided 外挿値 1.0016 は「bound ではない」と明示ラベル付き。
+- Euler 予測子段は全 run で 1 を超える(最大 1.0176)— 記録のみ。
+  完成 step の Heun のみを gate する。
+- 制約: stride 25 の記録行のみの被覆。行間の 24 step は未監査
+  (将来 run は `step_stream` で全 step 被覆)。判定語彙は
+  「stability-unverified であって不安定ではない」を全箇所で維持。
+
+### 既存 snapshot の core-width / P1-B 再正規化(`outputs/core_width_audit_v1`)
+
+全 4 解像度 × 5 時刻 × 2 場(u1、\(|\omega|\))の points-per-scale 監査
+(入力 manifest 検証済み、v1/v2 の共有 129×256 は byte 一致を確認)。
+
+- **\(T_1\) の fit 前提は全解像度・両場で不合格**: points_per_front は
+  u1 で 2.57/3.36/4.36/5.43、\(|\omega|\) で 2.55/3.29/4.43/5.70
+  (閾値 7)。**T₁ 増幅ラダーの収束 fit 禁止が機械的に確定**
+  (`convergence_fit_precondition_satisfied_at_final_snapshot = False`)。
+- 計算された正直な例外: t=5e-4 の \(|\omega|\) ラダーのみ全解像度で
+  前提を満たす(front 7.06/14.0/21.0/28.0 点)。早期時刻の front は
+  まだ広いという整合的な結果。
+- **P1-B 表(離散初期最大 vs 連続参照 7569.6226982)**:
+
+  | nr | 離散初期max | a/b | A_grid | A_common |
+  |---|---:|---:|---:|---:|
+  | 65 | 7494.31 | 0.9901 | 6.1148 | **6.0539** |
+  | 129 | 7554.61 | 0.9980 | 12.6957 | **12.6705** |
+  | 193 | 7561.48 | 0.9989 | 15.6280 | **15.6112** |
+  | 257 | 7565.84 | 0.9995 | 17.2588 | **17.2502** |
+
+  分母の格子依存だけで最大 1% 動く。以後の主比較は絶対値と
+  A_common を用い、A_grid は補助値とする(P1-B)。
+- 連続初期最大位置 \(r^*=1/\sqrt{37}\) を数値最大化で 1.2e-16 まで再現。
+  初期最大位置の格子誤差は最大 0.48 セル。
+- 隣接解像度の共通格子差(\(T_1\)、\(|\omega|\) L∞): 6.27e4 → 3.38e4 →
+  1.97e4 と値は減少するが、**微分 L∞ は 4.5e6/5.9e6/5.0e6 と減少しない**
+  — 微分レベルの収束は現ラダーに存在しない(正直に記録)。
+
+### Lean 監査(P0 §7)
+
+`formal/AxiomAudit.lean` を追加し `lake env lean AxiomAudit.lean` を実行:
+**9 定理すべて `[propext, Classical.choice, Quot.sound]` のみ**に依存
+(記録は `docs/formalization_map.md`)。sorry/admit/新規 axiom ゼロ、
+toolchain/mathlib は v4.32.1 固定を再確認。「8659 jobs = 8659 定理」
+という読みの禁止を明文化。
 
 ## 数学的に確認できたこと
 
@@ -718,32 +925,52 @@ baseline manifestの全7 payload、time-convergence manifestの全5 payloadに
 - 非収束の故障注入は判定器へ与える合成誤差系列である。将来のproduction
   solverには、意図的に壊した時間発展を通すend-to-end拒否試験も必要。
 - 文献の適用はまだ存在しない将来候補に対しては行えない。
+- (2026-07-28 追加)出荷済み run の von Neumann 監査は stride 25 の
+  記録行のみを被覆する。行間の step は未監査であり、将来 run の
+  `step_stream` 全 step 被覆でのみ閉じる。
+- (2026-07-28 追加)193×384 run は記録行監査でも stability-unverified
+  (T₁ 直前 4 行、max|G| ≤ 1.0000312)。65×128 の Gate 1 相互比較は
+  時間スキーム依存 ~6 ppm を示したが、193×384 の適応 CFL 0.1 運転点
+  そのものでの相互比較は未実施。
+- (2026-07-28 追加)65×128 の E-29 run では全 step 相対エネルギー収支
+  defect が 0.936 に達する(滑らか control では 4.2e-3 へ収束)。現行
+  解像度では離散エネルギー恒等式が front 上で閉じない。
+- (2026-07-28 追加)隣接解像度の共通格子差は値では減少するが微分 L∞
+  では減少しない。T₁ の全解像度が fit 前提(front ≥ 7 点)を満たさず、
+  増幅ラダーの外挿は blind 判定でも not_in_asymptotic_range。
+- (2026-07-28 追加)`hou_early_time` / `wall_dependence` 実験本体は
+  まだ旧計装(snapshot 系 gate)のまま。次回実行前に `gate_summary`
+  読み出しへの移行が必要(新規 run のみ。既存証拠は不変)。
+- (2026-07-28 追加)GitHub が既定 branch に dependabot 警告 4 件
+  (moderate 2、low 2)を報告している。数値結果には影響しないが未対処。
 
 ## 次に行うべき最小の一手
 
-壁依存性実験の結果を受けて、次の順に進める(項目 2–4 は 2026-07-28 に
-完了したため差し替えた)。
+〔改版 2026-07-28 第 2 セッション。FABLE5_NEXT_TASK_AUDIT の Gate 順序
+(Gate 1–4 が通るまで中後期成長・blow-up fit・AI 候補探索へ進まない)を
+最上位の拘束とする。Gate 1 は合格、Gate 2/3 は既存証拠+新監査で部分的、
+Gate 4 は未実装。〕
 
-1. **軸方向周期性を外す方向(最優先)**。壁依存性実験は、壁効果が最低軸
-   方向モード \(k=2\pi\) の Dirichlet 像応答として指数的に小さいことを
-   0.1–0.5% の精度で同定した。しかしその指数性は \(z\) 周期 1 が
-   \(k\ge2\pi>0\) を強制することの帰結であり、Clay 目標に関係するのは
-   \(k\to0\) を含む全空間側である。次に必要なのは
-   (a) \(z\) 周期を伸ばした族(\(L_z=1,2,4\))で \(k_{\min}=2\pi/L_z\) を
-   下げ、壁効果が指数減衰から代数減衰へ移行するかを測定すること、または
-   (b) 全空間楕円処理(Green 関数・有理基底、handoff §8.3)の設計。
-   (a) は既存実装の config 変更でほぼ測定でき、費用対効果が高い。
-2. **軸近傍解像度の設計判断**。相対軸パリティ 0.706(65×128、\(T_1\))、
-   Cartesian 監査の pointwise 所見、増幅率の未収束はいずれも front 近傍
-   (\(r\approx0.03\)–\(0.05\)、数セル)の未解像を指す。中成長段
-   (\(t_0\) 跨ぎ)へ進む前に、適応 mesh または半周期 sine 対称実装の
-   設計判断を行う。壁を退けてもこの問題は解消しないことが確認された。
-3. **既存 checkpoint の primitive 監査**。`hou_early_time_v1` の snapshot は
-   隣接対を持たないため圧力非依存残差が未評価のまま。snapshot 前後 1 step を
-   追加保存する option を既存実験へ入れれば閉じられる。
-4. **Lean 段階 1 の継続**。F-1(再スケーリング恒等式)と F-2(有限物理
-   時間)は mathlib 既存機能でほぼ届く。F-3 と同じ方針(定義の明示、
-   非スコープの明記、`#print axioms` の記録)で進める。
+1. **Gate 4 の実装(最優先)**: 非周期 \(z\) の有限 box、\(z\) 方向も
+   \(C^\infty\) compact な初期値族、free-space 楕円経路(W-1 の \(z\)
+   非周期版/Green 積分/Hankel)、\(R_{\max}\)/\(Z_{\max}\) 独立拡大、
+   低波数 stress test(`docs/whole_space_transition.md` §7)。その入口
+   として \(L_z\in\{1,2,4\}\) 族(既存実装の config 変更で測定可能)で
+   指数→代数遷移を実測する。
+2. **実験本体の新計装への移行**: `run_hou_early_time` /
+   `run_wall_dependence` の受入検査を `gate_summary`(全 step streaming)
+   読み出しへ切替え、`stage_cfl_limit` の使用を判断する。以後の新規 run
+   はすべて全 step 被覆+3 積分器のうち 2 つ以上での交差確認を要件とする
+   (Heun 単独増幅の候補判定使用は禁止済み)。
+3. **軸近傍解像度の設計判断**: T₁ の fit 前提不合格(front ≤ 5.7 点)、
+   相対軸パリティ 0.706、微分レベルの共通格子差の非減少はいずれも
+   front 未解像を指す。適応 mesh または半周期 sine 実装の設計判断を、
+   中成長段の前に行う。
+4. **既存 checkpoint の primitive 監査の完結**: snapshot 前後 1 step の
+   追加保存 option(既存実験へ)。
+5. **Lean 段階 1 の継続**: F-1(再スケーリング恒等式)と F-4(証明書
+   不等式)。F-2/F-3 と同じ方針(定義明示、非スコープ明記、
+   `#print axioms` 記録、`AxiomAudit.lean` へ追記)。
 
 これらが通っても、長時間探索、AI最適化、特異点fitへ自動的には進まない。
 動的再スケーリング探索の前に、全空間tailと候補用離散化の証明可能な設計を

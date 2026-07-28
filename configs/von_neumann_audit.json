@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "experiment_id": "von_neumann_audit_v1",
+  "description": "Frozen-coefficient von Neumann audit of every recorded operating point of the shipped Heun bundles hou_early_time_v1, hou_early_time_v2_hires and hou_time_refinement_v1. Each diagnostics row supplies max_abs_u_r, max_abs_u_z, dt and viscosity; the grid spacings are dr = r_max/(nr-1) and dz = z_period/nz with r_max = 1 and z period 1. Every row is scanned with ns_certificate_lab.von_neumann.audit_snapshot for the Heun full step and its explicit-Euler predictor stage over a 721x721 wavenumber sample, and each run (one nr x nz of the resolution series, one refinement level of the time-refinement series) receives a verdict computed from its own rows. The audited bundles record one diagnostic row every 25 accepted steps, so the audit covers the recorded rows and nothing between them.",
+  "interpretation": "A failing row or run is stability-unverified, not unstable. The frozen-coefficient model freezes the measured velocity maxima over the whole grid and omits the variable-coefficient commutators, the axis row, the wall rows, the per-stage elliptic solve and the zeroth-order production terms; a failure is grounds for suspicion and for re-running at a smaller step, never a proof that a recorded trajectory grew. Acceptance of this bundle means the audit executed correctly, not that the audited runs are stable. Nothing here is evidence for or against singularity formation.",
+  "sources": [
+    {
+      "label": "hou_early_time_v1",
+      "bundle": "outputs/hou_early_time_v1",
+      "stride": 25,
+      "r_max": 1.0,
+      "z_period": 1.0,
+      "grid": null,
+      "extra_run_key_columns": []
+    },
+    {
+      "label": "hou_early_time_v2_hires",
+      "bundle": "outputs/hou_early_time_v2_hires",
+      "stride": 25,
+      "r_max": 1.0,
+      "z_period": 1.0,
+      "grid": null,
+      "extra_run_key_columns": []
+    },
+    {
+      "label": "hou_time_refinement_v1",
+      "bundle": "outputs/hou_time_refinement_v1",
+      "stride": 25,
+      "r_max": 1.0,
+      "z_period": 1.0,
+      "grid": [65, 128],
+      "extra_run_key_columns": ["level_index", "requested_dt"]
+    }
+  ],
+  "methods": ["heun"],
+  "tolerance": 1e-12,
+  "n_theta": 721
+}
