@@ -1,7 +1,7 @@
 # Project status
 
-最終更新: 2026-07-28(branch `fable5-mainline`)
-状態: **Poisson ゲート統合・2 実装相互検証、Hou 設定の一次資料監査、壁付き非線形 production ソルバ、早期 Hou 実行までを完了。未知候補探索は未開始。**
+最終更新: 2026-07-28 第 2 セッション(branch `fable5-mainline`)
+状態: **FABLE5_NEXT_TASK_AUDIT の P0 ゲート(von Neumann 安定性監査、全 step streaming acceptance、core-width fit 前提、blind 外挿、エネルギー収支、Gate 1 積分器相互比較)を実装・実行済み。出荷済み Heun 実行は stability-unverified に再分類(時間スキーム依存の実測上界は ~6 ppm)。T₁ 増幅ラダーの収束 fit は前提不合格により機械的に禁止。Gate 4(真の全空間移行)は仕様のみで未実装。未知候補探索は未開始。**
 
 ## 2026-07-28 セッションの追加結果(fable5-mainline)
 
@@ -562,6 +562,57 @@ argmax 1 セル以内。
   旧「snapshot 対でゼロ」より強い)。循環 defect 7.67e-4(前登録閾値
   1e-3 以内)、Poisson 代数残差は全 step 相対 5e-15 以下。
 
+### 出荷済み証拠への von Neumann 監査適用(`outputs/von_neumann_audit_v1`)
+
+出荷済み 3 bundle の全診断行(1470 行、stride 25、step-0 除外 8)を
+`audit_snapshot` で監査(721² scan × 2940 回、51.8 秒)。
+
+| run | 行数 | 不合格行 | worst Heun max\|G\| | 判定 |
+|---|---:|---:|---|---|
+| v1 65×128 | 88 | 0 | 1.0(厳密) | verified-at-recorded-rows |
+| v1 129×256 | 88 | 0 | 1.0(厳密) | verified-at-recorded-rows |
+| **v1 193×384** | 89 | **4** | **1.0000312** | **stability-unverified** |
+| v2 129×256 | 88 | 0 | 1.0(厳密) | verified-at-recorded-rows |
+| v2 257×512 | 92 | 0 | 1.0(厳密) | verified-at-recorded-rows |
+| refinement dt=6e-7/3e-7/1.5e-7 | 147/293/585 | 0 | 1.0(厳密) | verified-at-recorded-rows |
+
+- 不合格 4 行は 193×384 の \(T_1\) 直前(t≈2.12–2.19e-3、CFL_z≈0.1002)。
+  strided 外挿値 1.0016 は「bound ではない」と明示ラベル付き。
+- Euler 予測子段は全 run で 1 を超える(最大 1.0176)— 記録のみ。
+  完成 step の Heun のみを gate する。
+- 制約: stride 25 の記録行のみの被覆。行間の 24 step は未監査
+  (将来 run は `step_stream` で全 step 被覆)。判定語彙は
+  「stability-unverified であって不安定ではない」を全箇所で維持。
+
+### 既存 snapshot の core-width / P1-B 再正規化(`outputs/core_width_audit_v1`)
+
+全 4 解像度 × 5 時刻 × 2 場(u1、\(|\omega|\))の points-per-scale 監査
+(入力 manifest 検証済み、v1/v2 の共有 129×256 は byte 一致を確認)。
+
+- **\(T_1\) の fit 前提は全解像度・両場で不合格**: points_per_front は
+  u1 で 2.57/3.36/4.36/5.43、\(|\omega|\) で 2.55/3.29/4.43/5.70
+  (閾値 7)。**T₁ 増幅ラダーの収束 fit 禁止が機械的に確定**
+  (`convergence_fit_precondition_satisfied_at_final_snapshot = False`)。
+- 計算された正直な例外: t=5e-4 の \(|\omega|\) ラダーのみ全解像度で
+  前提を満たす(front 7.06/14.0/21.0/28.0 点)。早期時刻の front は
+  まだ広いという整合的な結果。
+- **P1-B 表(離散初期最大 vs 連続参照 7569.6226982)**:
+
+  | nr | 離散初期max | a/b | A_grid | A_common |
+  |---|---:|---:|---:|---:|
+  | 65 | 7494.31 | 0.9901 | 6.1148 | **6.0539** |
+  | 129 | 7554.61 | 0.9980 | 12.6957 | **12.6705** |
+  | 193 | 7561.48 | 0.9989 | 15.6280 | **15.6112** |
+  | 257 | 7565.84 | 0.9995 | 17.2588 | **17.2502** |
+
+  分母の格子依存だけで最大 1% 動く。以後の主比較は絶対値と
+  A_common を用い、A_grid は補助値とする(P1-B)。
+- 連続初期最大位置 \(r^*=1/\sqrt{37}\) を数値最大化で 1.2e-16 まで再現。
+  初期最大位置の格子誤差は最大 0.48 セル。
+- 隣接解像度の共通格子差(\(T_1\)、\(|\omega|\) L∞): 6.27e4 → 3.38e4 →
+  1.97e4 と値は減少するが、**微分 L∞ は 4.5e6/5.9e6/5.0e6 と減少しない**
+  — 微分レベルの収束は現ラダーに存在しない(正直に記録)。
+
 ### Lean 監査(P0 §7)
 
 `formal/AxiomAudit.lean` を追加し `lake env lean AxiomAudit.lean` を実行:
@@ -874,32 +925,52 @@ baseline manifestの全7 payload、time-convergence manifestの全5 payloadに
 - 非収束の故障注入は判定器へ与える合成誤差系列である。将来のproduction
   solverには、意図的に壊した時間発展を通すend-to-end拒否試験も必要。
 - 文献の適用はまだ存在しない将来候補に対しては行えない。
+- (2026-07-28 追加)出荷済み run の von Neumann 監査は stride 25 の
+  記録行のみを被覆する。行間の step は未監査であり、将来 run の
+  `step_stream` 全 step 被覆でのみ閉じる。
+- (2026-07-28 追加)193×384 run は記録行監査でも stability-unverified
+  (T₁ 直前 4 行、max|G| ≤ 1.0000312)。65×128 の Gate 1 相互比較は
+  時間スキーム依存 ~6 ppm を示したが、193×384 の適応 CFL 0.1 運転点
+  そのものでの相互比較は未実施。
+- (2026-07-28 追加)65×128 の E-29 run では全 step 相対エネルギー収支
+  defect が 0.936 に達する(滑らか control では 4.2e-3 へ収束)。現行
+  解像度では離散エネルギー恒等式が front 上で閉じない。
+- (2026-07-28 追加)隣接解像度の共通格子差は値では減少するが微分 L∞
+  では減少しない。T₁ の全解像度が fit 前提(front ≥ 7 点)を満たさず、
+  増幅ラダーの外挿は blind 判定でも not_in_asymptotic_range。
+- (2026-07-28 追加)`hou_early_time` / `wall_dependence` 実験本体は
+  まだ旧計装(snapshot 系 gate)のまま。次回実行前に `gate_summary`
+  読み出しへの移行が必要(新規 run のみ。既存証拠は不変)。
+- (2026-07-28 追加)GitHub が既定 branch に dependabot 警告 4 件
+  (moderate 2、low 2)を報告している。数値結果には影響しないが未対処。
 
 ## 次に行うべき最小の一手
 
-壁依存性実験の結果を受けて、次の順に進める(項目 2–4 は 2026-07-28 に
-完了したため差し替えた)。
+〔改版 2026-07-28 第 2 セッション。FABLE5_NEXT_TASK_AUDIT の Gate 順序
+(Gate 1–4 が通るまで中後期成長・blow-up fit・AI 候補探索へ進まない)を
+最上位の拘束とする。Gate 1 は合格、Gate 2/3 は既存証拠+新監査で部分的、
+Gate 4 は未実装。〕
 
-1. **軸方向周期性を外す方向(最優先)**。壁依存性実験は、壁効果が最低軸
-   方向モード \(k=2\pi\) の Dirichlet 像応答として指数的に小さいことを
-   0.1–0.5% の精度で同定した。しかしその指数性は \(z\) 周期 1 が
-   \(k\ge2\pi>0\) を強制することの帰結であり、Clay 目標に関係するのは
-   \(k\to0\) を含む全空間側である。次に必要なのは
-   (a) \(z\) 周期を伸ばした族(\(L_z=1,2,4\))で \(k_{\min}=2\pi/L_z\) を
-   下げ、壁効果が指数減衰から代数減衰へ移行するかを測定すること、または
-   (b) 全空間楕円処理(Green 関数・有理基底、handoff §8.3)の設計。
-   (a) は既存実装の config 変更でほぼ測定でき、費用対効果が高い。
-2. **軸近傍解像度の設計判断**。相対軸パリティ 0.706(65×128、\(T_1\))、
-   Cartesian 監査の pointwise 所見、増幅率の未収束はいずれも front 近傍
-   (\(r\approx0.03\)–\(0.05\)、数セル)の未解像を指す。中成長段
-   (\(t_0\) 跨ぎ)へ進む前に、適応 mesh または半周期 sine 対称実装の
-   設計判断を行う。壁を退けてもこの問題は解消しないことが確認された。
-3. **既存 checkpoint の primitive 監査**。`hou_early_time_v1` の snapshot は
-   隣接対を持たないため圧力非依存残差が未評価のまま。snapshot 前後 1 step を
-   追加保存する option を既存実験へ入れれば閉じられる。
-4. **Lean 段階 1 の継続**。F-1(再スケーリング恒等式)と F-2(有限物理
-   時間)は mathlib 既存機能でほぼ届く。F-3 と同じ方針(定義の明示、
-   非スコープの明記、`#print axioms` の記録)で進める。
+1. **Gate 4 の実装(最優先)**: 非周期 \(z\) の有限 box、\(z\) 方向も
+   \(C^\infty\) compact な初期値族、free-space 楕円経路(W-1 の \(z\)
+   非周期版/Green 積分/Hankel)、\(R_{\max}\)/\(Z_{\max}\) 独立拡大、
+   低波数 stress test(`docs/whole_space_transition.md` §7)。その入口
+   として \(L_z\in\{1,2,4\}\) 族(既存実装の config 変更で測定可能)で
+   指数→代数遷移を実測する。
+2. **実験本体の新計装への移行**: `run_hou_early_time` /
+   `run_wall_dependence` の受入検査を `gate_summary`(全 step streaming)
+   読み出しへ切替え、`stage_cfl_limit` の使用を判断する。以後の新規 run
+   はすべて全 step 被覆+3 積分器のうち 2 つ以上での交差確認を要件とする
+   (Heun 単独増幅の候補判定使用は禁止済み)。
+3. **軸近傍解像度の設計判断**: T₁ の fit 前提不合格(front ≤ 5.7 点)、
+   相対軸パリティ 0.706、微分レベルの共通格子差の非減少はいずれも
+   front 未解像を指す。適応 mesh または半周期 sine 実装の設計判断を、
+   中成長段の前に行う。
+4. **既存 checkpoint の primitive 監査の完結**: snapshot 前後 1 step の
+   追加保存 option(既存実験へ)。
+5. **Lean 段階 1 の継続**: F-1(再スケーリング恒等式)と F-4(証明書
+   不等式)。F-2/F-3 と同じ方針(定義明示、非スコープ明記、
+   `#print axioms` 記録、`AxiomAudit.lean` へ追記)。
 
 これらが通っても、長時間探索、AI最適化、特異点fitへ自動的には進まない。
 動的再スケーリング探索の前に、全空間tailと候補用離散化の証明可能な設計を
