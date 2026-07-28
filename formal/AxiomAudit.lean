@@ -2,6 +2,7 @@ import NSSingularity.ClayStatement
 import NSSingularity.VelocityRecovery
 import NSSingularity.FiniteTime
 import NSSingularity.GalerkinNoBlowup
+import NSSingularity.FiniteModeNoGo
 
 /-!
 # Axiom audit (P0 Lean gate)
@@ -39,3 +40,23 @@ open NSSingularity
 #print axioms NSSingularity.galerkin_norm_le
 #print axioms NSSingularity.galerkin_norm_le_of_mem
 #print axioms NSSingularity.galerkin_not_tendsto_atTop
+
+-- F-12: the trilinear cancellation in the Fourier representation.
+#print axioms NSSingularity.advectionForm_eq_zero
+
+-- F-13: norm equivalence constants on the finite Fourier space.
+#print axioms NSSingularity.weighted_sq_sum_le
+#print axioms NSSingularity.sq_sum_abs_le_card_mul_sum_sq
+#print axioms NSSingularity.sum_abs_le_sqrt_card_mul_sqrt_sum_sq
+
+-- F-7a: a bounded trajectory reaches the finite-time endpoint.
+#print axioms NSSingularity.intervalIntegrable_of_continuousOn_bounded
+#print axioms NSSingularity.exists_tendsto_nhdsWithin_of_norm_deriv_le
+
+-- F-7b: local continuation of the autonomous Galerkin system.
+#print axioms NSSingularity.contDiff_galerkinField
+#print axioms NSSingularity.exists_local_galerkin_solution
+
+-- The logical connection: a fixed-finite-mode candidate never breaks down.
+#print axioms NSSingularity.not_isBreakdownCandidate_of_galerkin
+#print axioms NSSingularity.galerkin_bounded_and_reaches_endpoint

@@ -1,0 +1,29 @@
+{
+  "payloads": {
+    "cartesian_audit.csv": {
+      "bytes": 553,
+      "sha256": "ae9e85b1a81cf8973321b2d4ac897a8802e0b7612b6cac3d8b66984fbc284903"
+    },
+    "config.snapshot.json": {
+      "bytes": 1636,
+      "sha256": "c58236603f0e3f398c9c698a657c9a581126b6475a3e17f18f670974f9623721"
+    },
+    "domain_enlargement.csv": {
+      "bytes": 1270,
+      "sha256": "d39ccf6ffcd3d84343f9cd8d40048059160e2ceb20573ab748ddcef2580c6015"
+    },
+    "grid_refinement.csv": {
+      "bytes": 975,
+      "sha256": "4cb39e7c7555a1a971f96ed756510cfff1dfeb069e4100634e0ed196f88b521b"
+    },
+    "summary.json": {
+      "bytes": 23521,
+      "sha256": "29e89714f732bbf602381e47dd35e21c2d76a91f5361d62c517ea463168e1637"
+    },
+    "tail_error.csv": {
+      "bytes": 849,
+      "sha256": "417c20d9f1faa1e1fc4551ae557e0100169d30824b0ee269366853ae5a23f0d9"
+    }
+  },
+  "schema_version": 1
+}

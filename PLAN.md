@@ -150,7 +150,35 @@ Exit gate: Gates 1–3 measured and recorded (pass or documented failure);
 Gate 4 implemented and passed.  Until then the Hou mechanism is not called
 an \(\mathbb R^3\) candidate.
 
-## Phase 2.9 — Track F finite-mode class closed (completed, 2026-07-29)
+## Phase 2.85 — Gate 4, the linear whole-space elliptic gate (completed, 2026-07-29)
+
+Gate 4 of Phase 2.8 is implemented in `src/ns_certificate_lab/whole_space_gate.py`
+and passed all twenty preregistered acceptance checks in
+`outputs/whole_space_gate4_v1`.
+
+- Non-periodic `z` on a finite box, with the axial second difference
+  diagonalised by a dense **discrete sine transform built from `numpy.sin`** —
+  the non-Fourier independent axial path this repository has listed as open
+  since 2026-07-28.
+- An **exact closed-form free-space reference**: `L5` is the axisymmetric
+  five-dimensional Laplacian, so Newton's theorem solves a compactly supported
+  radial bump in closed form, and `z`-translation invariance makes superpositions
+  exact too.  No quadrature, no discretisation on the reference side.
+- Independent `R_max` and `Z_max` enlargement, with the truncation component
+  isolated by common-interior differencing because the direct comparison
+  saturates at the discretisation floor.
+- The periodic zero axial mode is shown to overstate the far field by exactly
+  `2R/L`, and the non-periodic Dirichlet operator has **no zero mode at all**.
+- An a posteriori bound on the continuum truncation error, dominating every
+  measured monopole row.
+- An independent Cartesian audit of the recovered velocity: `div u = 0` and
+  `curl u = omega1 (-y, x, 0)`, both second order.
+
+Exit gate: reached.  Coupling the solver into a time-stepper is now permitted.
+Passing a **linear** gate licenses no claim about the nonlinear evolution, and
+the next obstacle is resolution design, not the elliptic solve.
+
+## Phase 2.9 — Track F fixed-finite-mode class closed (completed, 2026-07-29)
 
 `START_NEW_SESSION_NAVIER_STOKES.md` section 6 "candidate A" proposed a symbolic
 search over low-order divergence-free Fourier ansaetze for a residual force that

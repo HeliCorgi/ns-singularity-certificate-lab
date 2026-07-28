@@ -1,0 +1,93 @@
+{
+  "balanced_source": {
+    "bumps": [
+      {
+        "amplitude": 1.0,
+        "center": 0.9,
+        "power": 6,
+        "radius": 1.2
+      },
+      {
+        "amplitude": -4.213991769547325,
+        "center": -0.9,
+        "power": 6,
+        "radius": 0.9
+      }
+    ],
+    "label": "zero_mass_pair"
+  },
+  "cartesian": {
+    "half_width": 3.0,
+    "points": [
+      33,
+      65,
+      129
+    ]
+  },
+  "domain_enlargement": {
+    "fixed_extent": 20.0,
+    "reference_size": 45.0,
+    "sizes": [
+      5.0,
+      7.5,
+      11.25
+    ],
+    "spacing": 0.125
+  },
+  "experiment": "whole_space_gate4_linear",
+  "fault_injection": {
+    "axis_coefficient": 4.0,
+    "radial_drift_coefficient": 1.0,
+    "understated_source_factor": 1000.0
+  },
+  "grid_refinement": {
+    "extent": 8.0,
+    "radial_points": [
+      65,
+      129,
+      257
+    ]
+  },
+  "interior_radius": 3.0,
+  "schema_version": 1,
+  "separation": {
+    "axial_half_periods": [
+      6.0,
+      12.0
+    ],
+    "interior_radius": 2.5,
+    "radial_extent": 8.0,
+    "spacing": 0.25
+  },
+  "source": {
+    "bumps": [
+      {
+        "amplitude": 1.0,
+        "center": 0.5,
+        "power": 6,
+        "radius": 1.2
+      },
+      {
+        "amplitude": 0.6,
+        "center": -0.8,
+        "power": 6,
+        "radius": 0.9
+      }
+    ],
+    "label": "monopole_pair"
+  },
+  "zero_frequency": {
+    "axial_half_extents": [
+      4.0,
+      8.0,
+      16.0
+    ],
+    "axial_period": 12.0,
+    "radial_extents": [
+      4.0,
+      8.0,
+      16.0,
+      32.0
+    ]
+  }
+}

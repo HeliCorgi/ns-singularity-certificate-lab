@@ -26,7 +26,11 @@
 を指示している。
 
 本文書は **step 5 を実行せず、step 6 を直接証明する**。理由は単純で、
-step 1–2 が定義する ansatz 族は **空であることが証明できる**からである。
+step 1–2 が定義する ansatz 族 — すなわち **固定有限次元・固定帯域**の
+ansatz — は **空であることが証明できる**からである。
+**これは Track F 全体の除外ではない。** 帯域幅が `t→T⁻` で発散する候補は
+本書の射程外であり、その必要条件は
+[track_f_shell_constraints.md](track_f_shell_constraints.md) で別途導出した。
 探索を回してもゼロ件になることが事前に分かっている以上、探索は測定ではなく
 計算資源の浪費であり、リポジトリの疫学規則(`AGENTS.md`)に照らしても
 「陰性の探索結果」ではなく「除外定理」として保存するのが正しい。
@@ -224,7 +228,7 @@ Ladyzhenskaya–Prodi–Serrin 条件により、`T` が特異時刻であるた
 
 (N-1)〜(N-3) は本リポジトリの Track U 側で既に確立している臨界 `L³` 障害
 (`docs/research_notes/critical_l3_obstruction.md`)と**同じ結論を外力ありの
-場合へ拡張**する。外力を許しても、破綻は劣臨界ノルムでは起こり得ない。
+場合へ拡張**する。すなわち `L²` エネルギーと時間積分された `H¹` 散逸は、滑らかな外力の下で有限時間内に自動的に有界であり、特異点の直接的な発散指標にはできない。
 
 ---
 
@@ -250,8 +254,8 @@ Leray (1934) / Hopf (1951) による Leray–Hopf 弱解の構成は、まさに
 「有限次元 Galerkin 系はエネルギー恒等式により大域可解」という補題の上に
 立っている。本書の寄与は新しい定理ではなく、
 
-1. その古典的事実が **Track F の ansatz 探索空間をちょうど空にする**という
-   接続を明示したこと、
+1. その古典的事実が **固定有限次元・固定帯域の Track-F 探索空間をちょうど
+   空にする**という接続を明示したこと(Track F 全体ではない)、
 2. Lemma 1 を当該モード集合に対し **厳密算術で機械検証**したこと、
 3. Theorem 1 (i) の中核不等式を **Lean 4 で証明**したこと(§8)、
 
@@ -285,5 +289,18 @@ Leray (1934) / Hopf (1951) による Leray–Hopf 弱解の構成は、まさに
    Fourier 台が広がる族)のみが残る。これは Track U の動的再スケーリング
    探索と同じ困難であり、「外力を使えば楽になる」という当初の期待は
    (N-1)(N-2) により**否定された**。
-3. F-7(ODE 延長の Lean 化)は mathlib の `ODE_solution_unique` /
-   Picard–Lindelöf で閉じられる小さな対象であり、段階 1 の次候補。
+3. F-7(ODE 延長の Lean 化)は 2026-07-29 第 4 便で**部分的に閉じた**。
+   実際に mathlib の API を確認した結果は次のとおりである。
+   - **F-7a(端点到達)**: `intervalIntegral.integral_eq_sub_of_hasDerivAt` と
+     `intervalIntegral.continuousOn_primitive_interval` で閉じた
+     (`NSSingularity.exists_tendsto_nhdsWithin_of_norm_deriv_le`)。
+   - **F-7b(端点からの局所延長)**: 時間非依存の場合は
+     `ContDiffAt.exists_forall_mem_closedBall_exists_eq_forall_mem_Ioo_hasDerivAt₀`
+     が直接使えた(`NSSingularity.exists_local_galerkin_solution`)。
+   - **F-7c(時間依存外力での延長、未着手)**: 上記 API は自励系専用で、
+     `g(t)` が時間依存だと**直接は適用できない**。必要な継続補題は
+     (i) `E × ℝ` 上への自励化(第 2 成分が `s(t)=t+c` であることの証明を含む)、
+     または (ii) 場 `(t,x) ↦ g t + B x x + A x` に対する
+     `IsPicardLindelof` の直接構成(uncurry の連続性、球上で `x` について
+     一様な Lipschitz 定数、ノルム上界の 3 点)。どちらも mathlib の
+     現行 API の範囲だが未実施であり、**公理化はしていない**。

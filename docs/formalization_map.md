@@ -10,7 +10,7 @@
 validated numerical object / connected physical solution /
 finite-time breakdown theorem / Clay-complete result)を用いる。
 
-最終更新: 2026-07-29(branch `fable5-mainline`、第 3 便)
+最終更新: 2026-07-29(branch `fable5-mainline`、第 4 便)
 
 **Lean 識別子 `F-1`〜`F-11` の確定登録簿は `docs/final_target.md` §4 にある。**
 外部ノート由来の採番衝突はそこで解消済みで、本書の節見出しはその登録簿に従う。
@@ -299,6 +299,64 @@ M0 (Clay命題固定)
   `ODE_solution_unique` 系。多項式右辺は局所 Lipschitz なので追加理論は不要。
 - **数値のみの部分:** なし(純粋な常微分方程式論)。
 
+### F-7a / F-7b Galerkin ODE の延長 — **部分的に形式化済み**(2026-07-29 第 4 便)
+
+- **状態:** `formal/NSSingularity/FiniteModeNoGo.lean`。`lake build` 成功、
+  `sorry`・`admit`・新規 `axiom` なし。
+- **F-7a(端点到達、形式化済み)**: `[0,T)` 上で微分可能・導関数が連続かつ
+  有界な曲線は `t → T⁻` で極限を持つ。
+  `NSSingularity.exists_tendsto_nhdsWithin_of_norm_deriv_le`。
+  補助: `intervalIntegrable_of_continuousOn_bounded`。
+  使用した mathlib: `intervalIntegral.integral_eq_sub_of_hasDerivAt`、
+  `intervalIntegral.continuousOn_primitive_interval`、
+  `Integrable.of_bound`、`intervalIntegrable_iff_integrableOn_Ioo_of_le`。
+- **F-7b(自励系の局所延長、形式化済み)**:
+  `NSSingularity.exists_local_galerkin_solution`、
+  `NSSingularity.contDiff_galerkinField`。使用した mathlib:
+  `ContDiffAt.exists_forall_mem_closedBall_exists_eq_forall_mem_Ioo_hasDerivAt₀`、
+  `ContDiff.clm_apply`、`ContinuousLinearMap.contDiff`。
+- **F-7c(時間依存外力、未着手)**: 上記 API は **`f : E → E` の自励系専用**で
+  あり、`g(t)` が時間依存だと直接適用できない。必要な継続補題は
+  `docs/final_target.md` §4.1 に 2 経路として明記した。**公理化していない。**
+- **論理接続**: `NSSingularity.not_isBreakdownCandidate_of_galerkin` が
+  F-6 の状態上界 → 速度上界 → F-7a を連結し、
+  「固定有限モード候補は破綻候補になれない」を結論する。
+  `IsBreakdownCandidate u T := 0 < T ∧ ¬∃L, Tendsto u (𝓝[<]T) (𝓝 L)`。
+- **接続していないこと**: `ClayStatement.lean` との接続。それには
+  `V_S` と係数空間の Fourier 同型、`⟨u,(u·∇)u⟩` と `advectionForm` の同一視
+  (解析側は mathlib にトーラス関数空間がなく未着手)、および
+  Navier–Stokes の局所一意性理論(mathlib になし)が要る。
+
+### F-12 三線型相殺の Fourier 表現 — **形式化済み**(2026-07-29 第 4 便)
+
+- **命題:** `k_i · a_i = 0` を満たす振幅族に対し、共鳴 3 次形式
+  `Σ_{p+q+s=0} (a_q·k_s)(a_p·a_s)` は恒等的にゼロ。
+- **Lean 定理名:** `NSSingularity.advectionForm_eq_zero`。
+  定義 `dotAmp`(双線型内積)、`resonantTriples`、`advectionForm`。
+- **証明:** `p ↔ s` の入れ替えが共鳴集合の対合であることを
+  `Finset.sum_nbij'` で使い、`2·form = Σ (a_p·a_s)(a_q·(k_p+k_s))` を
+  `k_p+k_s = −k_q` と発散ゼロ条件で消す。
+- **形式化していないこと:** これは **Fourier 表現での代数的恒等式**であり、
+  `∫_{𝕋³} u·(u·∇)u = 0` という多様体上の積分の形式化ではない。
+  両者を繋ぐには mathlib にないトーラス関数空間と Fourier 同型が要る。
+- 対応する厳密整数演算の機械検証は
+  `src/ns_certificate_lab/galerkin_obstruction.py` の
+  `verify_trilinear_cancellation`。
+
+### F-13 有限 Fourier 空間のノルム同値 — **形式化済み**(2026-07-29 第 4 便)
+
+- **命題:** (a) 重み付き和 `Σ w_i c_i² ≤ W Σ c_i²`(`w_i ≤ W`)、
+  (b) Cauchy–Schwarz `(Σ|c_i|)² ≤ |S| Σ c_i²` とその平方根形。
+- **Lean 定理名:** `NSSingularity.weighted_sq_sum_le`、
+  `NSSingularity.sq_sum_abs_le_card_mul_sum_sq`、
+  `NSSingularity.sum_abs_le_sqrt_card_mul_sqrt_sum_sq`。
+- これらは note の `‖u‖_{H^s} ≤ (1+4π²R_S²)^{s/2}‖u‖` と
+  `‖∂^α u‖_∞ ≤ (2πR_S)^{|α|}√|S|‖u‖` が使う定数そのものである。
+  「有限次元空間ではノルムが同値」という抽象命題ではなく、
+  実際に使う明示定数の形で形式化した。
+- 使用した mathlib: `Finset.sq_sum_le_card_mul_sum_sq`(Chebyshev)、
+  `Real.le_sqrt_of_sq_le`、`Real.sqrt_mul`。
+
 ### F-5 最終 Clay 反例命題までの依存関係
 
 段階 0 として `formal/NSSingularity/ClayStatement.lean` に (A)–(D) と
@@ -335,8 +393,10 @@ F-5 (Clay命題定義)
 'NSSingularity.tendsto_physicalTime_atTop' depends on axioms: [propext, Classical.choice, Quot.sound]
 ```
 
-2026-07-29 第 3 便で F-6 の 5 定理を追記し、`lake env lean AxiomAudit.lean` は
-全 14 行について同じ古典公理のみを報告した:
+2026-07-29 第 4 便で F-7a/F-7b/F-12/F-13 の 10 定理をさらに追記し、
+`lake env lean AxiomAudit.lean` は**全 24 行**について同じ古典公理
+`[propext, Classical.choice, Quot.sound]` のみを報告した。第 3 便で追記した
+F-6 の 5 定理は次のとおり:
 
 ```text
 'NSSingularity.norm_le_of_energy_inequality' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -348,8 +408,9 @@ F-5 (Clay命題定義)
 
 同日、`git ls-files formal | xargs grep -InE '\bsorry\b|\badmit\b|^[[:space:]]*axiom '`
 は文書コメント中の言及のみを返し、コード中の `sorry`/`admit`/新規 `axiom` は
-ゼロ。`lake build` は 2026-07-28 に 8659 jobs、F-6 追加後は 8660 jobs で成功 —
-これは**コンパイルジョブ数**であり、「8660 個の定理を証明した」ことを
+ゼロ。`lake build` は 2026-07-28 に 8659 jobs、F-6 追加後は 8660 jobs、
+F-7a/F-7b/F-12/F-13 追加後は 8661 jobs で成功 —
+これは**コンパイルジョブ数**であり、「8661 個の定理を証明した」ことを
 意味しない。証明済みの命題は本書に列挙されたもののみである。
 `lean-toolchain` は leanprover/lean4:v4.32.1、mathlib は v4.32.1 タグに固定。
 

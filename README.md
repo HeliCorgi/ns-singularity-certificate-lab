@@ -203,6 +203,19 @@ angle=0\) を**厳密整数演算**で
 陰性結果ではなく**除外定理**です
 ([docs/research_notes/track_f_finite_mode_nogo.md](docs/research_notes/track_f_finite_mode_nogo.md))。
 
+### 11. 全空間 Gate 4(線形楕円ゲート、約 1 分)
+
+```console
+python -m experiments.run_whole_space_gate4 --config configs/whole_space_gate4.json --output-dir outputs/whole_space_gate4_replay
+```
+
+非周期 \(z\) の有限 box 上で \(-\mathcal L_5\psi_1=\omega_1\) を解き、
+**閉形式の厳密な自由空間参照解**に対して格子細分・領域拡大・尾部上界・
+周期像分離・独立 Cartesian 検査を測定します。軸方向は FFT を使わない
+密な離散サイン変換で、既存ソルバと規約を共有しません。これは**線形**
+ゲートであり、非線形発展について何も主張しません
+([docs/whole_space_transition.md](docs/whole_space_transition.md))。
+
 より厳密な再現プロトコルは [docs/reproducibility.md](docs/reproducibility.md)
 を参照してください。
 

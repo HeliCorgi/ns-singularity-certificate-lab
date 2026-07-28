@@ -62,7 +62,8 @@ formal/
     ├── ClayStatement.lean      # 段階 0(定義のみ、sorry なし)
     ├── VelocityRecovery.lean   # 段階 1 / F-3(E-14/E-15、証明あり、sorry なし)
     ├── FiniteTime.lean         # 段階 1 / F-2(有限物理時間、証明あり、sorry なし)
-    └── GalerkinNoBlowup.lean   # 段階 1 / F-6(Galerkin エネルギー上界、証明あり、sorry なし)
+    ├── GalerkinNoBlowup.lean   # 段階 1 / F-6(Galerkin エネルギー上界、証明あり、sorry なし)
+    └── FiniteModeNoGo.lean     # 段階 1 / F-7a,F-7b,F-12,F-13(証明あり、sorry なし)
 ```
 
 以降の段階(1: 有限次元恒等式、2: 解析的な橋、3: 数値証明書、4: 最終定理)は
@@ -242,3 +243,32 @@ Dissipative  A   :=  ∀ x, ⟪x, A x⟫ ≤ 0          -- ⟪u, νΔu⟫ = -ν�
 4. `ClayStatement.lean` との接続はない。したがって本ファイルは
    Clay 命題について何も主張しない。除外できるのは、明示的に限定された
    ansatz クラスだけである。
+
+## 段階 1 — F-7a / F-7b / F-12 / F-13(`NSSingularity/FiniteModeNoGo.lean`)
+
+固定有限モード Track-F no-go の Lean 側を完成させるファイル。詳細は
+`docs/formalization_map.md` の該当節にある。要約:
+
+| 定理 | 主張 |
+|---|---|
+| `advectionForm_eq_zero`(F-12) | 共鳴 3 次形式 `Σ_{p+q+s=0}(a_q·k_s)(a_p·a_s)` は `k_i·a_i=0` の下で恒等的にゼロ |
+| `weighted_sq_sum_le`(F-13) | `Σ w_i c_i² ≤ W Σ c_i²` — `H^s` 対 `L²` の定数 |
+| `sq_sum_abs_le_card_mul_sum_sq`、`sum_abs_le_sqrt_card_mul_sqrt_sum_sq`(F-13) | `(Σ|c|)² ≤ |S| Σc²` — `L^∞` 対 `L²` の定数 |
+| `exists_tendsto_nhdsWithin_of_norm_deriv_le`(F-7a) | 有界導関数の曲線は `t→T⁻` で極限を持つ |
+| `exists_local_galerkin_solution`(F-7b) | 自励 Galerkin 場は任意の点を通る両側局所解を持つ |
+| `not_isBreakdownCandidate_of_galerkin` | F-6 → 速度上界 → F-7a を連結し、固定有限モード候補が破綻候補になれないことを結論 |
+
+`sorry`・`admit`・新規 `axiom` はない。全 10 定理の `#print axioms` は
+`[propext, Classical.choice, Quot.sound]`。
+
+### 証明していないこと
+
+1. **F-12 は Fourier 表現の代数的恒等式**であって、`∫_{𝕋³}u·(u·∇)u = 0` の
+   形式化ではない。両者を繋ぐトーラス関数空間と Fourier 同型は mathlib にない。
+2. **F-7c(時間依存外力での局所延長)は未着手**。mathlib の
+   `ContDiffAt.exists_forall_mem_closedBall_exists_eq_forall_mem_Ioo_hasDerivAt₀`
+   は自励系専用である。必要な継続補題は `docs/final_target.md` §4.1 に
+   2 経路として明記した。**公理化していない。**
+3. `ClayStatement.lean` との接続はない。Navier–Stokes の局所一意性理論も
+   mathlib にないため、Clay (D) の否定への完全な論理鎖はまだ組めない。
+4. F-13 は有限和の不等式であり、無限次元での意味を持たない。

@@ -55,3 +55,9 @@ jobs:
           python -m experiments.run_track_f_finite_mode_scan
           --config configs/track_f_finite_mode_scan.json
           --output-dir outputs/ci-track-f-finite-mode-scan
+
+      - name: Replay the linear whole-space Gate 4
+        run: >-
+          python -m experiments.run_whole_space_gate4
+          --config configs/whole_space_gate4.json
+          --output-dir outputs/ci-whole-space-gate4
