@@ -59,8 +59,59 @@ formal/
 ├── lean-toolchain       # leanprover/lean4:v4.32.1
 ├── NSSingularity.lean   # ルート import
 └── NSSingularity/
-    └── ClayStatement.lean   # 段階 0(定義のみ、sorry なし)
+    ├── ClayStatement.lean      # 段階 0(定義のみ、sorry なし)
+    └── VelocityRecovery.lean   # 段階 1 / F-3(E-14/E-15、証明あり、sorry なし)
 ```
 
 以降の段階(1: 有限次元恒等式 F-1〜F-4、2: 解析的な橋、3: 数値証明書、
 4: 最終定理)は `docs/formalization_map.md` を参照。
+
+## 段階 1 — F-3: 速度回復式と発散ゼロ(`NSSingularity/VelocityRecovery.lean`)
+
+### Lean で証明したこと
+
+`docs/equation_audit.md` の E-14 / E-15 を機械検証した。子午面を素直な
+積 `ℝ × ℝ`(`p.1 = r`、`p.2 = z`)でモデル化し、偏微分は
+`ClayStatement.lean` と同じ規約(座標方向に評価した Fréchet 微分)で
+
+```text
+partialR f p = fderiv ℝ f p (1,0)      partialZ f p = fderiv ℝ f p (0,1)
+uR ψ p = -(p.1 * partialZ ψ p)         uZ ψ p = 2 * ψ p + p.1 * partialR ψ p
+```
+
+と定義する(E-14)。主定理は
+
+| 定理 | 主張 |
+|---|---|
+| `divergence_of_recovered_velocity_eq_zero` | `ContDiff ℝ 2 ψ`、`p.1 ≠ 0` のとき `partialR (uR ψ) p + uR ψ p / p.1 + partialZ (uZ ψ) p = 0`(E-15 そのもの) |
+| `divergence_of_recovered_velocity_eq_zero'` | `uʳ/r` をその連続延長 `uROverR ψ = -partialZ ψ` に置き換えた形。`r ≠ 0` 不要で軸上 `r = 0` でも成立 |
+| `mixed_partial_comm` | `partialR (partialZ ψ) p = partialZ (partialR ψ) p`。**滑らかさが入る唯一の箇所** |
+| `partialR_uR` / `partialZ_uZ` | E-15 の第 1・第 3 括弧(積の微分則のみ) |
+| `uROverR_eq_div` | `p.1 ≠ 0` で `uROverR ψ p = uR ψ p / p.1` |
+
+`mixed_partial_comm` は mathlib の
+`ContDiffAt.isSymmSndFDerivAt : ContDiffAt 𝕜 n f x → minSmoothness 𝕜 2 ≤ n →
+IsSymmSndFDerivAt 𝕜 f x` を使う。E-15 の相殺は**混合偏微分の一致だけ**に
+依存しており、Lean 化によりその依存が構造的に露出している。
+
+`sorry`・`admit`・新規 `axiom` はない。
+`#print axioms divergence_of_recovered_velocity_eq_zero` は
+`[propext, Classical.choice, Quot.sound]`(mathlib 標準の古典公理のみ)。
+
+### Lean で証明していないこと(重要な限界)
+
+1. これは**選んだ座標表現に関する恒等式**であって、Navier–Stokes 方程式の
+   解についての主張ではない。`ψ` は任意の `C²` スカラー関数でよく、
+   E-13(`-𝓛₅ψ₁ = ω₁`)も運動方程式も一切使っていない。
+2. `uR` / `uZ` が実際に3次元軸対称ベクトル場の円柱成分であること、すなわち
+   E-18 の Cartesian 復元と E-24 の同値性は**未形式化**である。したがって
+   本定理から「`ℝ³` 上の発散ゼロベクトル場が得られる」とは言えない。
+   `ClayStatement.lean` の `DivergenceFree` との接続も未着手。
+3. 軸 `r = 0` 上の扱い: `divergence_of_recovered_velocity_eq_zero'` は
+   `uʳ/r` を連続延長 `-∂_zψ₁` に**定義として置き換えた**主張であり、
+   極限が実際にその値へ収束することの証明(E-16 の偶奇性を要する
+   軸正則性の議論)は含まない。Lean の `/` は全域(`x / 0 = 0`)なので、
+   素の商を使う主定理には `p.1 ≠ 0` が必要である。
+4. `fderiv` は微分不能点で junk 値を返すが、本ファイルのすべての命題は
+   同一命題内の `ContDiff ℝ 2` 仮定で保護されている
+   (`ClayStatement.lean` と同じ論点)。
