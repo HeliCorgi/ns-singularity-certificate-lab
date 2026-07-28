@@ -91,6 +91,11 @@ radial 三重対角系を解いている。最終行の Dirichlet identity 行�
 
 ## 4. 実装計画(次の対象)
 
+> **状態(2026-07-28 追記): W-A 実装完了、W-B の受入条件 6 件すべて合格。**
+> 実装は `src/ns_certificate_lab/transparent_boundary.py`、証拠は
+> `outputs/transparent_boundary_v1`(全 25 受入検査合格、3.5 秒)。
+> 実測は §6 に記載。
+
 **W-A. 透過境界条件付き楕円ソルバ.** solver A に (W-1) の 2 次離散化を
 追加(既存 Dirichlet 経路は残し、config で選択)。
 
@@ -115,6 +120,61 @@ radial 三重対角系を解いている。最終行の Dirichlet identity 行�
 `nonlinear_cylinder` の楕円 solve を切り替えられるようにし、
 support 漏れ診断を毎 step 記録する。ただしこれは**全空間探索用**であり、
 Hou 再現の run は物理壁のまま維持する。
+
+## 6. W-A の実測結果(2026-07-28)
+
+実装は `transparent_boundary.py` に置いた。solver A の import 集合は
+テストで固定されており(`test_solver_does_not_import_existing_cylindrical_operator_or_pde_modules`)、
+`bessel_reference` を足すとその assertion を弱めることになるため、
+別 module から solver A の `_radial_flux_coefficients` と
+`_solve_tridiagonal` を再利用する形にした。Dirichlet 分岐は
+`solve_streamfunction_poisson` へそのまま委譲するので bit 一致は
+構造的に保証され、テストでも固定している。
+
+**離散化と次数(正直な記載).** \(\omega_1\equiv0\ (r\ge R)\) なので
+連続解は \(R\) を越えて滑らかに接続し、ghost 節点 \(r_{N+1}=R+\Delta r\) は
+架空点ではない。E-26 の**内部行をそのまま** \(i=N\) に書き、(W-1) の
+中心差分形 \((\psi_{N+1}-\psi_{N-1})/(2\Delta r)+\beta_k\psi_N=0\) で
+ghost を消去する。\(\beta_k\psi(R)=-\psi'(R)\) が厳密なので ghost 欠損は
+\((\Delta r^3/3)\psi'''(R)\)、\(a_N^+=O(\Delta r^{-2})\) を掛けて
+**この 1 行の局所打切りは \(O(\Delta r)\)**。全体が 2 次になるのは、
+行列が既約優対角 M-matrix(\(\beta_k>0\) より第 \(N\) 行が狭義優対角)で
+flux 形の \(1/V_i\) スケーリングを持つため \(A^{-1}\) の該当列が
+\(O(\Delta r)\) だからである。これは仮定ではなく測定した(条件 3)。
+\(k=0\) は明示分岐で \(\beta_0=2/R\) を bit 単位で使い、
+\(K_0/K_1\) を引数 0 で呼ばない。FFT の負周波数が内向き増大条件に
+ならないよう \(|k|\) を用いる。
+
+**測定値**(\(a=0.95\)、\(p=8\)、core \(r\le0.9\)、\(1/\Delta r\in\{64,128,256\}\)):
+
+| 条件 | 結果 |
+|---|---|
+| 1. \(k=0\) 厳密性 | core の \(R=1\!\to\!2\) 差は透過 \(9.07\text{e-}7\to2.27\text{e-}7\to5.66\text{e-}8\)(次数 2.0002)。Dirichlet は \(-1.6969516537\text{e-}3\) で**変化しない**。改善率 1872 → 7489 → **29959**。E-33e の offset は消え、2 次で 0 へ収束する量に置き換わった |
+| 2. \(k>0\) 厳密性 | \(L_z=1\)(\(kR=6.28\))×11013、\(L_z=8\)(0.785)×31787、\(L_z=32\)(0.196、代数域)×30510、最大 ×34231。全 24 の観測次数は [1.948, 2.001] |
+| 3. manufactured 収束 | 外側が厳密 \(K_1(kr)/r\)、内側は 4 階まで一致する偶 6 次で接続(compact source が厳密ゼロ)。全行 1.9975–2.0038、**境界行のみ 2.0099–2.0150** |
+| 4. 大半径 Dirichlet 一致 | \(k=0\): 総差 8.899e-6 = 壁項 8.838e-6(閉形式、oracle 上界 8.839e-6)+ 残差 **6.08e-8**(\(/\Delta r^2\) は全格子で 3.99e-3、次数 2.0002) |
+| 5. 故障注入 | 符号反転 3628–4152 倍、\(2/R\) 脱落は \(k=0\) 行が特異になり**ソルバが拒否**(\(k>0\) 単一モードでは 130–56164 倍)、\(K_0/K_1\!:=\!1\) は 22.5–186 倍 |
+| 6. support 漏れ | 宣言 support \(\ge R\)、および宣言 0.95 で実体が 1.05 まで伸びる場合(残渣 9.21e-7)を共に拒否 |
+
+**正直に記録した限界.**
+
+- `frozen_ratio` 故障は \(k=0\) で**bit 単位で不可視**(どちらでも
+  \(\beta=2/R\))。実験は bracket が不変な case を検出要求から除外し
+  名前を出す(`cases_whose_bracket_is_bitwise_unchanged`)。
+- 条件 4 の \(L_z=32\) では、比較対象の \(R_{\rm big}=16\) Dirichlet 解
+  自体が収束していない(総差 3.891e-7 に対し壁項上界 3.309e-7)。
+  これは E-33 の代数 \(R^{-2}\) そのものであり、`known_gaps` に記録した。
+- \(K_\nu\) の求積は大引数で劣化する(\(x=3000\) で step-halving 欠損
+  2e-3)。E-33 の範囲(\(x\le60\))では届かないが、細かい透過格子の
+  Nyquist モードでは届く。\(x>10^3\) で文書化した漸近形へ切り替え、
+  切替点で両分枝が \(10^{-8}\) 未満で一致することを確認、切替モード数を
+  metadata に記録する。
+
+**Hou 再現との分離.** config は E-27 を名指しする
+`physical_wall_warning` を必須とし、solver metadata と summary にも
+`outer_boundary_scope_warning` / `outer_boundary_condition` を記録する。
+既定は全経路で Dirichlet のままなので、Hou 経路が暗黙にこれを拾うことは
+ない。
 
 ## 5. この文書が主張しないこと
 

@@ -104,8 +104,8 @@ carries the factor ``exp(-700) ~ 1e-304``.  The discarded tail is bounded by
 ``(2/x) exp(-x cosh t_max) cosh(t_max) <= (2 L / x^2) exp(-L)``, which is below
 ``1e-290`` for every ``x >= 1e-3`` and is therefore never the limiting error.
 
-The ratio
----------
+The ratios
+----------
 :func:`k1_over_i1` never forms ``K_1`` or ``I_1`` separately.  It evaluates
 
 .. math::
@@ -118,6 +118,58 @@ in which both factors of the quotient are ``O(1)`` and only the explicit
 smallest normal double, while a naive ``bessel_k1(x)/bessel_i1(x)`` would divide
 ``1e-27`` by ``1e+24``; the scaled form is what keeps the ratio usable across
 the whole range of ``kR`` that E-33 spans.
+
+:func:`k0_over_k1` is the second ratio this project needs.  It is the only
+special-function input to the exact modal transparent (Dirichlet-to-Neumann)
+outer condition of ``docs/whole_space_transition.md`` (W-1),
+
+.. math::
+
+   \partial_r\hat\psi_k(R)
+   +\Big[\frac2R+k\,\frac{K_0(kR)}{K_1(kR)}\Big]\hat\psi_k(R)=0 ,
+
+and it is evaluated as the quotient of the two *exponentially scaled*
+quadratures, ``(e^{x}K_0)/(e^{x}K_1)``.  The common factor ``e^{-x}`` cancels
+identically, so no underflow can occur: at ``x = 700`` a naive
+``bessel_k0(x)/bessel_k1(x)`` divides ``0.0`` by ``0.0``, while the scaled form
+still returns a number within ``1e-3`` of its limit ``1``.  The quotient is
+bounded in ``(0, 1)`` for every ``x > 0`` because ``K_0 < K_1`` pointwise
+(DLMF 10.37.1), and it increases monotonically to ``1``; both facts are checked
+by the tests, and the monotone bound is what makes the transparent bracket
+``2/R + k K_0/K_1`` lie strictly between ``2/R`` and ``2/R + k``.
+
+**Where the quadrature stops being the accurate branch.**  ``t_max =
+arccosh(1 + L/x)`` shrinks like ``sqrt(2L/x)`` as ``x`` grows, so with a fixed
+step the node count falls: ``x = 60`` gets 121 nodes, ``x = 1000`` gets 38 and
+``x = 3000`` gets 22.  The Poisson-summation bound of the previous section is
+``exp(x - 280)`` and is therefore vacuous well before that.  Measured on this
+machine with :func:`k_quadrature_step_halving_defect`, ``e^x K_0`` is stable to
+``6e-15`` at ``x = 240`` but only to ``3e-9`` at ``x = 1000``, ``3e-7`` at
+``x = 1300`` and ``2e-3`` at ``x = 3000``.  The ratio is better conditioned
+than either factor because the two quadratures share their nodes and their
+errors partly cancel -- at ``x = 1300`` the ratio still matches the asymptotic
+branch to ``4e-9`` -- but it degrades all the same.
+:data:`LARGE_ARGUMENT_QUADRATURE_LIMIT` records the crossover, and consumers
+that need ``K_0/K_1`` beyond it are expected to use the asymptotic branch and
+to say so; :func:`ns_certificate_lab.transparent_boundary.outer_bracket` does
+exactly that.  The functions themselves are left pure: they do not silently
+switch formula behind the caller's back.
+
+Its two asymptotic branches are exposed separately, because the transparent
+condition's limits are exactly those branches:
+
+* :func:`k0_over_k1_small_argument_asymptote` returns ``x(-log(x/2) - gamma)``,
+  which follows from ``K_0(x) = -log(x/2) - gamma + O(x^2 log x)`` and
+  ``K_1(x) = 1/x + O(x log x)`` (DLMF 10.30.2/10.30.3).  It vanishes as
+  ``x -> 0``, so the transparent bracket tends to ``2/R``, i.e. to the exact
+  condition satisfied by the ``k = 0`` decaying solution ``C/r^2``.
+* :func:`k0_over_k1_large_argument_asymptote` returns
+  ``1 - 1/(2x) + 3/(8x^2)``, obtained by dividing the standard expansions
+  ``K_nu(x) ~ sqrt(pi/2x) e^{-x} (1 + (4 nu^2-1)/(8x)
+  + (4 nu^2-1)(4 nu^2-9)/(128 x^2) + ...)`` (DLMF 10.40.2) for ``nu = 0`` and
+  ``nu = 1`` and re-expanding.  Its limit ``1`` is the ``kR >> 1`` regime, where
+  the bracket becomes ``2/R + k`` and the condition degenerates into pure
+  outgoing exponential decay.
 
 Validation
 ----------
@@ -139,8 +191,23 @@ Validation
   :func:`wronskian_relative_defect`;
 * the two asymptotic regimes of E-33(c).
 
-``I_0`` and ``K_0`` exist in this module only to make that cross-product
-identity available; they are not used by the wall-response measurement itself.
+``tests/test_transparent_boundary.py`` adds, for the ``K_0/K_1`` ratio,
+
+* the published value ``K_0(1) = 0.4210244382407083`` (DLMF 10.31.1 /
+  Abramowitz & Stegun Table 9.8), giving ``K_0(1)/K_1(1) = 0.699423...``, and a
+  second point ``K_0(2)/K_1(2)`` recomputed **inside the test module** from the
+  independent ascending series
+  ``K_0(x) = -(log(x/2)+gamma) I_0(x) + sum_{m>=1} H_m (x^2/4)^m/(m!)^2``;
+* the derivative identity ``K_1'(x) = -K_0(x) - K_1(x)/x`` (DLMF 10.29.2),
+  evaluated by a fourth-order central difference of :func:`bessel_k1`, which is
+  the identity the transparent condition is derived from and therefore the one
+  that must hold if the derivation is to mean anything;
+* monotonicity and the bound ``0 < K_0/K_1 < 1``;
+* both asymptotic branches above.
+
+``I_0`` was introduced only to make the cross-product identity available; the
+``K_0`` branch is additionally the special-function content of the transparent
+outer condition (W-1).
 """
 
 from __future__ import annotations
@@ -148,6 +215,8 @@ from __future__ import annotations
 import math
 
 __all__ = [
+    "EULER_MASCHERONI",
+    "LARGE_ARGUMENT_QUADRATURE_LIMIT",
     "MINIMUM_K_ARGUMENT",
     "QUADRATURE_EXPONENT_CUTOFF",
     "QUADRATURE_STEP",
@@ -161,6 +230,9 @@ __all__ = [
     "exp_scaled_k0",
     "exp_scaled_k1",
     "i1_over_argument",
+    "k0_over_k1",
+    "k0_over_k1_large_argument_asymptote",
+    "k0_over_k1_small_argument_asymptote",
     "k1_over_i1",
     "k1_over_i1_large_argument_asymptote",
     "k1_over_i1_small_argument_asymptote",
@@ -179,6 +251,21 @@ SERIES_RELATIVE_CUTOFF = 1.0e-19
 
 MINIMUM_K_ARGUMENT = 1.0e-10
 """Smallest argument accepted by the ``K_nu`` quadrature; see ``_exp_scaled_k``."""
+
+EULER_MASCHERONI = 0.5772156649015328606065120900824
+"""``gamma``, needed by the small-argument branch of ``K_0/K_1``."""
+
+LARGE_ARGUMENT_QUADRATURE_LIMIT = 1.0e3
+"""Argument beyond which the ``K_nu`` quadrature is no longer the better branch.
+
+Below it the trapezoidal rule reproduces ``K_0/K_1`` to roundoff and the
+three-term asymptote is the cruder of the two; above it the node count has
+fallen far enough that the ordering reverses.  At exactly this argument the
+asymptote's own remainder is about ``4e-10`` relative (it decays like
+``0.375/x^3``) while the quadrature's step-halving defect is already ``3e-9``,
+so switching here costs nothing and bounds the error for every larger argument.
+See the module docstring for the measured table.
+"""
 
 _MAX_SERIES_TERMS = 4096
 _MAX_QUADRATURE_NODES = 1_000_000
@@ -334,6 +421,57 @@ def k1_over_i1(x: float) -> float:
 
     value = _checked_argument(x, name="x", positive=True)
     return math.exp(-2.0 * value) * exp_scaled_k1(value) / exp_scaled_i1(value)
+
+
+def k0_over_k1(x: float) -> float:
+    """Return ``K_0(x)/K_1(x)``, the special-function part of the W-1 bracket.
+
+    Both quadratures carry the same explicit factor ``e^{-x}``, so the ratio is
+    formed from the exponentially scaled values and the factor cancels exactly.
+    Nothing underflows: at ``x = 700`` the unscaled ``K_nu`` are both ``0.0`` in
+    binary64, while this quotient is still accurate.  See the module docstring
+    for the bounds ``0 < K_0/K_1 < 1`` and the monotonicity that the tests pin.
+    """
+
+    value = _checked_argument(x, name="x", positive=True)
+    return exp_scaled_k0(value) / exp_scaled_k1(value)
+
+
+def k0_over_k1_small_argument_asymptote(x: float) -> float:
+    """Return ``x(-log(x/2) - gamma)``, the ``x << 1`` branch of ``K_0/K_1``.
+
+    From ``K_0(x) = -log(x/2) - gamma + O(x^2 log x)`` and
+    ``K_1(x) = 1/x + O(x log x)``.  It vanishes as ``x -> 0``, which is why the
+    transparent bracket ``2/R + k K_0(kR)/K_1(kR)`` tends to ``2/R``.
+
+    This branch is also the *evaluated* form below
+    :data:`MINIMUM_K_ARGUMENT`, where the ``K_nu`` quadrature refuses to run;
+    the transparent solver says so explicitly at its call site.
+    """
+
+    value = _checked_argument(x, name="x", positive=True)
+    return value * (-math.log(0.5 * value) - EULER_MASCHERONI)
+
+
+def k0_over_k1_large_argument_asymptote(x: float, *, terms: int = 3) -> float:
+    """Return the ``x >> 1`` branch ``1 - 1/(2x) + 3/(8x^2)`` of ``K_0/K_1``.
+
+    ``terms=1`` gives the bare limit ``1`` (the ``kR >> 1`` regime in which the
+    transparent bracket degenerates to ``2/R + k``); ``terms=2`` adds
+    ``-1/(2x)``; ``terms=3`` adds ``+3/(8x^2)``.  The coefficients come from
+    dividing the DLMF 10.40.2 expansions of ``K_0`` and ``K_1`` and
+    re-expanding, as recorded in the module docstring.
+    """
+
+    value = _checked_argument(x, name="x", positive=True)
+    if terms not in (1, 2, 3):
+        raise ValueError("terms must be 1, 2 or 3")
+    series = 1.0
+    if terms >= 2:
+        series -= 0.5 / value
+    if terms >= 3:
+        series += 0.375 / (value * value)
+    return series
 
 
 def k1_over_i1_large_argument_asymptote(x: float, *, terms: int = 2) -> float:

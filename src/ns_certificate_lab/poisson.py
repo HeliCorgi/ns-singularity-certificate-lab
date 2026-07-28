@@ -25,6 +25,21 @@ the Fourier/finite-volume method.  ``pde_residual`` is intentionally computed
 through a second, physical-space centered-difference path.  Neither is a
 continuum error bound, and analytic manufactured-solution error must be
 measured separately.
+
+Outer boundary condition
+------------------------
+This module imposes an explicit outer **Dirichlet** trace, which is E-25's
+declared finite-domain boundary and also E-27's *physical* no-slip wall for the
+Hou reproduction.  The selectable outer condition of milestone W-A lives in
+:mod:`ns_certificate_lab.transparent_boundary`:
+``solve_streamfunction_poisson_outer(grid, omega1,
+boundary_condition="dirichlet" | "transparent", ...)`` defaults to Dirichlet and
+delegates that case here unchanged, so nothing in this file is affected.  The
+transparent (Dirichlet-to-Neumann) option replaces only the outermost radial row
+of each per-mode system and belongs to the whole-space problem; it must never be
+used for the Hou physical wall.  It lives in a separate module because it needs
+:mod:`ns_certificate_lab.bessel_reference`, which this module's import guard in
+``tests/test_poisson_solver.py`` deliberately forbids here.
 """
 
 from __future__ import annotations

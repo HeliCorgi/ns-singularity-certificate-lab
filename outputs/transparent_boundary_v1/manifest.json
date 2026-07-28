@@ -1,0 +1,30 @@
+{
+  "experiment_id": "transparent_boundary_v1",
+  "files": {
+    "config.snapshot.json": {
+      "bytes": 4384,
+      "sha256": "d5f43b87271be5f96df381884df11ef4032d50311dd5db74556270fd1146294b"
+    },
+    "fault_injection.csv": {
+      "bytes": 3967,
+      "sha256": "bd79b183d094567c08e424c397071cb70878fa879bd336346b3f600a72e3f54d"
+    },
+    "large_radius_agreement.csv": {
+      "bytes": 1889,
+      "sha256": "0558680df77ca6b81a11c5e77ea37dd913fa7963f8cc1ae64580ef5fd7430709"
+    },
+    "manufactured_convergence.csv": {
+      "bytes": 1762,
+      "sha256": "2fea0b90f9621c8da0bdf320c4b224ea8d8e54149ea700ade000c7ec64830e09"
+    },
+    "r_independence.csv": {
+      "bytes": 8399,
+      "sha256": "7d6bfbd06cf40d0e951158f3beb55c387bdd8d487ad2a72d5556e8b7636a8695"
+    },
+    "summary.json": {
+      "bytes": 94428,
+      "sha256": "82dc6043e8bbd543634447a131f4945ac80ecaaf56247182d891908da2229897"
+    }
+  },
+  "schema_version": 1
+}
