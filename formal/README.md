@@ -60,7 +60,8 @@ formal/
 ├── NSSingularity.lean   # ルート import
 └── NSSingularity/
     ├── ClayStatement.lean      # 段階 0(定義のみ、sorry なし)
-    └── VelocityRecovery.lean   # 段階 1 / F-3(E-14/E-15、証明あり、sorry なし)
+    ├── VelocityRecovery.lean   # 段階 1 / F-3(E-14/E-15、証明あり、sorry なし)
+    └── FiniteTime.lean         # 段階 1 / F-2(有限物理時間、証明あり、sorry なし)
 ```
 
 以降の段階(1: 有限次元恒等式 F-1〜F-4、2: 解析的な橋、3: 数値証明書、
@@ -115,3 +116,74 @@ IsSymmSndFDerivAt 𝕜 f x` を使う。E-15 の相殺は**混合偏微分の一
 4. `fderiv` は微分不能点で junk 値を返すが、本ファイルのすべての命題は
    同一命題内の `ContDiff ℝ 2` 仮定で保護されている
    (`ClayStatement.lean` と同じ論点)。
+
+## 段階 1 — F-2: 有限物理時間条件(`NSSingularity/FiniteTime.lean`)
+
+### Lean で証明したこと
+
+動的再スケーリング軌道では物理時刻 `t` と再スケーリング時刻 `s` が
+`dt/ds = L(s)^2` で結ばれる。`L : ℝ → ℝ` をスケール関数として
+
+```text
+scaleRate L σ           = L σ ^ 2                       -- 再スケーリング率 dt/ds
+physicalTime t₀ s₀ L s  = t₀ + ∫ σ in s₀..s, scaleRate L σ   -- 区間積分
+blowupTime  t₀ s₀ L     = t₀ + ∫ σ in Set.Ioi s₀, scaleRate L σ
+```
+
+と定義する。`physicalTime` を**区間積分**、`blowupTime` を **`Ioi` 上の集合
+積分**で書くのは意図的で、前者は微積分学の基本定理
+(`intervalIntegral.integral_hasDerivAt_right`)がその形で述べられているため、
+後者は広義積分の収束定理
+(`MeasureTheory.intervalIntegral_tendsto_integral_Ioi`)がその形だからである。
+両者を接続するのがまさにその収束定理であり、解析的内容が入る唯一の箇所である。
+
+| 定理 | 主張 |
+|---|---|
+| `tendsto_physicalTime` | `IntegrableOn (scaleRate L) (Set.Ici s₀)` のとき `Tendsto (physicalTime t₀ s₀ L) atTop (𝓝 (blowupTime t₀ s₀ L))`(**F-2 本体**) |
+| `physicalTime_le_blowupTime` | 同仮定のもと `∀ s, physicalTime t₀ s₀ L s ≤ blowupTime t₀ s₀ L` |
+| `physicalTime_lt_blowupTime` | さらに `∀ σ, 0 < L σ` なら `∀ s, physicalTime … s < blowupTime …`(**到達しない**) |
+| `exists_finite_blowupTime` | 上記 3 つの梱包形: `∃ T, Tendsto … (𝓝 T) ∧ (∀ s, … ≤ T) ∧ MonotoneOn … (Ici s₀)` |
+| `physicalTime_monotoneOn` | 局所仮定 `∀ b, s₀ ≤ b → IntervalIntegrable (scaleRate L) volume s₀ b` のもと `MonotoneOn (physicalTime t₀ s₀ L) (Set.Ici s₀)` |
+| `physicalTime_strictMonoOn` | 加えて `∀ σ, 0 < L σ` なら `StrictMonoOn … (Set.Ici s₀)`。**正値性が使われる唯一の実質的箇所** |
+| `tendsto_physicalTime_atTop` | 局所可積分だが `¬ IntegrableOn (scaleRate L) (Set.Ioi s₀)` なら `Tendsto (physicalTime t₀ s₀ L) atTop atTop`(**逆向き**) |
+| `hasDerivAt_physicalTime` | `Continuous L` のとき `HasDerivAt (physicalTime t₀ s₀ L) (scaleRate L s) s`。定義が確かに `dt/ds = L²` を解いていることの証明 |
+| 補助 | `intervalIntegrable_scaleRate`、`le_physicalTime_of_le`、`physicalTime_le_of_le_base`、`physicalTime_le_physicalTime`、`physicalTime_base`、`scaleRate_nonneg`、`scaleRate_pos` |
+
+被積分関数を `L σ ^ 2` と書くことで非負性が `sq_nonneg` から無償で出るため、
+**単調性・有限極限・上界 `t(s) ≤ T` のいずれにも `L` の正値性は不要**である。
+正値性は狭義単調性と `t(s) < T` にのみ使う。
+
+`tendsto_physicalTime` と `tendsto_physicalTime_atTop` を合わせると、
+可積分性は「有限爆発時刻」の十分条件であるだけでなく**分水嶺そのもの**である
+ことが Lean 上で確定する。
+
+`sorry`・`admit`・新規 `axiom` はない。
+本ファイルの全 15 定理について `#print axioms` は
+`[propext, Classical.choice, Quot.sound]`(mathlib 標準の古典公理のみ)。
+
+主に使用した mathlib 補題:
+`MeasureTheory.intervalIntegral_tendsto_integral_Ioi`、
+`MeasureTheory.integrableOn_Ioi_of_intervalIntegral_norm_bounded`、
+`MeasureTheory.setIntegral_pos_iff_support_of_nonneg_ae`、
+`intervalIntegral.integral_mono_interval`、
+`intervalIntegral.integral_add_adjacent_intervals`、
+`intervalIntegral.integral_hasDerivAt_right`。
+
+### Lean で証明していないこと(重要な限界)
+
+1. これは**与えられたスケール関数 `L` についての命題**である。`L` を構成しない。
+   任意の可測な `L : ℝ → ℝ` に対して成り立つ主張であり、爆発の存在とは無関係。
+2. Navier–Stokes 方程式との接続は**一切ない**。`L` が実際の解の自己相似スケール
+   であること、`physicalTime` が実際の解の物理時刻であることは形式化されていない。
+   `ClayStatement.lean` の定義とも未接続。
+3. **仮定 `IntegrableOn (fun σ => L σ ^ 2) (Set.Ici s₀)` こそが本質**であり、
+   本ファイルはそれを一切検証しない。将来の区間証明書が厳密な数値上界として
+   供給すべき対象がまさにこの仮定である
+   (`docs/formalization_map.md` の M5 / F-4 参照)。
+   なお `scaleRate` は可測性を仮定していないが、`IntegrableOn` が
+   `AEStronglyMeasurable` を含むので可測性はこの仮定に内包されている。
+4. `t(s) < T` は「物理時刻が `T` に達しない」ことを言うだけで、`T` において
+   解が特異になること(ノルム発散)は含まない。それは別の blow-up criterion の
+   形式化(未着手)を要する。
+5. `hasDerivAt_physicalTime` は `Continuous L` を仮定する。主定理群は連続性を
+   使わないので、この補題は定義の妥当性確認のためだけに存在する。
