@@ -1,0 +1,84 @@
+{
+  "acceptance": {
+    "maximum_circulation_growth_ratio": 0.001,
+    "maximum_core_reference_relative_spread": 1e-12,
+    "maximum_energy_growth_ratio": 1e-10,
+    "maximum_initial_axis_parity_relative": 0.001,
+    "maximum_initial_norm_relative_error": 0.01,
+    "maximum_odd_symmetry_defect_ratio": 1e-08
+  },
+  "amplitude_scale": 1.0,
+  "cfl_coefficient": 0.1,
+  "coordinate_system": "axisymmetric cylindrical half-plane (r,z), r in [0,R_wall], z periodic with period 1",
+  "core_radius": 0.9,
+  "decision_rule": {
+    "resolution_consistency_relative_tolerance": 0.25,
+    "wall_dependent_amplification_ratio": 0.2,
+    "wall_dependent_argmax_relative_displacement": 0.1,
+    "wall_effect_small_amplification_ratio": 0.05
+  },
+  "description": "Preregistered wall-dependence experiment (docs/wall_dependence_prereg.md): the E-32 C-infinity compact-support initial-data family integrated to T_1 on nested finite cylinders R_wall in {1, 1.5, 2, 3} at a fixed core spacing dr = 1/192, dz = 1/384, plus the resolution-consistency pair R_wall in {1, 2} at dr = 1/128",
+  "diagnostic_stride": 25,
+  "envelope": {
+    "rho1": 0.81,
+    "rho2": 0.9025
+  },
+  "experiment_id": "wall_dependence_v1",
+  "interpretation": "This is a resolution-limited numerical observation of the wall-radius sensitivity of THIS discretization over THIS early time interval. It is not a reproduction of any published amplification value, not a singularity candidate, not a proof, and a small measured wall effect is not evidence of wall independence in the whole space.",
+  "max_steps": 200000,
+  "max_time_step": 1e-06,
+  "member_groups": [
+    {
+      "label": "core_dr192",
+      "nz": 384,
+      "points_per_unit_radius": 192,
+      "primary": true,
+      "wall_radii": [
+        1.0,
+        1.5,
+        2.0,
+        3.0
+      ]
+    },
+    {
+      "label": "core_dr128",
+      "nz": 384,
+      "points_per_unit_radius": 128,
+      "primary": false,
+      "wall_radii": [
+        1.0,
+        2.0
+      ]
+    }
+  ],
+  "normalization_description": "Hou finite-cylinder normalization: u1 = u^theta/r, omega1 = omega^theta/r, psi1 = psi^theta/r; the E-29 amplitude 12000 is part of the audited equation and is multiplied by amplitude_scale, which exists only so that reduced-amplitude smoke runs can reuse this schema; the E-32 cutoff multiplies the whole datum by chi_c(r^2)",
+  "schema_version": 1,
+  "seed": 20260728,
+  "snapshot_times": [
+    0.0,
+    0.0005,
+    0.001,
+    0.0015,
+    0.002191729
+  ],
+  "t_final": 0.002191729,
+  "tail_radius": 1.1,
+  "units": {
+    "energy": "dimensionless kinetic energy on the finite cylinder",
+    "omega1": "dimensionless inverse length inverse time",
+    "psi1": "dimensionless length inverse time",
+    "r": "dimensionless length",
+    "time": "dimensionless time",
+    "u1": "dimensionless inverse time",
+    "viscosity": "dimensionless kinematic viscosity",
+    "vorticity": "dimensionless inverse time",
+    "z": "dimensionless length"
+  },
+  "viscosity_schedule": [
+    [
+      0.0,
+      0.0005
+    ]
+  ],
+  "z_period": 1.0
+}
