@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "experiment": "whole_space_gate5_derivative_and_nonlinear",
+  "source": {
+    "bumps": [
+      {"center": 0.5, "radius": 1.2, "amplitude": 1.0, "power": 6},
+      {"center": -0.8, "radius": 0.9, "amplitude": 0.6, "power": 6}
+    ]
+  },
+  "tail_bounds": {
+    "moment_grid": {"nr": 513, "nz": 1025, "r_max": 8.0, "z_max": 8.0},
+    "evaluation_radii": [2.5, 4.0, 6.0],
+    "samples_per_sphere": 181,
+    "finite_difference_step": 0.0002,
+    "understated_moment_factor": 1000.0
+  },
+  "green_path": {
+    "grids": [{"nr": 161, "nz": 321}, {"nr": 321, "nz": 641}],
+    "r_max": 4.0,
+    "z_max": 4.0,
+    "quadrature_nodes": 48,
+    "targets_r": [2.2, 2.6, 3.0, 0.1, 0.5, 2.0],
+    "targets_z": [0.3, -1.0, 1.5, 2.4, -2.6, 2.2]
+  },
+  "recovery": {
+    "extent": 8.0,
+    "radial_points": [65, 129, 257],
+    "interior_radius": 3.0,
+    "domain_sizes": [5.0, 7.5, 11.25],
+    "domain_fixed_extent": 20.0,
+    "domain_spacing": 0.25,
+    "cartesian_half_width": 3.0,
+    "cartesian_points": [33, 65, 129]
+  },
+  "evolution": {
+    "viscosity": 0.005,
+    "swirl": {"center": 0.0, "radius": 1.5, "amplitude": 0.05, "power": 6},
+    "base": {"nr": 65, "nz": 129, "r_max": 4.0, "z_max": 4.0, "steps": 40, "time_step": 0.0025},
+    "time_refinement": [1, 2, 4],
+    "radial_points": [33, 65, 129],
+    "axial_points": [65, 129, 257],
+    "radial_extents": [3.0, 4.0, 6.0],
+    "axial_extents": [3.0, 4.0, 6.0],
+    "integrators": ["heun", "ssprk3", "rk4"],
+    "boundary_modes": ["monopole", "zero"],
+    "cartesian_half_width": 2.0,
+    "cartesian_points": 41
+  },
+  "cascade": {
+    "shells": 10,
+    "high_shell_start": 4,
+    "forced_shells": 2,
+    "steps": 200000,
+    "time_step": 0.0002,
+    "seed_amplitude": 0.001,
+    "cases": [
+      {"label": "unforced_viscous", "viscosity": 0.002, "forcing": 0.0, "forced_shells": 0},
+      {"label": "low_mode_forced_viscous", "viscosity": 0.002, "forcing": 0.003, "forced_shells": 2},
+      {"label": "low_mode_forced_high_viscosity", "viscosity": 0.02, "forcing": 0.003, "forced_shells": 2},
+      {"label": "low_mode_forced_inviscid", "viscosity": 0.0, "forcing": 0.003, "forced_shells": 2},
+      {"label": "unforced_inviscid", "viscosity": 0.0, "forcing": 0.0, "forced_shells": 0}
+    ]
+  }
+}

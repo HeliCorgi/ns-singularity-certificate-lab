@@ -23,7 +23,10 @@
 
 | ファイル名 | 内容 |
 |---|---|
-| `track_f_finite_mode_nogo.md` | Track F 有限モード ansatz の除外定理(2026-07-29 第 3 便)。Lemma 1 の厳密算術検証、Theorem 1 の a priori 上界(Lean `F-6`)、任意の (C)/(D) 反例が満たすべき必要条件 |
+| `track_f_finite_mode_nogo.md` | Track F **固定有限帯域** ansatz の除外定理(2026-07-29 第 3 便)。Lemma 1 の厳密算術検証、Theorem 1 の a priori 上界(Lean `F-6`)、任意の (C)/(D) 反例が満たすべき必要条件 |
+| `track_f_shell_constraints.md` | 帯域幅発散候補の必要条件と実現可能指数領域(第 4 便)。Lean `F-16` |
+| `green_derivative_tail_bounds.md` | 5 次元 Green 核の微分 tail 上界と 2 つの独立評価経路(第 5 便)。Lean `F-14`/`F-15` |
+| `cascade_toy_model.md` | 外力の役割分離と有限 cascade 模型(第 5 便)。低周波のみの外力が間接駆動しうることの模型検査 |
 
 ## 読む際の注意
 

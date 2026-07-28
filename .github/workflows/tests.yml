@@ -61,3 +61,9 @@ jobs:
           python -m experiments.run_whole_space_gate4
           --config configs/whole_space_gate4.json
           --output-dir outputs/ci-whole-space-gate4
+
+      - name: Replay whole-space Gate 5
+        run: >-
+          python -m experiments.run_whole_space_gate5
+          --config configs/whole_space_gate5.json
+          --output-dir outputs/ci-whole-space-gate5

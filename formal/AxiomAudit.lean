@@ -3,6 +3,7 @@ import NSSingularity.VelocityRecovery
 import NSSingularity.FiniteTime
 import NSSingularity.GalerkinNoBlowup
 import NSSingularity.FiniteModeNoGo
+import NSSingularity.GreenAndCascade
 
 /-!
 # Axiom audit (P0 Lean gate)
@@ -60,3 +61,21 @@ open NSSingularity
 -- The logical connection: a fixed-finite-mode candidate never breaks down.
 #print axioms NSSingularity.not_isBreakdownCandidate_of_galerkin
 #print axioms NSSingularity.galerkin_bounded_and_reaches_endpoint
+
+-- F-14: the five-dimensional radial Green profile is harmonic off the origin.
+#print axioms NSSingularity.hasDerivAt_greenProfile
+#print axioms NSSingularity.hasDerivAt_greenProfileDeriv
+#print axioms NSSingularity.greenProfile_radial_laplace_eq_zero
+
+-- F-15: Newton's flux identity.
+#print axioms NSSingularity.flux_newtonSlope
+#print axioms NSSingularity.hasDerivAt_flux
+
+-- F-16: the shell exponent region, with every hypothesis named.
+#print axioms NSSingularity.ShellAdmissible.bandwidth_lt_one
+#print axioms NSSingularity.ShellAdmissible.sigma_mem
+#print axioms NSSingularity.not_shellAdmissible_of_one_le
+
+-- Limited Clay connection and the F-7c reduction.
+#print axioms NSSingularity.breakdown_time_set_empty
+#print axioms NSSingularity.galerkin_solution_of_autonomised

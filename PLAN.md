@@ -174,9 +174,43 @@ and passed all twenty preregistered acceptance checks in
 - An independent Cartesian audit of the recovered velocity: `div u = 0` and
   `curl u = omega1 (-y, x, 0)`, both second order.
 
-Exit gate: reached.  Coupling the solver into a time-stepper is now permitted.
-Passing a **linear** gate licenses no claim about the nonlinear evolution, and
-the next obstacle is resolution design, not the elliptic solve.
+Exit gate: reached, with the scope stated precisely: **the gate certifies the
+free-space potential *value* only.**  The derivative tail needed for velocity
+recovery and the nonlinear coupling were not verified by this phase; they are
+Phase 2.86.
+
+## Phase 2.86 — Gate 5: derivative tails and the nonlinear entry point (completed, 2026-07-29)
+
+Gate 4 certified the free-space potential *value*.  Phase 2.86 promotes that to a
+differentiated entry point.
+
+- **Explicit derivative tail bounds** from analytic differentiation of the
+  five-dimensional Green kernel: `|D^k(psi - psi_multipole)| <= A_{k+1} I_1 /
+  d^{4+k}` for the monopole truncation and `<= (1/2) A_{k+2} I_2 / d^{5+k}` for
+  the dipole one, with `A_m` the exact homogeneity constants of `D^m G_5`.  No
+  maximum principle is used; the interior propagation uses the classical
+  interior elliptic estimate `(nk/rho)^k` instead, which the maximum principle
+  cannot supply for `k >= 1`.
+- **Two independent evaluation paths**: finite differences of the solver output
+  (the production path) and an analytic-Green quadrature that differentiates the
+  kernel and never touches the solver.  The second converges at order 4 and
+  agrees with the closed-form reference to `1.6e-8`.
+- **A free-space velocity recovery API** returning `psi1`, its first and second
+  derivatives, `u^r`, `u^z`, and both the boundary and interior derivative tail
+  bounds, all second order and with exact axis regularity.
+- **A small-amplitude nonlinear whole-space run** from smooth compactly
+  supported divergence-free pure-swirl data, refined independently in `dt`,
+  `dr`, `dz`, `R_max`, `Z_max`, integrator and outer boundary order.
+- **A finite dyadic cascade model** showing that low-mode-only smooth forcing
+  drives high-shell amplitude by 26 orders of magnitude with exactly zero direct
+  injection, so the earlier reading "forcing gives Track F no advantage" was
+  wrong and has been corrected everywhere.
+
+Exit gate: reached, with three sub-gates recorded as **uninformative rather than
+passed** — at this amplitude the time refinement, the domain enlargement and the
+boundary-order comparison all produce identical answers, because the temporal
+error is far below the spatial one and the field never reaches the boundary.
+They must be repeated at an amplitude that exercises them.
 
 ## Phase 2.9 — Track F fixed-finite-mode class closed (completed, 2026-07-29)
 

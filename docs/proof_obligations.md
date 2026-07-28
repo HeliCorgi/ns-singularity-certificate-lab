@@ -2,7 +2,7 @@
 
 > **2026-07-29 追記**: 本書の PO-01〜PO-15 を Clay 命題 (A)〜(D)、Track U /
 > Track F の最終定理、Lean 識別子 `F-1`〜`F-11` と一つの依存グラフへまとめた
-> 全体図は [final_target.md](final_target.md) にある。状態語彙
+> 全体図は [final_target.md](final_target.md) にある(第 5 便で PO-06/PO-14 を更新)。状態語彙
 > (M 数学的に閉じた / L Lean で閉じた / I 区間演算が必要 / N 数値観測のみ /
 > O 未着手)もそちらで定義している。本書は個々の義務の詳細台帳である。
 

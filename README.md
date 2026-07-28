@@ -216,6 +216,21 @@ python -m experiments.run_whole_space_gate4 --config configs/whole_space_gate4.j
 ゲートであり、非線形発展について何も主張しません
 ([docs/whole_space_transition.md](docs/whole_space_transition.md))。
 
+### 12. 全空間 Gate 5(微分 tail・速度回復・小振幅非線形、数分)
+
+```console
+python -m experiments.run_whole_space_gate5 --config configs/whole_space_gate5.json --output-dir outputs/whole_space_gate5_replay
+```
+
+Green 核の解析微分から導いた**微分 tail 上界**を閉形式参照解に対して検査し、
+自由空間速度回復 API の空間・領域収束、軸正則性、独立 Cartesian 検査、
+故障注入を測定し、滑らか・コンパクト台・発散ゼロの**小振幅純粋旋回**初期値から
+非周期 \(z\) の全空間非線形短時間発展を回します。最後に、低周波のみの
+滑らかな外力が非線形 triad 経由で高シェルを駆動しうるかを有限 cascade 模型で
+判定します
+([docs/research_notes/green_derivative_tail_bounds.md](docs/research_notes/green_derivative_tail_bounds.md)、
+[docs/research_notes/cascade_toy_model.md](docs/research_notes/cascade_toy_model.md))。
+
 より厳密な再現プロトコルは [docs/reproducibility.md](docs/reproducibility.md)
 を参照してください。
 

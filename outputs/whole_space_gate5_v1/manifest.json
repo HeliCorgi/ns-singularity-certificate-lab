@@ -1,0 +1,33 @@
+{
+  "payloads": {
+    "cascade.csv": {
+      "bytes": 926,
+      "sha256": "75eabb2ac97fab95ccb8d5b987ae776b40694c5fbbe20c31a5445008f962152a"
+    },
+    "config.snapshot.json": {
+      "bytes": 3239,
+      "sha256": "0717f18b02b31ef26f375d633fcb42d4666bff4a3f8380bef04532abf339df10"
+    },
+    "evolution.csv": {
+      "bytes": 8225,
+      "sha256": "51cbaa020adbcfd3acabe8920f9eff17d753ba46e0c5bde09db32e10467ebef6"
+    },
+    "green_path.csv": {
+      "bytes": 545,
+      "sha256": "3b9099df7e2a6047c1d3507b66d8baa0c83f4fca8e5ab73377a8bfa85e06bada"
+    },
+    "recovery.csv": {
+      "bytes": 995,
+      "sha256": "5c49faaecf6365a4e7251e83eef2ef193eecce159047b6a0e35b862e69df657c"
+    },
+    "summary.json": {
+      "bytes": 51095,
+      "sha256": "f65c95f89dfc76c34e8ff04bc6727549c111f789404aeed3d547f10656584cb1"
+    },
+    "tail_bounds.csv": {
+      "bytes": 1643,
+      "sha256": "4dde7dd38ede13a3a105ccc963c2bca80e4637bf846ba83bd0c12fe00df650ad"
+    }
+  },
+  "schema_version": 1
+}

@@ -308,6 +308,65 @@ class ManufacturedFreeSpaceField:
             total = total + slope * (zb - bump.center)
         return total
 
+    def _slope_derivative_over_radius(self, rb: FloatArray, zb: FloatArray) -> list[FloatArray]:
+        """``q'(R)/R`` per bump, with ``q(R) = psi'(R)/R``; regular at ``R=0``."""
+        out: list[FloatArray] = []
+        for bump in self.bumps:
+            radius5 = np.hypot(rb, zb - bump.center)
+            s = radius5 / bump.radius
+            values = np.empty_like(radius5)
+            far = s >= 1.0
+            near = ~far
+            values[far] = 5.0 * bump.mass / np.maximum(radius5[far], 1.0e-300) ** 7
+            if np.any(near):
+                sn = s[near]
+                series = np.zeros_like(sn)
+                for j, coefficient in enumerate(bump._binomials):
+                    if j == 0:
+                        continue
+                    series += (coefficient * (2.0 * j) / (5.0 + 2.0 * j)) * sn ** (
+                        2 * j - 2
+                    )
+                values[near] = -bump.amplitude * series / bump.radius**2
+            out.append(values)
+        return out
+
+    def _second_derivative_parts(
+        self, r: npt.ArrayLike, z: npt.ArrayLike
+    ) -> tuple[FloatArray, FloatArray, FloatArray, FloatArray, FloatArray]:
+        r_array = np.asarray(r, dtype=np.float64)
+        z_array = np.asarray(z, dtype=np.float64)
+        shape = np.broadcast(r_array, z_array).shape
+        rb = np.broadcast_to(r_array, shape)
+        zb = np.broadcast_to(z_array, shape)
+        slope = self._slope_over_radius(rb, zb)
+        curvature = self._slope_derivative_over_radius(rb, zb)
+        return rb, zb, shape, slope, curvature
+
+    def d2psi1_drr(self, r: npt.ArrayLike, z: npt.ArrayLike) -> FloatArray:
+        """``psi_rr`` in closed form."""
+        rb, zb, shape, slope, curvature = self._second_derivative_parts(r, z)
+        total = np.zeros(shape, dtype=np.float64)
+        for value, second in zip(slope, curvature):
+            total = total + value + rb**2 * second
+        return total
+
+    def d2psi1_dzz(self, r: npt.ArrayLike, z: npt.ArrayLike) -> FloatArray:
+        """``psi_zz`` in closed form."""
+        rb, zb, shape, slope, curvature = self._second_derivative_parts(r, z)
+        total = np.zeros(shape, dtype=np.float64)
+        for bump, value, second in zip(self.bumps, slope, curvature):
+            total = total + value + (zb - bump.center) ** 2 * second
+        return total
+
+    def d2psi1_drz(self, r: npt.ArrayLike, z: npt.ArrayLike) -> FloatArray:
+        """``psi_rz`` in closed form."""
+        rb, zb, shape, _slope, curvature = self._second_derivative_parts(r, z)
+        total = np.zeros(shape, dtype=np.float64)
+        for bump, second in zip(self.bumps, curvature):
+            total = total + rb * (zb - bump.center) * second
+        return total
+
     def far_field(self, r: npt.ArrayLike, z: npt.ArrayLike) -> FloatArray:
         """The monopole approximation ``M/(3R^3)`` about the origin."""
         radius5 = np.hypot(

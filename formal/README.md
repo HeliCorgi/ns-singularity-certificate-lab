@@ -63,7 +63,8 @@ formal/
     ├── VelocityRecovery.lean   # 段階 1 / F-3(E-14/E-15、証明あり、sorry なし)
     ├── FiniteTime.lean         # 段階 1 / F-2(有限物理時間、証明あり、sorry なし)
     ├── GalerkinNoBlowup.lean   # 段階 1 / F-6(Galerkin エネルギー上界、証明あり、sorry なし)
-    └── FiniteModeNoGo.lean     # 段階 1 / F-7a,F-7b,F-12,F-13(証明あり、sorry なし)
+    ├── FiniteModeNoGo.lean     # 段階 1 / F-7a,F-7b,F-12,F-13(証明あり、sorry なし)
+    └── GreenAndCascade.lean    # 段階 1 / F-14,F-15,F-16,F-7c 還元(証明あり、sorry なし)
 ```
 
 以降の段階(1: 有限次元恒等式、2: 解析的な橋、3: 数値証明書、4: 最終定理)は
@@ -272,3 +273,32 @@ Dissipative  A   :=  ∀ x, ⟪x, A x⟫ ≤ 0          -- ⟪u, νΔu⟫ = -ν�
 3. `ClayStatement.lean` との接続はない。Navier–Stokes の局所一意性理論も
    mathlib にないため、Clay (D) の否定への完全な論理鎖はまだ組めない。
 4. F-13 は有限和の不等式であり、無限次元での意味を持たない。
+
+## 段階 1 — F-14 / F-15 / F-16 / F-7c 還元(`NSSingularity/GreenAndCascade.lean`)
+
+| 定理 | 主張 |
+|---|---|
+| `greenProfile_radial_laplace_eq_zero`(F-14) | `R^{-3}` は `f'' + 4f'/R` に消される(5 次元動径 Laplace) |
+| `hasDerivAt_greenProfile`, `hasDerivAt_greenProfileDeriv` | 上の 2 つの微分値 |
+| `flux_newtonSlope`(F-15) | `R⁴ψ'(R) = −m(R)`。Newton の flux 恒等式 |
+| `hasDerivAt_flux`(F-15) | flux の微分が `−R⁴ω` |
+| `ShellAdmissible`(F-16) | shell 指数の 4 条件を**構造体として明示**。黙って落とせない |
+| `ShellAdmissible.bandwidth_lt_one`(F-16) | その仮定の下で `γ < 1` |
+| `ShellAdmissible.sigma_mem`, `not_shellAdmissible_of_one_le` | 許容区間と `γ ≥ 1` の排除 |
+| `breakdown_time_set_empty` | 固定有限帯域候補の**破綻時刻の集合は空**(Clay への限定的接続) |
+| `galerkin_solution_of_autonomised` | **F-7c 還元**: 自励化した場の局所流があれば、時間依存系にも局所解がある |
+
+`sorry`・`admit`・新規 `axiom` はない。全 10 定理の `#print axioms` は
+`[propext, Classical.choice, Quot.sound]`。
+
+### 証明していないこと
+
+1. **F-14 / F-15 は動径プロファイルの 1 次元実解析の恒等式**であり、
+   `Δ₅G₅ = −δ₀` の分布論的形式化ではない。mathlib にその展開はなく、
+   本リポジトリのどの上界も Dirac 側を使わない。
+2. **F-16 は指数の算術**である。4 つの不等式を PDE から導く部分は紙上であり、
+   端点正則性定理を**引用**している。
+3. **F-7c 還元は F-7c を閉じない。** 残るのは自励化した場
+   `F(x,s) = (g s + B x x + A x, 1)` の局所流の構成であり、公理化していない。
+4. `breakdown_time_set_empty` は係数 ODE の言葉での主張であり、
+   `ClayStatement.lean` とは依然接続されていない。

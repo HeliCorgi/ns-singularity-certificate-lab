@@ -10,7 +10,7 @@
 validated numerical object / connected physical solution /
 finite-time breakdown theorem / Clay-complete result)を用いる。
 
-最終更新: 2026-07-29(branch `fable5-mainline`、第 4 便)
+最終更新: 2026-07-29(branch `fable5-mainline`、第 5 便)
 
 **Lean 識別子 `F-1`〜`F-11` の確定登録簿は `docs/final_target.md` §4 にある。**
 外部ノート由来の採番衝突はそこで解消済みで、本書の節見出しはその登録簿に従う。
@@ -357,6 +357,50 @@ M0 (Clay命題固定)
 - 使用した mathlib: `Finset.sq_sum_le_card_mul_sum_sq`(Chebyshev)、
   `Real.le_sqrt_of_sq_le`、`Real.sqrt_mul`。
 
+### F-14 / F-15 5 次元 Green 核の動径恒等式 — **形式化済み**(2026-07-29 第 5 便)
+
+- **状態:** `formal/NSSingularity/GreenAndCascade.lean`。`lake build` 成功、
+  `sorry`・`admit`・新規 `axiom` なし。
+- **F-14:** `greenProfile R = R^(-3:ℤ)` が `f'' + 4f'/R = 0` を満たす
+  (`greenProfile_radial_laplace_eq_zero`、微分値は
+  `hasDerivAt_greenProfile` / `hasDerivAt_greenProfileDeriv`)。
+  使用した mathlib: `hasDerivAt_zpow`、`zpow_neg`、`zpow_natCast`。
+- **F-15:** `flux_newtonSlope`(`R⁴ψ'(R) = −m(R)`)と `hasDerivAt_flux`。
+- **形式化していないこと:** `Δ₅G₅ = −δ₀` の分布論的形式化。mathlib に展開がなく、
+  本リポジトリのどの上界も Dirac 側を使わない。これらは**動径プロファイルの
+  1 次元恒等式**である。
+- **数値側との対応:** `src/ns_certificate_lab/free_space_recovery.py` の
+  微分 tail 上界と、`whole_space_gate.py` の閉形式参照解の出発点。
+
+### F-16 shell 指数領域(仮定明示)— **形式化済み**(2026-07-29 第 5 便)
+
+- **状態:** 同ファイル。`ShellAdmissible γ σ β` を**構造体**として定義し、
+  4 条件(帯域幅発散・スペクトル可和・エネルギー有界・散逸可積分・臨界ノルム発散)を
+  フィールドとして明示。どれも黙って落とせない。
+- **定理:** `ShellAdmissible.bandwidth_lt_one`(`γ < 1`)、
+  `ShellAdmissible.sigma_mem`(`σ ∈ Ico (max 0 (2γ−1)) γ`)、
+  `not_shellAdmissible_of_one_le`(`γ ≥ 1` なら admissible な点はない)。
+- **形式化していないこと:** 4 つの不等式を PDE から導く部分。それは紙上であり
+  端点正則性定理を**引用**する(`F-11`)。本定理は指数の算術である。
+
+### F-7c 還元 — **部分的に形式化済み**(2026-07-29 第 5 便)
+
+- **定理:** `galerkin_solution_of_autonomised`。自励化した場
+  `F(x,s) = (g s + B x x + A x, 1)` の局所流 `α` が `(L,T)` を通るなら、
+  時間依存 Galerkin 系は `L` を通る局所解を持つ。
+  証明は第 2 成分が `s' = 1`、`s(T) = T` から `s(t) = t` であることによる
+  (`Convex.norm_image_sub_le_of_norm_hasDerivWithin_le` で導関数ゼロ ⇒ 定数)。
+- **残る義務:** 自励化した場の局所流そのものの構成。**公理化していない。**
+
+### Clay への限定的接続 — **形式化済み**(2026-07-29 第 5 便)
+
+- **定理:** `breakdown_time_set_empty`。固定有限帯域 Galerkin 軌道について
+  `{T | IsBreakdownCandidate u T} = ∅`。1 点の否定から**時刻集合の空性**へ
+  強めた形。
+- **接続していないこと:** `ClayStatement.lean`。必要なのは Fourier 同型、
+  `⟨u,(u·∇)u⟩` と `advectionForm` の同一視の解析側、および
+  Navier–Stokes の局所一意性理論(いずれも mathlib になし)。
+
 ### F-5 最終 Clay 反例命題までの依存関係
 
 段階 0 として `formal/NSSingularity/ClayStatement.lean` に (A)–(D) と
@@ -393,8 +437,8 @@ F-5 (Clay命題定義)
 'NSSingularity.tendsto_physicalTime_atTop' depends on axioms: [propext, Classical.choice, Quot.sound]
 ```
 
-2026-07-29 第 4 便で F-7a/F-7b/F-12/F-13 の 10 定理をさらに追記し、
-`lake env lean AxiomAudit.lean` は**全 24 行**について同じ古典公理
+2026-07-29 第 5 便で F-14/F-15/F-16/F-7c 還元の 10 定理をさらに追記し、
+`lake env lean AxiomAudit.lean` は**全 34 行**について同じ古典公理
 `[propext, Classical.choice, Quot.sound]` のみを報告した。第 3 便で追記した
 F-6 の 5 定理は次のとおり:
 
@@ -409,8 +453,8 @@ F-6 の 5 定理は次のとおり:
 同日、`git ls-files formal | xargs grep -InE '\bsorry\b|\badmit\b|^[[:space:]]*axiom '`
 は文書コメント中の言及のみを返し、コード中の `sorry`/`admit`/新規 `axiom` は
 ゼロ。`lake build` は 2026-07-28 に 8659 jobs、F-6 追加後は 8660 jobs、
-F-7a/F-7b/F-12/F-13 追加後は 8661 jobs で成功 —
-これは**コンパイルジョブ数**であり、「8661 個の定理を証明した」ことを
+F-7a/F-7b/F-12/F-13 追加後は 8661 jobs、F-14/F-15/F-16 追加後は 8662 jobs で成功 —
+これは**コンパイルジョブ数**であり、「8662 個の定理を証明した」ことを
 意味しない。証明済みの命題は本書に列挙されたもののみである。
 `lean-toolchain` は leanprover/lean4:v4.32.1、mathlib は v4.32.1 タグに固定。
 
