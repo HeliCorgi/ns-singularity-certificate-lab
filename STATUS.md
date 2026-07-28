@@ -222,6 +222,68 @@ A/B が共有する axial Fourier(`fftfreq` bit 同一)+Thomas の単一障害�
   Cartesian 監査の pointwise 所見と整合し、65×128 は \(T_1\) 近傍で
   軸近傍が深刻に解像不足であることを定量化する。
 
+### 圧力非依存の primitive 残差(ギャップ解消、`outputs/hou_primitive_residual_v1`)
+
+Cartesian 監査で「圧力未保存・snapshot 間隔 ≈500 step」として明示していた
+ギャップを、**圧力を発明せずに**閉じた。運動量残差
+\(R=u_t+(u\cdot\nabla)u-\nu\Delta u\) は厳密解で \(-\nabla p\) に等しいので
+\(\operatorname{curl}R=0\)、同値に渦度輸送残差 \(S\) が消える。両者は
+圧力を含まない。
+
+- 実験は 7 状態(offset \(0,\pm1,\pm2,\pm4\) step)を保存するため、中心差分
+  \(u_t\) の Richardson **次数が測定できる**(誤差推定ではない):
+  実測 **1.99997**。
+- 評価は保存 artifact を `load_candidate` で読み直す経路のみ(非循環性)、
+  stencil は `cartesian_validation` 固有、円柱 module 不 import を AST 固定。
+- 129×256 実測(内部領域、分母は**同一領域**の項和最大 — 甘くない正規化):
+  相対 RMS \(\operatorname{curl}R=5.835\times10^{-4}\)、
+  \(S=9.346\times10^{-4}\)、\(\nabla\cdot u=2.815\times10^{-4}\)。
+  監査格子細分の次数 1.885 / 1.835 / 2.279。
+- 全 10 受入検査+5 record-only 合格、manifest+26 payload SHA-256 検証済み。
+- **正直に記録した所見**: (1) \(\nu=5\times10^{-4}\) では粘性項が項和の
+  \(2.9\times10^{-4}\) しかなく、実データ上で粘性符号反転は**検出できない**
+  (その旨を主張するテストを置き、決定的な注入は manufactured 場で実施);
+  (2) 減衰 Taylor–Green は移流が厳密勾配のため非線形項に対して退化 →
+  別の非自明 solenoidal 場を追加; (3) 2 形式は実データで相対 RMS 2.4% 相違、
+  次数 1.28(バンドル中最弱); (4) 65×128 は次数 0.79/1.13 で bilinear 復元
+  律速のため 129×256 を出荷; (5) 既存 `hou_early_time` checkpoint は
+  この観点では**未監査のまま**。
+- 圧力回復は scoped・record-only(転置を随伴恒等式 \(3\times10^{-15}\) で
+  検証、零空間を射影除去。\(x,y\) 端の閉じ方により診断であって検証済み
+  圧力ではない)。
+
+### Lean 4 段階 1 — F-3(`formal/NSSingularity/VelocityRecovery.lean`)
+
+E-14 ⇒ E-15(速度回復から物理発散ゼロ)を機械検証した。
+
+- `divergence_of_recovered_velocity_eq_zero`(\(r\neq0\))と
+  `divergence_of_recovered_velocity_eq_zero'`(\(u^r/r\) を連続延長に
+  置換、軸込み)、`mixed_partial_comm`(Schwarz)。
+- `sorry`・`admit`・新規 axiom なし。`#print axioms` は
+  `[propext, Classical.choice, Quot.sound]` のみ(独立に再確認)。
+- 独立検証: `lake build` 成功(8658 jobs)、軸の向き(`partialR` が
+  \(r\)、`partialZ` が \(z\))を別途 Lean で確認 — 軸取り違えで別命題に
+  なる罠を排除。
+- 形式化により、E-15 の相殺が**混合偏微分の一致のみ**に依存することが
+  構造的に露出した(滑らかさ仮定の唯一の使用箇所)。
+- **非スコープ**: 任意の \(C^2\) スカラーに対する座標表現の恒等式であり、
+  E-13 も運動方程式も使わない。E-18/E-24(3D 場との対応)は未形式化で、
+  `ClayStatement.lean` の `DivergenceFree` へは未接続。
+
+### 壁依存性(E-32 + 実装完了、実行中)
+
+- **E-32**(`docs/equation_audit.md`): \(C^\infty\) compact-support
+  envelope 初期値族。core(\(r\le0.9\))は E-29 と **bit 一致**、
+  sup 偏差 \(\le3.4008\times10^{-10}\)(実測 \(2.577\times10^{-12}\))、
+  \(r\ge0.95\) で厳密 0、遷移帯の 4 階差分は平の E-29 と bit 一致。
+- 実装(`wall_dependence.py` + 実験 + 60 テスト)。`nonlinear_cylinder` が
+  \(r_{\max}\) について既に一般であることを検証(4 半径で壁行の挙動が正しく、
+  初期エネルギーは compact support ゆえ全半径同一 4008.106)。
+- **前登録の完全性**: 閾値は一つも変更していない。受入検査 3 件の文言が
+  一意でなかったため、実装した読み方を
+  `docs/wall_dependence_prereg.md` §8 に**改版として明記**し、
+  前登録されていなかった実装判断(整合性許容幅 0.25 等)も別枠で列挙した。
+
 限界: 一様固定格子は Hou の適応最小格子幅 \(O(10^{-8})\) に遠く及ばず、
 これは公表増幅率の再現主張ではない。FABLE5_HANDOFF §7.2 の受入基準
 (3 空間解像度+3 時間刻み+peak 位置・振幅傾向の一致等)のうち、
