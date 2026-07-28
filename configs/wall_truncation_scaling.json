@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "experiment": "wall_truncation_scaling_v1",
+  "description": "Verification of equation-audit entry E-33: the wall-truncation response of the E-25 finite-cylinder elliptic problem -L5 psi1 = omega1 with psi1(R,z)=0, for a compactly supported source. Axial modes L_z in {1,2,4,8,16,32} at m=1 plus one exactly z-independent case sweep kR from 0.196 to 50.3, crossing the E-33(c) transition at kR ~ 1. Every wall radius shares the radial spacing, so the core nodes are bitwise identical and the core differences are exact nodewise comparisons.",
+  "interpretation": "This measures how the solution of THIS discretization of THIS finite-cylinder problem moves when the artificial outer wall is moved, and checks that the movement obeys the closed form E-33 derives. It is not a continuum bound, not a whole-space result, and not singularity evidence. Its programmatic content is the opposite of reassuring: the k=0 component's truncation error falls only like R^-2, so approximating the whole space by a large finite cylinder converges only algebraically.",
+  "source_profile": {
+    "support_radius": 0.95,
+    "exponent": 8
+  },
+  "core_radius": 0.9,
+  "axial_cases": [
+    {"label": "k0", "z_period": 1.0, "mode": 0},
+    {"label": "Lz1_m1", "z_period": 1.0, "mode": 1},
+    {"label": "Lz2_m1", "z_period": 2.0, "mode": 1},
+    {"label": "Lz4_m1", "z_period": 4.0, "mode": 1},
+    {"label": "Lz8_m1", "z_period": 8.0, "mode": 1},
+    {"label": "Lz16_m1", "z_period": 16.0, "mode": 1},
+    {"label": "Lz32_m1", "z_period": 32.0, "mode": 1}
+  ],
+  "wall_radii": [1.0, 1.5, 2.0, 3.0, 4.0, 8.0],
+  "reference_wall_radius": 8.0,
+  "axial_points": 32,
+  "radial_resolutions": [64, 128, 256],
+  "cross_check": {
+    "points_per_unit_radius": 64,
+    "axial_points": 128,
+    "wall_radii": [1.0, 1.5, 2.0, 8.0],
+    "axial_case_labels": ["k0", "Lz1_m1", "Lz8_m1"],
+    "realspace_tolerance": 1e-13,
+    "realspace_max_iterations": 20000
+  },
+  "nonlinear_cross_link": {
+    "summary_path": "outputs/wall_dependence_v1/summary.json",
+    "member_group": "core_dr192",
+    "z_period": 1.0,
+    "mode": 1
+  },
+  "classification": {
+    "exponential_min_kr": 3.0,
+    "algebraic_max_kr": 0.5
+  },
+  "roundoff_floor_factor": 16.0,
+  "well_resolved_floor_margin": 10000.0,
+  "acceptance": {
+    "max_oracle_ratio_relative_error_finest": 1e-3,
+    "max_oracle_ratio_relative_error_any": 1e-2,
+    "min_oracle_ratio_observed_order": 1.85,
+    "max_oracle_ratio_observed_order": 2.15,
+    "max_zero_mode_closed_form_relative_error_finest": 1e-4,
+    "min_zero_mode_closed_form_observed_order": 1.9,
+    "max_zero_mode_closed_form_observed_order": 2.1,
+    "max_zero_mode_constancy_relative_spread": 1e-11,
+    "max_shape_one_minus_cosine": 1e-6,
+    "min_shape_observed_order": 3.5,
+    "max_shape_observed_order": 4.5,
+    "max_exponential_slope_relative_deviation": 0.06,
+    "max_algebraic_slope_absolute_deviation": 0.35,
+    "max_measured_versus_oracle_slope_relative_error": 5e-3,
+    "max_modal_ode_relative_residual": 1e-5,
+    "min_modal_ode_observed_order": 3.5,
+    "max_wronskian_relative_defect": 1e-14,
+    "max_published_value_relative_error": 1e-12,
+    "max_cross_solver_relative_difference": 5e-3,
+    "min_cross_solver_ab_difference_over_dr_squared": 1e-3,
+    "max_cross_solver_ab_difference_over_dr_squared": 1.0,
+    "max_cross_solver_ratio_relative_deviation": 1e-2
+  }
+}
