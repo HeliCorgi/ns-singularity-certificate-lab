@@ -1,0 +1,13 @@
+{
+  "files": {
+    "term_balance.csv": {
+      "bytes": 15958,
+      "sha256": "ea6f904683e341f38df0383e7b309410ad7fc1df0bdbe0e5743667a10fb0ac38"
+    },
+    "term_balance.json": {
+      "bytes": 41991,
+      "sha256": "1bb2b3f11b023cc7db84856f4a838e66fa55cf7f1f2f4112538630fcc9d58a88"
+    }
+  },
+  "schema_version": 1
+}
