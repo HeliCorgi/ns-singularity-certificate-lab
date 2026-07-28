@@ -5,6 +5,16 @@ a claim of singularity formation.  Arrays use the convention ``(n_r, n_z)``.
 """
 
 from .axis import AxisRegularityReport, check_axis_regularity
+from .critical_l3 import (
+    CriticalGrowthReport,
+    CriticalL3Report,
+    analyze_critical_l3,
+    anisotropic_l3_scaling_factor,
+    axisymmetric_l3_cubed,
+    axisymmetric_l3_norm,
+    critical_growth_series,
+    state_critical_l3,
+)
 from .grid import AxisymmetricGrid
 from .operators import (
     divergence_physical,
@@ -15,6 +25,14 @@ from .operators import (
 from .pde import EquationTerms, PDEResiduals, compute_pde_residuals
 
 __all__ = [
+    "CriticalGrowthReport",
+    "CriticalL3Report",
+    "analyze_critical_l3",
+    "anisotropic_l3_scaling_factor",
+    "axisymmetric_l3_cubed",
+    "axisymmetric_l3_norm",
+    "critical_growth_series",
+    "state_critical_l3",
     "AxisRegularityReport",
     "AxisymmetricGrid",
     "EquationTerms",

@@ -1,0 +1,13 @@
+{
+  "files": {
+    "critical_l3_snapshots.csv": {
+      "bytes": 7097,
+      "sha256": "d5589fdb76637427ff81c06e885c6c264fb679f343edc8ec4dcaa80261bae467"
+    },
+    "critical_l3_summary.json": {
+      "bytes": 29705,
+      "sha256": "151fe2a6df1e9d432b8b0b92581ca2882cc04a1332b9dc50206dfdd6beef38c8"
+    }
+  },
+  "schema_version": 1
+}

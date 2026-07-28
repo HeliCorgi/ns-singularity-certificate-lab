@@ -1,0 +1,60 @@
+{
+  "cases": [
+    {
+      "diagnostics": {
+        "bessel_backend": "cephes",
+        "dz": 0.05,
+        "original_z_points": 80,
+        "pad_factor": 1,
+        "padded_period": 4.0,
+        "padded_z_points": 80,
+        "quadrature": "uniform composite trapezoid in rho with rho^3 measure",
+        "radial_max": 6.0,
+        "radial_points": 181,
+        "solution_linf": 1.0045175244749225,
+        "source_linf": 9.0
+      },
+      "pad_factor": 1,
+      "period_image_reduction_from_previous": null,
+      "relative_l2_interior": 0.011893619334281484
+    },
+    {
+      "diagnostics": {
+        "bessel_backend": "cephes",
+        "dz": 0.05,
+        "original_z_points": 80,
+        "pad_factor": 2,
+        "padded_period": 8.0,
+        "padded_z_points": 160,
+        "quadrature": "uniform composite trapezoid in rho with rho^3 measure",
+        "radial_max": 6.0,
+        "radial_points": 181,
+        "solution_linf": 1.001541421030592,
+        "source_linf": 9.0
+      },
+      "pad_factor": 2,
+      "period_image_reduction_from_previous": 2.56153091248228,
+      "relative_l2_interior": 0.004643168378848819
+    },
+    {
+      "diagnostics": {
+        "bessel_backend": "cephes",
+        "dz": 0.05,
+        "original_z_points": 80,
+        "pad_factor": 4,
+        "padded_period": 16.0,
+        "padded_z_points": 320,
+        "quadrature": "uniform composite trapezoid in rho with rho^3 measure",
+        "radial_max": 6.0,
+        "radial_points": 181,
+        "solution_linf": 1.001362062034501,
+        "source_linf": 9.0
+      },
+      "pad_factor": 4,
+      "period_image_reduction_from_previous": 1.1068788011349868,
+      "relative_l2_interior": 0.004194829979657883
+    }
+  ],
+  "interpretation": "The radial boundary is removed analytically.  z remains periodized; padding sensitivity measures, but does not rigorously bound, image error.",
+  "status": "pass"
+}
