@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "experiment_id": "hou_primitive_residual_v1",
+  "description": "Pressure-free primitive Navier-Stokes residual of the E-29 datum on real saved states. The E-29 datum is integrated on a 129x256 grid with the fixed uniform step 1e-6 to the target time 5e-4, and schema-v2 candidates are saved at the exact whole-step offsets -4,-2,-1,0,+1,+2,+4 around it. Reloading those seven archives from disk gives three centered approximations of the same u_t at spacings dt, 2dt and 4dt, from which the order of the time difference itself is measured. On the Cartesian audit box (half_width 0.7, since 0.7*sqrt(2)=0.98995 < r_max=1.0, and the full periodic z extent [0,1)) two different discretizations of the same pressure-free statement are then evaluated: curl of the momentum residual, and the Cartesian vorticity-transport residual. Fine audit shape 64x64x128 with the coarse companion 32x32x64 so that audit truncation is separated from a state defect; interior_margin 4 because these residuals take up to three nested derivatives and the x,y faces carry one-sided closures. The source resolution 129x256 (dr=1/128) is deliberately finer than the fine audit spacing dx=1.4/63, which is what makes the audit-grid refinement orders land near two instead of near one: at 65x128 the same run measures relative RMS 1.35e-3 (curl) and 1.84e-3 (transport) with refinement orders 0.79 and 1.13, i.e. still limited by the bilinear reconstruction of the coarser source grid.",
+  "interpretation": "This closes the pressure-free half of the primitive-residual gap recorded in outputs/hou_snapshot_cartesian_audit_v1/summary.json. It is a resolution-limited floating-point consistency measurement of the discrete trajectory against the Cartesian momentum equation, dominated by the bilinear reconstruction and the audit truncation. It is not a reproduction claim, not a continuum statement, not a singularity candidate and not a proof. The recovered pressure is a scoped least-squares diagnostic and is record-only.",
+  "coordinate_system": "uniform Cartesian (x,y,z) box [-a,a]^2 x [z_min,z_max) inscribed in the finite cylinder of the saved checkpoints",
+  "normalization_description": "Hou finite-cylinder normalization: u1 = u^theta/r, omega1 = omega^theta/r, psi1 = psi^theta/r; the E-29 amplitude 12000 is part of the audited equation and is multiplied by amplitude_scale, which exists only so that reduced-amplitude smoke runs can reuse this schema",
+  "units": {
+    "r": "dimensionless length",
+    "z": "dimensionless length",
+    "time": "dimensionless time",
+    "u1": "dimensionless inverse time",
+    "omega1": "dimensionless inverse length inverse time",
+    "psi1": "dimensionless length inverse time",
+    "viscosity": "dimensionless kinematic viscosity",
+    "velocity": "dimensionless length per dimensionless time",
+    "pressure": "dimensionless kinematic pressure (pressure divided by constant density)"
+  },
+  "seed": 20260728,
+  "r_max": 1.0,
+  "z_period": 1.0,
+  "resolution": [
+    129,
+    256
+  ],
+  "amplitude_scale": 1.0,
+  "viscosity_schedule": [
+    [
+      0.0,
+      0.0005
+    ]
+  ],
+  "time_step": 1e-06,
+  "target_time": 0.0005,
+  "cfl_coefficient": 0.1,
+  "max_steps": 20000,
+  "diagnostic_stride": 25,
+  "cartesian_grid": {
+    "half_width": 0.7,
+    "z_min": 0.0,
+    "z_max": 1.0,
+    "z_periodic": true,
+    "shape": [
+      64,
+      64,
+      128
+    ],
+    "coarse_shape": [
+      32,
+      32,
+      64
+    ],
+    "interior_margin": 4
+  },
+  "pressure_recovery": {
+    "enabled": true,
+    "tolerance": 1e-09,
+    "max_iterations": 20000
+  },
+  "hard_gates": {
+    "maximum_relative_curl_momentum_residual_rms": 0.005,
+    "maximum_relative_vorticity_transport_residual_rms": 0.01,
+    "time_difference_order_lower_bound": 1.8,
+    "time_difference_order_upper_bound": 2.2
+  },
+  "record_only_thresholds": {
+    "reference_relative_curl_momentum_residual_max": 0.05,
+    "reference_relative_vorticity_transport_residual_max": 0.08,
+    "reference_relative_pressure_consistency_max": 0.02,
+    "reference_relative_divergence_rms": 0.002
+  }
+}

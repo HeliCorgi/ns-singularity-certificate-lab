@@ -1,0 +1,113 @@
+{
+  "acceptance": {
+    "large_radius_discretization_constant": 0.05,
+    "max_k0_over_k1_derivative_identity_relative_defect": 1e-09,
+    "max_k0_over_k1_large_argument_relative_error": 0.0001,
+    "max_k0_over_k1_published_relative_error": 1e-12,
+    "max_k0_over_k1_small_argument_relative_error": 0.001,
+    "max_large_radius_dirichlet_split_factor": 1.5,
+    "max_manufactured_boundary_row_observed_order": 2.15,
+    "max_manufactured_error_over_dr_squared": 100.0,
+    "max_manufactured_observed_order": 2.15,
+    "max_outer_condition_defect_over_dr_squared": 0.5,
+    "max_transparent_r_independence_observed_order": 2.15,
+    "max_transparent_r_independence_over_dr_squared": 0.05,
+    "max_wronskian_relative_defect": 1e-14,
+    "max_zero_mode_bracket_relative_defect": 1e-15,
+    "max_zero_mode_dirichlet_closed_form_relative_error": 0.0001,
+    "max_zero_mode_wall_corrected_observed_order": 2.15,
+    "max_zero_mode_wall_corrected_residual_over_dr_squared": 0.05,
+    "min_dirichlet_over_transparent_improvement_factor": 1000.0,
+    "min_fault_detection_factor": 10.0,
+    "min_long_wavelength_improvement_factor": 5000.0,
+    "min_manufactured_boundary_row_observed_order": 1.85,
+    "min_manufactured_observed_order": 1.85,
+    "min_transparent_r_independence_observed_order": 1.85,
+    "min_zero_mode_wall_corrected_observed_order": 1.85
+  },
+  "axial_cases": [
+    {
+      "label": "k0",
+      "mode": 0,
+      "z_period": 1.0
+    },
+    {
+      "label": "Lz1_m1",
+      "mode": 1,
+      "z_period": 1.0
+    },
+    {
+      "label": "Lz8_m1",
+      "mode": 1,
+      "z_period": 8.0
+    },
+    {
+      "label": "Lz32_m1",
+      "mode": 1,
+      "z_period": 32.0
+    }
+  ],
+  "axial_points": 32,
+  "core_radius": 0.9,
+  "description": "Acceptance evidence for milestone W-A of docs/whole_space_transition.md: the exact modal transparent (Dirichlet-to-Neumann) outer condition d_r psi_hat_k(R) + [2/R + |k| K_0(|k|R)/K_1(|k|R)] psi_hat_k(R) = 0 applied to the E-25 finite-cylinder elliptic problem. The same compactly supported source family as the E-33 wall-truncation run (support 0.95, exponent 8, core 0.9) is solved on nested cylinders R in {1, 1.5, 2, 3} that share their radial spacing bitwise, under both outer conditions, at three radial resolutions, for one exactly z-independent case and three axial modes spanning kR from 0.196 (algebraic regime) to 6.28 (exponential regime).",
+  "experiment": "transparent_boundary_v1",
+  "fault_injection": {
+    "points_per_unit_radius": 64,
+    "variants": [
+      "sign_flipped",
+      "no_curvature_term",
+      "frozen_ratio"
+    ],
+    "wall_radii": [
+      1.0,
+      2.0
+    ]
+  },
+  "interpretation": "This measures whether the transparent outer condition removes the artificial-wall truncation error of THIS discretization, leaving only the O(dr^2) discretization error of the boundary row. It is not a continuum bound, it does not make the elliptic problem a whole-space problem in any rigorous sense, and it is not singularity evidence. Its content is narrow: with a compactly supported source, moving the artificial wall stops moving the solution.",
+  "large_radius_dirichlet": {
+    "dirichlet_wall_radii": [
+      2.0,
+      4.0,
+      8.0,
+      16.0
+    ],
+    "transparent_wall_radius": 1.0
+  },
+  "long_wavelength_max_kr": 0.5,
+  "manufactured": {
+    "axial_case_labels": [
+      "k0",
+      "Lz1_m1",
+      "Lz8_m1",
+      "Lz32_m1"
+    ],
+    "radial_resolutions": [
+      64,
+      128,
+      256
+    ],
+    "wall_radius": 1.25
+  },
+  "physical_wall_warning": "The condition measured here belongs to the whole-space problem. The Hou reproduction keeps the PHYSICAL no-slip wall of audit entry E-27, where psi_1(t,1,z)=0 is a boundary condition of the modelled flow and not a truncation artefact. Runs that reproduce Hou must keep boundary_condition='dirichlet'; the transparent path exists only for whole-space exploration and is never selected implicitly.",
+  "radial_resolutions": [
+    64,
+    128,
+    256
+  ],
+  "schema_version": 1,
+  "source_profile": {
+    "exponent": 8,
+    "support_radius": 0.95
+  },
+  "support_leak": {
+    "leaking_support_radius": 1.05,
+    "points_per_unit_radius": 64,
+    "wall_radius": 1.0
+  },
+  "wall_radii": [
+    1.0,
+    1.5,
+    2.0,
+    3.0
+  ]
+}

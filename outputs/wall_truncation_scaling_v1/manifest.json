@@ -1,0 +1,26 @@
+{
+  "experiment_id": "wall_truncation_scaling_v1",
+  "files": {
+    "config.snapshot.json": {
+      "bytes": 3794,
+      "sha256": "6bc576520cdfb6587792cfd319be3cc1e3ffca512a62254a9a7d0164c5d06812"
+    },
+    "core_response.npz": {
+      "bytes": 2093992,
+      "sha256": "9a876ed7a63ea3358dc2f394883b7f94b6d38f9a059491962b67a71bb8b6b81f"
+    },
+    "radius_pairs.csv": {
+      "bytes": 10809,
+      "sha256": "567050d9b780b1f4f14c79a6e29f6a37e4bc48299897b4f491f1e0ac56359d4e"
+    },
+    "summary.json": {
+      "bytes": 335778,
+      "sha256": "316da10264df1cd280121b35c7c512d60057f103f468598c8fbc514e9b206114"
+    },
+    "wall_response.csv": {
+      "bytes": 19041,
+      "sha256": "af2456a9ac69f20e255f7679263a93865571ab6b4dfadcdcf2ae74723ac01b5e"
+    }
+  },
+  "schema_version": 1
+}

@@ -1,0 +1,62 @@
+{
+  "experiment_id": "hou_time_refinement_v1",
+  "files": {
+    "checkpoints/checkpoint_dt00_n3653.manifest.json": {
+      "bytes": 6663,
+      "sha256": "794abc10537dd61a7825f4b4f9c88a95e2b7d620370469865bff2596fae4688f"
+    },
+    "checkpoints/checkpoint_dt00_n3653.manifest.json.sha256": {
+      "bytes": 65,
+      "sha256": "7c50fc8623d5c26d43b66206772d56158299aca7326983b891a3730982fcf21a"
+    },
+    "checkpoints/checkpoint_dt00_n3653.npz": {
+      "bytes": 142915,
+      "sha256": "28cf3ab275892e11e7bc02ae06a385c547d7f35ec3492829a40c1cb726ed2fc0"
+    },
+    "checkpoints/checkpoint_dt01_n7306.manifest.json": {
+      "bytes": 6663,
+      "sha256": "ae2dedbc40196718e7309b90b6b3eee03f6db16c494039968ce7930d725577ff"
+    },
+    "checkpoints/checkpoint_dt01_n7306.manifest.json.sha256": {
+      "bytes": 65,
+      "sha256": "1b0773d6cd2337b190ff6fe197fe608aedbb70ea5b1bbf7f1e4a92625743414d"
+    },
+    "checkpoints/checkpoint_dt01_n7306.npz": {
+      "bytes": 143163,
+      "sha256": "f60a547f34ad017a1647bf13a7b62ff0f8d7f722f04937ba4390f6429e27a7e8"
+    },
+    "checkpoints/checkpoint_dt02_n14612.manifest.json": {
+      "bytes": 6668,
+      "sha256": "01b60ca46ac39dea05716d328ca5cb2569c6dd053cf54888cd1fb72aecd8c177"
+    },
+    "checkpoints/checkpoint_dt02_n14612.manifest.json.sha256": {
+      "bytes": 65,
+      "sha256": "57e99008db6d4d0429d17ccc15d21c341d654c147414ef34bbfc364b7db9f2f0"
+    },
+    "checkpoints/checkpoint_dt02_n14612.npz": {
+      "bytes": 143441,
+      "sha256": "8405263d48376c656c0f88fa44449ad8fdc78b37a822c9b7a173c34c01154558"
+    },
+    "config.snapshot.json": {
+      "bytes": 2060,
+      "sha256": "5d964629f64c5168d5dc5b0cb33f82ebf39cc1a538082ceeb1a8f223718c6fc3"
+    },
+    "diagnostics.csv": {
+      "bytes": 657302,
+      "sha256": "e8edb10210b04b41473b4e4b3a737ceb0727d0e533a0db92219979bf966c67a8"
+    },
+    "summary.json": {
+      "bytes": 31875,
+      "sha256": "bfbb60823c465c691056e498b8080252f86b26bf0252d227283e8eb8732bb9bb"
+    },
+    "time_refinement.csv": {
+      "bytes": 2417,
+      "sha256": "8b7c7b86ad5ad2b54b3e92676e7590940bd69f48493e763d89064bb8d369c701"
+    },
+    "trajectories.npz": {
+      "bytes": 477267,
+      "sha256": "eec443b4fa6be6a71a4a29d128c16a9d1578ebbcbd65bd9ccdc524061f60dd52"
+    }
+  },
+  "schema_version": 1
+}

@@ -336,13 +336,40 @@ def test_finite_cylinder_solver_does_not_import_operator_pde_or_sibling_modules(
 
 
 def test_cross_validation_is_the_only_module_importing_both_solvers() -> None:
-    """The isolation claim above is only credible if it is enforced somewhere."""
+    """The isolation claim above is only credible if it is enforced somewhere.
+
+    The check is AST-based: it detects genuine ``import``/``from`` statements
+    of the two solver modules, not mere string mentions.  (A naive substring
+    scan would trip on test files that list both module names inside their
+    own forbidden-import guard lists, which is the opposite of importing
+    them.)  Aliased imports of the parent package followed by attribute
+    access would evade this scan; the paired convention below and code
+    review cover that residual gap.
+    """
+
+    import ast as _ast
+
+    solver_a = "ns_certificate_lab.poisson"
+    solver_b = "ns_certificate_lab.finite_cylinder_poisson"
+
+    def _imported_modules(path: Path) -> set[str]:
+        tree = _ast.parse(path.read_text(encoding="utf-8"))
+        modules: set[str] = set()
+        for node in _ast.walk(tree):
+            if isinstance(node, _ast.Import):
+                modules.update(alias.name for alias in node.names)
+            elif isinstance(node, _ast.ImportFrom):
+                module = node.module or ""
+                modules.add(module)
+                # ``from ns_certificate_lab import poisson`` style
+                modules.update(f"{module}.{alias.name}" for alias in node.names)
+        return modules
 
     this_file = Path(__file__).resolve()
     for path in sorted(this_file.parent.glob("test_*.py")):
         if path == this_file:
             continue
-        text = path.read_text(encoding="utf-8")
-        imports_a = "ns_certificate_lab.poisson" in text
-        imports_b = "ns_certificate_lab.finite_cylinder_poisson" in text
+        modules = _imported_modules(path)
+        imports_a = solver_a in modules
+        imports_b = solver_b in modules
         assert not (imports_a and imports_b), path.name

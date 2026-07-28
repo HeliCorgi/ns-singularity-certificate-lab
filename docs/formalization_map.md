@@ -51,8 +51,9 @@ finite-time breakdown theorem / Clay-complete result)を用いる。
   (mathlib に極座標の一部はあるが 3D 円柱座標の体系的理論はない)。
 - **新規形式化が必要:** 円柱⇔Cartesian 成分変換、\(u^r=-r\partial_z\psi_1,\
   u^z=2\psi_1+r\partial_r\psi_1\) から物理発散
-  \(\partial_ru^r+u^r/r+\partial_zu^z=0\) が従う恒等式(段階1の最初の対象として最適)、
-  \(\mathcal L_5\) と軸対称 Laplacian の関係。
+  \(\partial_ru^r+u^r/r+\partial_zu^z=0\) が従う恒等式(**F-3 として形式化済み**、
+  `formal/NSSingularity/VelocityRecovery.lean`)、
+  \(\mathcal L_5\) と軸対称 Laplacian の関係(未着手)。
 - **Clay までの依存:** M1 は「縮約系で構成した解が元の 3D 方程式を満たす」ことの
   橋であり、最終定理の再構成段階(段階4の項目 4)が直接依存する。
 
@@ -113,10 +114,157 @@ M0 (Clay命題固定)
      ├─ 初期値の許容性     ← M1 の座標恒等式 + 明示的初期値の検査
      ├─ 軌道の厳密存在     ← M5 の区間証明書 + Newton–Kantorovich
      ├─ 物理解への再構成   ← M1 の同値性定理
-     ├─ 有限物理時間       ← L(s) 可積分性(区間証明書)
+     ├─ 有限物理時間       ← F-2(形式化済み)+ L(s) 可積分性(区間証明書)
      ├─ t<T での滑らかさ   ← connected-solution 定理(未設計)
      └─ ノルム発散         ← blow-up criterion(新規形式化)
 ```
+
+## 段階 0–1 の具体的形式化対象(2026-07-28 追加)
+
+数値探索を止めない範囲で先行形式化する小対象。環境は
+`formal/`(Lean 4 v4.32.1 + mathlib4 v4.32.1、`lean-toolchain` で固定)。
+
+### F-1 再スケーリングの代数的恒等式(E-21b)
+
+- **命題:** \(u^{(\lambda)}(x,t)=\lambda u(\lambda x,\lambda^2t)\) が E-01 を
+  満たすことと \(u\) が満たすことの同値、および
+  \(u_1^{(\lambda)}=\lambda^2u_1(\lambda r,\lambda z,\lambda^2t)\) 等の
+  変換則(E-21b)。
+- **仮定:** 場の微分可能性のみ。純代数+連鎖律。
+- **mathlib 基盤:** `fderiv` の合成則、`deriv_comp`。新規理論不要。
+- **数値のみの部分:** なし。
+
+### F-2 有限物理時間条件 — **形式化済み**(2026-07-28)
+
+- **状態:** Lean 4 で証明完了。`formal/NSSingularity/FiniteTime.lean`
+  (`lake build` 成功、`sorry`・`admit`・新規 `axiom` なし)。
+- **命題:** \(L:\mathbb R\to\mathbb R\) に対し
+  \(t(s)=t_0+\int_{s_0}^sL(\sigma)^2d\sigma\) は、\(L^2\) が \([s_0,\infty)\)
+  上可積分なら \(s\to\infty\) で有限極限
+  \(T=t_0+\int_{(s_0,\infty)}L^2\) を持ち、\([s_0,\infty)\) 上単調で
+  \(t(s)\le T\)(さらに \(L>0\) なら \(t(s)<T\))。逆に \(L^2\) が
+  \((s_0,\infty)\) 上可積分でなければ \(t(s)\to+\infty\)。
+  すなわち可積分性は有限爆発時刻の**分水嶺そのもの**である。
+- **Lean 定理名:**
+  - `NSSingularity.tendsto_physicalTime`
+    — `(hint : IntegrableOn (scaleRate L) (Set.Ici s₀)) (t₀ : ℝ) :
+      Tendsto (physicalTime t₀ s₀ L) atTop (𝓝 (blowupTime t₀ s₀ L))`(**F-2 本体**)
+  - `NSSingularity.physicalTime_le_blowupTime`
+    — 同仮定で `∀ s, physicalTime t₀ s₀ L s ≤ blowupTime t₀ s₀ L`
+  - `NSSingularity.physicalTime_lt_blowupTime`
+    — `(hpos : ∀ σ, 0 < L σ)` を追加した狭義版(`T` に到達しない)
+  - `NSSingularity.exists_finite_blowupTime`
+    — 梱包形 `∃ T, Tendsto … (𝓝 T) ∧ (∀ s, … ≤ T) ∧ MonotoneOn … (Set.Ici s₀)`
+  - `NSSingularity.physicalTime_monotoneOn` / `physicalTime_strictMonoOn`
+    — 局所仮定 `∀ b, s₀ ≤ b → IntervalIntegrable (scaleRate L) volume s₀ b`
+      のもとでの単調性 / `L>0` 追加時の狭義単調性
+  - `NSSingularity.tendsto_physicalTime_atTop`
+    — **逆向き**: 局所可積分かつ `¬ IntegrableOn (scaleRate L) (Set.Ioi s₀)`
+      なら `Tendsto (physicalTime t₀ s₀ L) atTop atTop`
+  - `NSSingularity.hasDerivAt_physicalTime`
+    — `Continuous L` のとき `HasDerivAt (physicalTime t₀ s₀ L) (scaleRate L s) s`。
+      定義が実際に \(dt/ds=L^2\)、\(t(s_0)=t_0\) を解くことの確認
+  - 補助: `intervalIntegrable_scaleRate`、`physicalTime_le_physicalTime`、
+    `le_physicalTime_of_le`、`physicalTime_le_of_le_base`、`physicalTime_base`、
+    `scaleRate_nonneg`、`scaleRate_pos`
+- **定義:** `scaleRate L σ = L σ ^ 2`、
+  `physicalTime t₀ s₀ L s = t₀ + ∫ σ in s₀..s, scaleRate L σ`(**区間積分**)、
+  `blowupTime t₀ s₀ L = t₀ + ∫ σ in Set.Ioi s₀, scaleRate L σ`(**`Ioi` 上の
+  集合積分**)。前者は FTC が、後者は広義積分収束定理が mathlib でその形を
+  取るための選択で、両者を橋渡しするのが解析的内容の入る唯一の箇所。
+  被積分を \(L^2\) と平方で書いたため非負性は `sq_nonneg` から無償であり、
+  単調性・有限極限・`t(s) ≤ T` に \(L\) の正値性は**不要**。
+- **依存公理:** 本ファイルの全 15 定理について `#print axioms` は
+  `[propext, Classical.choice, Quot.sound]`。mathlib 標準の古典公理のみ。
+- **mathlib 基盤(実際に使用):**
+  `MeasureTheory.intervalIntegral_tendsto_integral_Ioi`
+  (`Mathlib/MeasureTheory/Integral/IntegralEqImproper.lean`)、
+  `MeasureTheory.integrableOn_Ioi_of_intervalIntegral_norm_bounded`(逆向き)、
+  `MeasureTheory.setIntegral_pos_iff_support_of_nonneg_ae`(狭義単調性)、
+  `intervalIntegral.integral_mono_interval`、
+  `intervalIntegral.integral_add_adjacent_intervals`、
+  `intervalIntegral.integral_nonneg`、`intervalIntegral.integral_symm`、
+  `intervalIntegral.integral_hasDerivAt_right`、
+  `MeasureTheory.IntegrableOn.intervalIntegrable`、
+  `MeasureTheory.intervalIntegrable_iff_integrableOn_Ioc_of_le`、
+  `ge_of_tendsto`、`Real.volume_Ioc`。
+- **形式化していないこと:** これは**与えられた `L` についての命題**であり、
+  `L` を構成しない。Navier–Stokes の解との接続は皆無で、`ClayStatement.lean`
+  とも未接続。仮定 \(\int_{s_0}^\infty L^2<\infty\) は本ファイルでは検証されず、
+  将来の区間証明書が厳密上界として供給すべき対象そのものである。
+  また \(t(s)<T\) は物理時刻が \(T\) に達しないことのみを言い、\(T\) での
+  ノルム発散(blow-up criterion)は含まない。
+- **区間証明書へ:** \(\int L^2\) の数値上界を厳密上界へ変換する部分
+  (= `IntegrableOn (fun σ => L σ ^ 2) (Set.Ici s₀)` の供給)。
+
+### F-3 速度回復式と発散ゼロ(E-14/E-15)— **形式化済み**(2026-07-28)
+
+- **状態:** Lean 4 で証明完了。`formal/NSSingularity/VelocityRecovery.lean`
+  (`lake build` 成功、`sorry`・`admit`・新規 `axiom` なし)。
+- **命題:** \(C^2\) な \(\psi_1\) に対し \(u^r=-r\psi_{1,z}\)、
+  \(u^z=2\psi_1+r\psi_{1,r}\) は \(r\neq0\) で
+  \(\partial_ru^r+u^r/r+\partial_zu^z=0\) を満たし、\(u^r/r\) を連続延長
+  \(-\psi_{1,z}\) に置き換えれば軸 \(r=0\) を含む全点で 0。
+- **Lean 定理名:**
+  - `NSSingularity.divergence_of_recovered_velocity_eq_zero`
+    — `(ψ : ℝ × ℝ → ℝ) (hψ : ContDiff ℝ 2 ψ) (p : ℝ × ℝ) (hr : p.1 ≠ 0) :
+      partialR (uR ψ) p + uR ψ p / p.1 + partialZ (uZ ψ) p = 0`(E-15 本体)
+  - `NSSingularity.divergence_of_recovered_velocity_eq_zero'`
+    — 軸込みの形(`uROverR ψ p = -(partialZ ψ p)` を使用、`r ≠ 0` 不要)
+  - `NSSingularity.mixed_partial_comm`
+    — `partialR (partialZ ψ) p = partialZ (partialR ψ) p`。
+      滑らかさ仮定が入る**唯一**の箇所(Schwarz/Clairaut)
+  - 補助: `partialR_uR`、`partialZ_uZ`、`uROverR_eq_div`、
+    `fderiv_apply_const`、`differentiable_fderiv_of_contDiff_two`
+- **定義:** `partialR f p = fderiv ℝ f p (1,0)`、
+  `partialZ f p = fderiv ℝ f p (0,1)`(`ClayStatement.lean` の
+  `partialDeriv` と同規約)、`uR ψ p = -(p.1 * partialZ ψ p)`、
+  `uZ ψ p = 2 * ψ p + p.1 * partialR ψ p`(= E-14)。
+  子午面は `ℝ × ℝ`(`p.1 = r`、`p.2 = z`)。
+- **依存公理:** `#print axioms divergence_of_recovered_velocity_eq_zero` は
+  `[propext, Classical.choice, Quot.sound]`。mathlib 標準の古典公理のみで、
+  それ以外の公理には依存しない。
+- **mathlib 基盤(実際に使用):**
+  `ContDiffAt.isSymmSndFDerivAt : ContDiffAt 𝕜 n f x → minSmoothness 𝕜 2 ≤ n →
+  IsSymmSndFDerivAt 𝕜 f x`(`Mathlib/Analysis/Calculus/FDeriv/Symmetric.lean`)、
+  `HasFDerivAt.clm_apply`、`HasFDerivAt.mul`、`ContDiff.fderiv_right`。
+- **形式化していないこと:** これは選んだ座標表現に関する恒等式であり、
+  \(u^r,u^z\) が実際に3次元軸対称ベクトル場の円柱成分であること
+  (E-18 の Cartesian 復元、E-24 の同値性)、および軸極限が E-16 の
+  偶奇性から従うことは未形式化。`ClayStatement.lean` の `DivergenceFree`
+  との接続も未着手。詳細は `formal/README.md` の当該節。
+- **意義:** M1 の最初の Lean 補題。E-15 の紙上導出の機械検証であり、
+  相殺が混合偏微分の一致のみに依存することが構造的に露出した。
+
+### F-4 候補証明書の有限次元不等式
+
+- **命題:** radii-polynomial / Newton–Kantorovich 型
+  \(Y+Zr+\tfrac K2r^2\le r\)(\(Y,Z,K,r\in\mathbb Q_{\ge0}\)、
+  \(Z<1\))の検査器と、その成立が縮小写像条件を含意する抽象補題。
+- **仮定:** 抽象 Banach 空間での標準仮定(段階 3 で実体化)。
+- **mathlib 基盤:** `Rat` 算術、`norm_num`;縮小写像は
+  `ContractingWith` が既存。
+- **区間証明書へ:** \(Y,Z,K\) の数値を二進有理数上界として出力する
+  発見コード側の変換器(独立実装、未着手)。
+
+### F-5 最終 Clay 反例命題までの依存関係
+
+段階 0 として `formal/NSSingularity/ClayStatement.lean` に (A)–(D) と
+無外力強化版反例命題を **定義のみ**(証明なし・`sorry` なし)で固定する。
+依存 DAG:
+
+```text
+F-5 (Clay命題定義)
+ ← F-3 (発散ゼロ恒等式) … 初期値の許容性検査
+ ← F-1 (スケーリング)   … 再スケーリング軌道→物理解
+ ← F-2 (有限物理時間)   … T<∞
+ ← F-4 (証明書不等式)   … 軌道存在(段階3)
+ → FinalTheorem(段階4、未着手)
+```
+
+最終証明経路の `sorry`・`admit`・未証明 axiom 禁止は
+`LEAN4_VERIFICATION_POLICY.md` のとおり維持する。段階 0 は定義のみで
+この制約に抵触しない。
 
 ## 未解決の形式化上の論点
 
