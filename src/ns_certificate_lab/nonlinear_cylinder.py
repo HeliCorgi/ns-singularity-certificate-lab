@@ -139,6 +139,7 @@ Fault = Literal[
     "axis_coeff",
     "wall_leak",
     "poisson_sign",
+    "viscosity_sign",
 ]
 VALID_FAULTS: tuple[Fault, ...] = (
     "thom_sign",
@@ -146,6 +147,7 @@ VALID_FAULTS: tuple[Fault, ...] = (
     "axis_coeff",
     "wall_leak",
     "poisson_sign",
+    "viscosity_sign",
 )
 
 FAULT_DESCRIPTIONS: dict[str, str] = {
@@ -161,6 +163,12 @@ FAULT_DESCRIPTIONS: dict[str, str] = {
         "stay frozen at their initial values"
     ),
     "poisson_sign": "flip the sign of the elliptic solution psi1 (E-13)",
+    "viscosity_sign": (
+        "flip the sign of the viscous term nu L5 in both E-11 and E-12; at "
+        "the Hou operating point nu = 5e-4 this is invisible in the term-sum "
+        "budget, so it must be rejected by the diffusion-dominated control "
+        "problem and by the energy-balance defect, not by the Hou run itself"
+    ),
 }
 
 _TIME_TOLERANCE = 1.0e-12
@@ -183,6 +191,14 @@ class ConstrainedState:
     E-14 velocities recovered from it.  Instances are produced only by
     :func:`constrain_state` so that no unconstrained state can reach the
     right-hand side.
+
+    ``poisson_algebraic_residual_relative`` is the maximum absolute residual of
+    the *exact linear system that solver A actually solved* (the spectral
+    per-mode tridiagonal system, applied back to the returned solution),
+    divided by the same scale ``max(1, max|omega1|, max|psi1| (dr^-2+dz^-2))``
+    that :mod:`ns_certificate_lab.poisson` uses.  For a correct solve this is a
+    round-off quantity; it is recorded on every accepted step (P0-C) and is
+    *not* the O(h^2) discretization error of the PDE.
     """
 
     u1: FloatArray
@@ -190,6 +206,7 @@ class ConstrainedState:
     psi1: FloatArray
     u_r: FloatArray
     u_z: FloatArray
+    poisson_algebraic_residual_relative: float = float("nan")
 
 
 def solve_poisson(
@@ -253,7 +270,30 @@ def constrain_state(
     vorticity = grid.validate_field(omega1, name="omega1").copy()
     if fault != "wall_leak":
         swirl[-1] = 0.0
-    psi1 = solve_poisson(grid, vorticity, outer_dirichlet=outer_dirichlet)
+    trace = (
+        np.zeros(grid.nz, dtype=np.float64)
+        if outer_dirichlet is None
+        else np.asarray(outer_dirichlet, dtype=np.float64)
+    )
+    solution = solve_streamfunction_poisson(
+        grid,
+        vorticity,
+        trace,
+        estimate_condition=False,
+    )
+    psi1 = solution.psi1
+    # The exact algebraic residual of the linear system solver A solved,
+    # normalized by the solver's own residual scale (see the dataclass
+    # docstring).  The fault paths below deliberately corrupt psi1 *after*
+    # the solve, so this number always refers to the clean solve.
+    residual_scale = max(
+        1.0,
+        float(np.max(np.abs(vorticity))),
+        float(np.max(np.abs(psi1))) * (grid.dr**-2 + grid.dz**-2),
+    )
+    algebraic_residual = float(
+        np.max(np.abs(solution.discrete_residual)) / residual_scale
+    )
     if fault == "poisson_sign":
         psi1 = -psi1
     if fault != "wall_leak":
@@ -265,6 +305,7 @@ def constrain_state(
         psi1=psi1,
         u_r=u_r,
         u_z=u_z,
+        poisson_algebraic_residual_relative=algebraic_residual,
     )
 
 
@@ -281,6 +322,8 @@ def _viscous_operator(
         # The correct axis row is 8 (f1 - f0)/dr^2 (E-17).  Using 4 instead
         # halves that coefficient.
         result[0] -= 4.0 * (field[1] - field[0]) / grid.dr**2
+    if fault == "viscosity_sign":
+        result = -result
     return result
 
 
@@ -357,6 +400,123 @@ def right_hand_side(
     return rhs_u1, rhs_omega1
 
 
+Integrator = Literal["heun", "ssprk3", "rk4"]
+VALID_INTEGRATORS: tuple[Integrator, ...] = ("heun", "ssprk3", "rk4")
+
+# Linear-stability caveat (P0-A, docs/numerical_stability_audit.md): for pure
+# centered-difference advection the Fourier symbol is purely imaginary and the
+# Heun amplification factor satisfies |G(i a)|^2 = 1 + a^4/4 > 1, so Heun is
+# von-Neumann unstable without viscosity.  Whether the physical viscosity
+# stabilizes every discrete wavenumber at the operating point of a given run
+# must be checked per snapshot with :mod:`ns_certificate_lab.von_neumann`;
+# it must never be inferred from the smallness of the viscous term.  SSPRK3
+# and RK4 have imaginary-axis stability intervals (|a| <= sqrt(3) and
+# 2*sqrt(2)) and exist here as cross-checking integrators: amplification
+# obtained with Heun alone must not be used for candidate decisions.
+
+
+def take_step(
+    grid: AxisymmetricGrid,
+    state: ConstrainedState,
+    *,
+    method: Integrator = "heun",
+    dt: float,
+    time: float,
+    viscosity: float,
+    forcing_u1: Forcing = None,
+    forcing_omega1: Forcing = None,
+    fault: Fault | None = None,
+) -> tuple[ConstrainedState, tuple[ConstrainedState, ...]]:
+    """Advance one explicit step and return ``(new_state, stage_states)``.
+
+    ``stage_states`` are the *intermediate* constrained stages the method
+    evaluated (Heun: the Euler predictor; SSPRK3: the two Shu--Osher stages;
+    RK4: the three internal stages).  They exist so the caller can monitor the
+    stage CFL numbers (P0-B): the predictor state can carry larger velocities
+    than either endpoint, and a CFL acceptance that never saw the stages would
+    not bound what the scheme actually evaluated.
+
+    Every stage is passed through :func:`constrain_state`, so all methods are
+    projected Runge--Kutta methods for the wall-constrained system.  The
+    formal classical orders (2, 3, 4) hold for the unconstrained interior
+    dynamics; no claim is made that projection preserves order beyond the
+    measured convergence recorded by the tests.
+    """
+
+    if method not in VALID_INTEGRATORS:
+        raise ValueError(f"unknown time integrator: {method!r}")
+    step = float(dt)
+    if not math.isfinite(step) or step <= 0.0:
+        raise ValueError("dt must be positive and finite")
+
+    def rhs(
+        current: ConstrainedState, at_time: float
+    ) -> tuple[FloatArray, FloatArray]:
+        return right_hand_side(
+            grid,
+            current,
+            viscosity=viscosity,
+            time=at_time,
+            forcing_u1=forcing_u1,
+            forcing_omega1=forcing_omega1,
+            fault=fault,
+        )
+
+    def constrained(u1: FloatArray, omega1: FloatArray) -> ConstrainedState:
+        return constrain_state(grid, u1, omega1, fault=fault)
+
+    if method == "heun":
+        k1_u1, k1_omega1 = rhs(state, time)
+        predictor = constrained(
+            state.u1 + step * k1_u1, state.omega1 + step * k1_omega1
+        )
+        k2_u1, k2_omega1 = rhs(predictor, time + step)
+        final = constrained(
+            state.u1 + 0.5 * step * (k1_u1 + k2_u1),
+            state.omega1 + 0.5 * step * (k1_omega1 + k2_omega1),
+        )
+        return final, (predictor,)
+
+    if method == "ssprk3":
+        k1_u1, k1_omega1 = rhs(state, time)
+        stage1 = constrained(
+            state.u1 + step * k1_u1, state.omega1 + step * k1_omega1
+        )
+        k2_u1, k2_omega1 = rhs(stage1, time + step)
+        stage2 = constrained(
+            0.75 * state.u1 + 0.25 * (stage1.u1 + step * k2_u1),
+            0.75 * state.omega1 + 0.25 * (stage1.omega1 + step * k2_omega1),
+        )
+        k3_u1, k3_omega1 = rhs(stage2, time + 0.5 * step)
+        final = constrained(
+            state.u1 / 3.0 + 2.0 / 3.0 * (stage2.u1 + step * k3_u1),
+            state.omega1 / 3.0 + 2.0 / 3.0 * (stage2.omega1 + step * k3_omega1),
+        )
+        return final, (stage1, stage2)
+
+    # method == "rk4"
+    k1_u1, k1_omega1 = rhs(state, time)
+    stage2 = constrained(
+        state.u1 + 0.5 * step * k1_u1, state.omega1 + 0.5 * step * k1_omega1
+    )
+    k2_u1, k2_omega1 = rhs(stage2, time + 0.5 * step)
+    stage3 = constrained(
+        state.u1 + 0.5 * step * k2_u1, state.omega1 + 0.5 * step * k2_omega1
+    )
+    k3_u1, k3_omega1 = rhs(stage3, time + 0.5 * step)
+    stage4 = constrained(
+        state.u1 + step * k3_u1, state.omega1 + step * k3_omega1
+    )
+    k4_u1, k4_omega1 = rhs(stage4, time + step)
+    final = constrained(
+        state.u1
+        + step / 6.0 * (k1_u1 + 2.0 * k2_u1 + 2.0 * k3_u1 + k4_u1),
+        state.omega1
+        + step / 6.0 * (k1_omega1 + 2.0 * k2_omega1 + 2.0 * k3_omega1 + k4_omega1),
+    )
+    return final, (stage2, stage3, stage4)
+
+
 def heun_step(
     grid: AxisymmetricGrid,
     state: ConstrainedState,
@@ -370,39 +530,18 @@ def heun_step(
 ) -> ConstrainedState:
     """Advance one explicit Heun/RK2 step (``c=(0,1)``, ``a21=1``, ``b=(1/2,1/2)``)."""
 
-    step = float(dt)
-    if not math.isfinite(step) or step <= 0.0:
-        raise ValueError("dt must be positive and finite")
-    k1_u1, k1_omega1 = right_hand_side(
+    final, _ = take_step(
         grid,
         state,
-        viscosity=viscosity,
+        method="heun",
+        dt=dt,
         time=time,
-        forcing_u1=forcing_u1,
-        forcing_omega1=forcing_omega1,
-        fault=fault,
-    )
-    stage = constrain_state(
-        grid,
-        state.u1 + step * k1_u1,
-        state.omega1 + step * k1_omega1,
-        fault=fault,
-    )
-    k2_u1, k2_omega1 = right_hand_side(
-        grid,
-        stage,
         viscosity=viscosity,
-        time=time + step,
         forcing_u1=forcing_u1,
         forcing_omega1=forcing_omega1,
         fault=fault,
     )
-    return constrain_state(
-        grid,
-        state.u1 + 0.5 * step * (k1_u1 + k2_u1),
-        state.omega1 + 0.5 * step * (k1_omega1 + k2_omega1),
-        fault=fault,
-    )
+    return final
 
 
 def adaptive_time_step(
@@ -441,6 +580,32 @@ def adaptive_time_step(
     tolerance rather than against ``C`` exactly.
     """
 
+    step, _ = adaptive_time_step_detail(
+        grid,
+        state,
+        viscosity=viscosity,
+        cfl_coefficient=cfl_coefficient,
+        max_time_step=max_time_step,
+    )
+    return step
+
+
+def adaptive_time_step_detail(
+    grid: AxisymmetricGrid,
+    state: ConstrainedState,
+    *,
+    viscosity: float,
+    cfl_coefficient: float = 0.1,
+    max_time_step: float | None = None,
+) -> tuple[float, str]:
+    """Return ``(dt, binding_constraint)`` for the design section 4 rule.
+
+    ``binding_constraint`` names the candidate that actually limited the step:
+    ``"advective_r"``, ``"advective_z"``, ``"viscous"`` or ``"max_time_step"``
+    (P0-B requires recording which term limited ``dt``; clipping to a target
+    time is applied by the caller and reported there as ``"target_clip"``).
+    """
+
     coefficient = float(cfl_coefficient)
     if not math.isfinite(coefficient) or coefficient <= 0.0:
         raise ValueError("cfl_coefficient must be positive and finite")
@@ -449,17 +614,20 @@ def adaptive_time_step(
         raise ValueError("adaptive stepping requires a positive finite viscosity")
     max_u_r = float(np.max(np.abs(state.u_r)))
     max_u_z = float(np.max(np.abs(state.u_z)))
-    candidates = [
-        coefficient * grid.dr / (max_u_r + _VELOCITY_FLOOR),
-        coefficient * grid.dz / (max_u_z + _VELOCITY_FLOOR),
-        coefficient * min(grid.dr**2, grid.dz**2) / (4.0 * nu),
+    candidates: list[tuple[float, str]] = [
+        (coefficient * grid.dr / (max_u_r + _VELOCITY_FLOOR), "advective_r"),
+        (coefficient * grid.dz / (max_u_z + _VELOCITY_FLOOR), "advective_z"),
+        (
+            coefficient * min(grid.dr**2, grid.dz**2) / (4.0 * nu),
+            "viscous",
+        ),
     ]
     if max_time_step is not None:
         cap = float(max_time_step)
         if not math.isfinite(cap) or cap <= 0.0:
             raise ValueError("max_time_step must be positive and finite")
-        candidates.append(cap)
-    return min(candidates)
+        candidates.append((cap, "max_time_step"))
+    return min(candidates, key=lambda item: item[0])
 
 
 def normalize_viscosity_schedule(
@@ -586,6 +754,96 @@ def enstrophy(grid: AxisymmetricGrid, state: ConstrainedState) -> float:
     return math.pi * _weighted_squared_norm(
         grid,
         cartesian_vorticity(grid, state.u1, state.omega1),
+    )
+
+
+def wall_enstrophy_flux(grid: AxisymmetricGrid, state: ConstrainedState) -> float:
+    r"""Return the wall work integral ``W = \oint u^z \omega^\theta \, dS``.
+
+    The E-27 wall is *not* fully no-slip: ``u1 = 0`` pins the swirl but
+    ``u^z(r_{max}, z) = r_{max} \psi_{1,r}`` is generally nonzero.  Multiplying
+    the Navier--Stokes equations by ``u`` and integrating over the cylinder
+    with ``u \cdot n = 0`` gives
+
+    .. math::
+
+       \frac{dE}{dt} = -\nu \int |\omega|^2 \, dx
+                       - \nu \oint_{r = r_{max}} u^z \omega^\theta \, dS,
+
+    because ``(u \times \omega)\cdot e_r = u^\theta \omega^z - u^z
+    \omega^\theta`` and ``u^\theta`` vanishes on the wall.  Note that
+    ``\int |omega|^2 dx = 2 pi \int |omega|^2 r dr dz`` is TWICE the E-20
+    ``pi``-normalized measure returned by :func:`enstrophy`; the integrator's
+    energy-balance defect accounts for that factor explicitly.  The discrete
+    trapezoid-in-``z`` evaluation with ``\omega^\theta = r \omega_1`` and
+    ``dS = r_{max} \, d\theta \, dz`` is
+    ``W = 2 \pi r_{max}^2 \, dz \sum_j u^z[-1, j] \, \omega_1[-1, j]``.
+    Recording the energy-balance defect against ``-\nu \int |\omega|^2``
+    *alone* would pollute the defect with this physical boundary term; the
+    integrator therefore records the defect against the full identity and
+    additionally stores this term so both readings stay available (P1-C).
+    """
+
+    r_max = float(grid.r[-1])
+    return float(
+        2.0
+        * math.pi
+        * r_max**2
+        * grid.dz
+        * np.sum(state.u_z[-1] * state.omega1[-1])
+    )
+
+
+def swirl_energy_rates(
+    grid: AxisymmetricGrid,
+    state: ConstrainedState,
+    *,
+    viscosity: float,
+) -> dict[str, float]:
+    r"""Return the term-wise power input to the swirl energy (P1-C item 4).
+
+    The swirl kinetic energy is ``E_s = \pi \int (r u_1)^2 r \, dr \, dz`` and
+    its evolution under E-11 decomposes as ``dE_s/dt = 2\pi \int r^3 u_1
+    (\text{term}) \, dr \, dz`` for each right-hand-side term.  The wall row is
+    excluded exactly as :func:`right_hand_side` excludes it (it is an
+    algebraic constraint, not an evolution row).  The meridional energy is
+    driven through the elliptic diagnosis ``\omega_1 \mapsto \psi_1`` and is
+    *not* decomposed here; only the total balance is gated.  These rates are
+    recorded, not gated.
+    """
+
+    nu = float(viscosity)
+    u1 = state.u1
+    u1_r = derivative_r(grid, u1, even_at_axis=True)
+    u1_z = derivative_z(grid, u1)
+    psi1_z = derivative_z(grid, state.psi1)
+    advection = -state.u_r * u1_r - state.u_z * u1_z
+    stretching = 2.0 * u1 * psi1_z
+    viscous = nu * laplacian_5d_formal(grid, u1)
+    weights = _radial_weights(grid)[:, None] * grid.r[:, None] ** 2
+    weights[-1] = 0.0
+
+    def projected(term: FloatArray) -> float:
+        return float(
+            2.0 * math.pi * grid.dr * grid.dz * np.sum(weights * u1 * term)
+        )
+
+    return {
+        "advection": projected(advection),
+        "stretching": projected(stretching),
+        "viscous": projected(viscous),
+    }
+
+
+def directional_cfl(grid: AxisymmetricGrid, state: ConstrainedState, dt: float) -> float:
+    """Return ``dt * max(max|u^r|/dr, max|u^z|/dz)`` for one state."""
+
+    return float(
+        float(dt)
+        * max(
+            float(np.max(np.abs(state.u_r))) / grid.dr,
+            float(np.max(np.abs(state.u_z))) / grid.dz,
+        )
     )
 
 
@@ -872,9 +1130,94 @@ RELATIVE_DIAGNOSTIC_FIELDS: tuple[str, ...] = (
 )
 
 
+# Per-accepted-step streaming record (P0-B / P0-C).  ``integrate`` fills one
+# equal-length float64 array per key; acceptance gates must read the streaming
+# extrema in ``gate_summary`` (computed over *every* accepted step), never the
+# strided ``history`` rows, because a violation between two recorded rows
+# would otherwise be invisible.
+STEP_STREAM_FIELDS: tuple[str, ...] = (
+    "step",
+    "time",
+    "dt",
+    "viscosity",
+    "cfl_pre_state",
+    "cfl_predictor_stage",
+    "cfl_post_state",
+    "viscous_stability_number",
+    "binding_constraint_code",
+    "rejected_attempts",
+    "energy",
+    "energy_step_increase",
+    "enstrophy",
+    "wall_enstrophy_flux",
+    "energy_balance_defect",
+    "energy_balance_defect_relative",
+    "energy_balance_defect_no_wall",
+    "swirl_power_advection",
+    "swirl_power_stretching",
+    "swirl_power_viscous",
+    "circulation_max",
+    "circulation_defect_relative",
+    "odd_symmetry_relative",
+    "axis_parity_relative_u1",
+    "axis_parity_relative_omega1",
+    "divergence_residual_relative",
+    "wall_u1_max_abs",
+    "poisson_algebraic_residual_relative",
+)
+
+# ``binding_constraint_code`` values of the step stream.
+BINDING_CONSTRAINT_CODES: dict[str, float] = {
+    "advective_r": 0.0,
+    "advective_z": 1.0,
+    "viscous": 2.0,
+    "max_time_step": 3.0,
+    "target_clip": 4.0,
+    "fixed": 5.0,
+}
+
+GATE_SUMMARY_FIELDS: tuple[str, ...] = (
+    "steps_accepted",
+    "steps_rejected",
+    "max_energy_step_increase",
+    "max_energy_step_increase_relative",
+    "final_energy_minus_initial",
+    "max_circulation_defect_relative",
+    "max_odd_symmetry_relative",
+    "max_axis_parity_relative_u1",
+    "max_axis_parity_relative_omega1",
+    "max_divergence_residual_relative",
+    "max_wall_u1_abs",
+    "max_cfl_pre_state",
+    "max_cfl_predictor_stage",
+    "max_cfl_post_state",
+    "max_viscous_stability_number",
+    "max_poisson_algebraic_residual_relative",
+    "max_energy_balance_defect_relative",
+    "max_abs_energy_balance_defect",
+    "max_abs_energy_balance_defect_no_wall",
+    "min_dt",
+    "max_dt",
+    "binding_count_advective_r",
+    "binding_count_advective_z",
+    "binding_count_viscous",
+    "binding_count_max_time_step",
+    "binding_count_target_clip",
+    "binding_count_fixed",
+)
+
+_MAX_STEP_REJECTIONS = 25
+
+
 @dataclass(frozen=True)
 class IntegrationResult:
-    """Final state, diagnostic history and step bookkeeping of one run."""
+    """Final state, diagnostic history and step bookkeeping of one run.
+
+    ``history`` keeps the strided :func:`compute_diagnostics` rows (output
+    thinning is allowed); ``step_stream`` and ``gate_summary`` record the
+    acceptance-critical quantities of **every** accepted step so that gates
+    can never be evaded by events between recorded rows (P0-C).
+    """
 
     grid: AxisymmetricGrid
     state: ConstrainedState
@@ -885,6 +1228,10 @@ class IntegrationResult:
     viscosity_switch_times: tuple[float, ...]
     reference_vorticity_max: float
     completed: bool
+    integrator: str = "heun"
+    rejected_step_count: int = 0
+    step_stream: dict[str, FloatArray] | None = None
+    gate_summary: dict[str, float] | None = None
 
 
 def _step_targets(
@@ -909,6 +1256,73 @@ def _step_targets(
     return tuple(sorted(values))
 
 
+def _summarize_gates(
+    step_stream: Mapping[str, FloatArray],
+    *,
+    initial_energy: float,
+    final_energy: float,
+    rejected_total: int,
+) -> dict[str, float]:
+    """Reduce the per-step stream to the streaming extrema the gates read.
+
+    Every ``max_*`` entry is a maximum over **all** accepted steps, so a
+    violation between two strided ``history`` rows cannot hide from it
+    (P0-C).  An empty stream (a run that took no steps) yields ``nan``
+    extrema.
+    """
+
+    def _max(name: str) -> float:
+        values = step_stream[name]
+        return float(np.max(values)) if values.size else float("nan")
+
+    def _min(name: str) -> float:
+        values = step_stream[name]
+        return float(np.min(values)) if values.size else float("nan")
+
+    codes = step_stream["binding_constraint_code"]
+    summary: dict[str, float] = {
+        "steps_accepted": float(step_stream["step"].size),
+        "steps_rejected": float(rejected_total),
+        "max_energy_step_increase": _max("energy_step_increase"),
+        "max_energy_step_increase_relative": (
+            _max("energy_step_increase")
+            / max(abs(initial_energy), _DENOMINATOR_FLOOR)
+        ),
+        "final_energy_minus_initial": float(final_energy - initial_energy),
+        "max_circulation_defect_relative": _max("circulation_defect_relative"),
+        "max_odd_symmetry_relative": _max("odd_symmetry_relative"),
+        "max_axis_parity_relative_u1": _max("axis_parity_relative_u1"),
+        "max_axis_parity_relative_omega1": _max("axis_parity_relative_omega1"),
+        "max_divergence_residual_relative": _max("divergence_residual_relative"),
+        "max_wall_u1_abs": _max("wall_u1_max_abs"),
+        "max_cfl_pre_state": _max("cfl_pre_state"),
+        "max_cfl_predictor_stage": _max("cfl_predictor_stage"),
+        "max_cfl_post_state": _max("cfl_post_state"),
+        "max_viscous_stability_number": _max("viscous_stability_number"),
+        "max_poisson_algebraic_residual_relative": _max(
+            "poisson_algebraic_residual_relative"
+        ),
+        "max_energy_balance_defect_relative": _max(
+            "energy_balance_defect_relative"
+        ),
+        "max_abs_energy_balance_defect": (
+            float(np.max(np.abs(step_stream["energy_balance_defect"])))
+            if codes.size
+            else float("nan")
+        ),
+        "max_abs_energy_balance_defect_no_wall": (
+            float(np.max(np.abs(step_stream["energy_balance_defect_no_wall"])))
+            if codes.size
+            else float("nan")
+        ),
+        "min_dt": _min("dt"),
+        "max_dt": _max("dt"),
+    }
+    for label, code in BINDING_CONSTRAINT_CODES.items():
+        summary[f"binding_count_{label}"] = float(np.sum(codes == code))
+    return summary
+
+
 def integrate(
     grid: AxisymmetricGrid,
     *,
@@ -928,6 +1342,8 @@ def integrate(
     diagnostic_stride: int = 1,
     on_snapshot: Callable[[float, ConstrainedState, dict[str, float]], None] | None = None,
     reference_vorticity_max: float | None = None,
+    time_integrator: Integrator = "heun",
+    stage_cfl_limit: float | None = None,
 ) -> IntegrationResult:
     """Integrate E-11/E-12 from ``initial_time`` to ``t_final``.
 
@@ -935,9 +1351,28 @@ def integrate(
     tests; otherwise the adaptive rule of :func:`adaptive_time_step` applies and
     steps are clipped so that viscosity switch times, snapshot times and
     ``t_final`` are hit exactly.
+
+    ``time_integrator`` selects the explicit scheme (P0-A cross-checking:
+    ``"heun"``, ``"ssprk3"`` or ``"rk4"``); all schemes share the identical
+    spatial discretization and constraint ordering.  ``stage_cfl_limit``
+    (adaptive mode only) enables predictor-stage step rejection (P0-B): a step
+    whose *intermediate stage* directional CFL exceeds the limit is discarded,
+    ``dt`` is halved and the step is retried; accepted steps therefore satisfy
+    the limit on every stage the scheme actually evaluated.
     """
 
     _check_fault(fault)
+    if time_integrator not in VALID_INTEGRATORS:
+        raise ValueError(f"unknown time integrator: {time_integrator!r}")
+    if stage_cfl_limit is not None:
+        limit = float(stage_cfl_limit)
+        if not math.isfinite(limit) or limit <= 0.0:
+            raise ValueError("stage_cfl_limit must be positive and finite")
+        if fixed_time_step is not None:
+            raise ValueError(
+                "stage_cfl_limit requires adaptive stepping; fixed_time_step "
+                "runs must keep their uniform grid in time"
+            )
     schedule = normalize_viscosity_schedule(viscosity_schedule)
     start = float(initial_time)
     stop = float(t_final)
@@ -1017,6 +1452,15 @@ def integrate(
     ):
         on_snapshot(time, state, recorded)
 
+    # --- P0-B / P0-C streaming state -------------------------------------
+    stream: dict[str, list[float]] = {name: [] for name in STEP_STREAM_FIELDS}
+    initial_energy = kinetic_energy(grid, state)
+    initial_circulation = float(np.max(np.abs(grid.r[:, None] ** 2 * state.u1)))
+    energy_prev = initial_energy
+    enstrophy_prev = enstrophy(grid, state)
+    wall_flux_prev = wall_enstrophy_flux(grid, state)
+    rejected_total = 0
+
     switch_times: list[float] = []
     step_index = 0
     target_index = 0
@@ -1028,35 +1472,159 @@ def integrate(
                 break
             nu = viscosity_at(schedule, time)
             if uniform_dt is not None:
-                dt = uniform_dt
+                proposal, proposal_binding = uniform_dt, "fixed"
             else:
-                dt = adaptive_time_step(
+                proposal, proposal_binding = adaptive_time_step_detail(
                     grid,
                     state,
                     viscosity=nu,
                     cfl_coefficient=cfl_coefficient,
                     max_time_step=max_time_step,
                 )
-            landed = False
-            if dt >= target - time - _TIME_TOLERANCE:
-                dt = target - time
-                landed = True
-            state = heun_step(
-                grid,
-                state,
-                dt=dt,
-                time=time,
-                viscosity=nu,
-                forcing_u1=forcing_u1,
-                forcing_omega1=forcing_omega1,
-                fault=fault,
-            )
+            attempts = 0
+            while True:
+                dt = proposal
+                binding = proposal_binding
+                landed = False
+                if dt >= target - time - _TIME_TOLERANCE:
+                    dt = target - time
+                    binding = "target_clip"
+                    landed = True
+                new_state, stages = take_step(
+                    grid,
+                    state,
+                    method=time_integrator,
+                    dt=dt,
+                    time=time,
+                    viscosity=nu,
+                    forcing_u1=forcing_u1,
+                    forcing_omega1=forcing_omega1,
+                    fault=fault,
+                )
+                cfl_stage = max(
+                    directional_cfl(grid, stage, dt) for stage in stages
+                )
+                if (
+                    stage_cfl_limit is not None
+                    and cfl_stage > float(stage_cfl_limit)
+                ):
+                    if attempts >= _MAX_STEP_REJECTIONS:
+                        raise FloatingPointError(
+                            "stage CFL rejection failed to reach the limit "
+                            f"after {_MAX_STEP_REJECTIONS} halvings"
+                        )
+                    attempts += 1
+                    rejected_total += 1
+                    proposal = 0.5 * dt
+                    proposal_binding = "target_clip" if landed else binding
+                    continue
+                break
+
+            cfl_pre = directional_cfl(grid, state, dt)
+            cfl_post = directional_cfl(grid, new_state, dt)
+            swirl_rates = swirl_energy_rates(grid, state, viscosity=nu)
+            state = new_state
             time = target if landed else time + dt
             step_index += 1
             if not (
                 np.all(np.isfinite(state.u1)) and np.all(np.isfinite(state.omega1))
             ):
                 raise FloatingPointError("nonlinear cylinder state became non-finite")
+
+            # --- acceptance-critical quantities of THIS accepted step ----
+            energy_now = kinetic_energy(grid, state)
+            enstrophy_now = enstrophy(grid, state)
+            wall_flux_now = wall_enstrophy_flux(grid, state)
+            energy_rate = (energy_now - energy_prev) / dt
+            # :func:`enstrophy` is the E-20 measure ``pi \int |omega|^2 r dr
+            # dz``, which is HALF of the volume integral ``\int |omega|^2
+            # dV = 2 pi \int |omega|^2 r dr dz`` that the energy identity
+            # dissipates.  The trapezoid of the volume integral is therefore
+            # the plain sum of the two pi-measures.
+            dissipation_avg = enstrophy_prev + enstrophy_now
+            wall_avg = 0.5 * (wall_flux_prev + wall_flux_now)
+            balance_defect = energy_rate + nu * dissipation_avg + nu * wall_avg
+            # The difference of two O(E) float64 energies carries an absolute
+            # round-off of order eps * E; divided by dt that is a hard noise
+            # floor on the measurable rate.  The relative defect must not read
+            # that noise as a physical defect (the absolute defect is still
+            # recorded unfloored).
+            balance_roundoff = (
+                8.0
+                * float(np.finfo(np.float64).eps)
+                * max(abs(energy_now), abs(energy_prev))
+                / dt
+            )
+            balance_scale = max(
+                abs(energy_rate),
+                nu * dissipation_avg,
+                nu * abs(wall_avg),
+                balance_roundoff,
+                _DENOMINATOR_FLOOR,
+            )
+            circulation_now = float(
+                np.max(np.abs(grid.r[:, None] ** 2 * state.u1))
+            )
+            odd_relative = max(
+                odd_symmetry_defect(grid, field)
+                / max(float(np.max(np.abs(field))), _DENOMINATOR_FLOOR)
+                for field in (state.u1, state.omega1, state.psi1)
+            )
+            divergence = relative_divergence(grid, state.u_r, state.u_z)
+            poisson_residual = max(
+                state.poisson_algebraic_residual_relative,
+                max(
+                    stage.poisson_algebraic_residual_relative
+                    for stage in stages
+                ),
+            )
+            observation = {
+                "step": float(step_index),
+                "time": float(time),
+                "dt": float(dt),
+                "viscosity": float(nu),
+                "cfl_pre_state": cfl_pre,
+                "cfl_predictor_stage": cfl_stage,
+                "cfl_post_state": cfl_post,
+                "viscous_stability_number": float(
+                    4.0 * nu * dt / min(grid.dr**2, grid.dz**2)
+                ),
+                "binding_constraint_code": BINDING_CONSTRAINT_CODES[binding],
+                "rejected_attempts": float(attempts),
+                "energy": energy_now,
+                "energy_step_increase": energy_now - energy_prev,
+                "enstrophy": enstrophy_now,
+                "wall_enstrophy_flux": wall_flux_now,
+                "energy_balance_defect": balance_defect,
+                "energy_balance_defect_relative": abs(balance_defect)
+                / balance_scale,
+                "energy_balance_defect_no_wall": energy_rate
+                + nu * dissipation_avg,
+                "swirl_power_advection": swirl_rates["advection"],
+                "swirl_power_stretching": swirl_rates["stretching"],
+                "swirl_power_viscous": swirl_rates["viscous"],
+                "circulation_max": circulation_now,
+                "circulation_defect_relative": (
+                    circulation_now - initial_circulation
+                )
+                / max(initial_circulation, _DENOMINATOR_FLOOR),
+                "odd_symmetry_relative": odd_relative,
+                "axis_parity_relative_u1": relative_axis_parity(
+                    grid, state.u1
+                )["relative"],
+                "axis_parity_relative_omega1": relative_axis_parity(
+                    grid, state.omega1
+                )["relative"],
+                "divergence_residual_relative": divergence["relative"],
+                "wall_u1_max_abs": float(np.max(np.abs(state.u1[-1]))),
+                "poisson_algebraic_residual_relative": poisson_residual,
+            }
+            for name in STEP_STREAM_FIELDS:
+                stream[name].append(observation[name])
+            energy_prev = energy_now
+            enstrophy_prev = enstrophy_now
+            wall_flux_prev = wall_flux_now
+
             at_target = landed
             if step_index % diagnostic_stride == 0 or at_target:
                 history.append(
@@ -1081,6 +1649,17 @@ def integrate(
     else:
         completed = True
 
+    step_stream = {
+        name: np.asarray(values, dtype=np.float64)
+        for name, values in stream.items()
+    }
+    gate_summary = _summarize_gates(
+        step_stream,
+        initial_energy=initial_energy,
+        final_energy=energy_prev,
+        rejected_total=rejected_total,
+    )
+
     return IntegrationResult(
         grid=grid,
         state=state,
@@ -1091,6 +1670,10 @@ def integrate(
         viscosity_switch_times=tuple(switch_times),
         reference_vorticity_max=reference,
         completed=completed,
+        integrator=time_integrator,
+        rejected_step_count=rejected_total,
+        step_stream=step_stream,
+        gate_summary=gate_summary,
     )
 
 

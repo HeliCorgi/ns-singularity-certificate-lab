@@ -305,6 +305,40 @@
 - rescaled field から物理 \(u,\omega\) に戻した後、3D divergence、エネルギー、継続判定量を再計算する。
 - 形式的な五次元作用素の体積要素と、物理三次元の \(2\pi r\,dr\,dz\) を混同しないテストを置く。
 
+### TM-20 時間積分スキーム由来の偽増幅(2026-07-28 追加)
+
+- Heun+中心差分は純移流で厳密に増幅する(\(|G(i\alpha)|^2=1+\alpha^4/4\))。
+  粘性項の相対的大きさから安定性を推論しない。
+- 各 run の運転点(全 step の \(\max|u^r|,\max|u^z|,dt,\nu\))で凍結係数
+  von Neumann scan(`von_neumann.py`)を実行し、`max|G|>1+tol` なら
+  「stability-unverified」と分類する(不安定の証明ではない)。
+- 増幅・ピーク位置・core width・エネルギー収支を、虚軸安定な比較積分器
+  (SSPRK3/RK4、同一空間離散化・同一 dt 系列)と突き合わせる
+  (`run_integrator_comparison.py`)。**Heun 単独の増幅を候補判定に
+  使わない。**
+
+### TM-21 診断間引きによる違反見逃し(2026-07-28 追加)
+
+- acceptance-critical 量(エネルギー増分、循環 defect、parity、発散、
+  CFL 三点、Poisson 代数残差、エネルギー収支 defect)は全 accepted step で
+  計算し、streaming 極値(`gate_summary`)で判定する。出力間引き
+  (`diagnostic_stride`)は gate に作用しない。
+- 記録行の間だけ違反する合成 trajectory を gate が捕捉することをテストで
+  固定する(`test_gate_catches_violation_between_history_rows`)。
+- CFL は選択時(pre)・中間段(predictor)・終了時(post)を別々に保存し、
+  中間段超過での step 棄却(`stage_cfl_limit`)を利用可能にする。
+
+### TM-22 未解像ピークでの収束外挿(2026-07-28 追加)
+
+- 増幅が plateau しないことを「grid-scale saturation なし」と読まない。
+- ピークの points-per-scale(radial/axial FWHM、10–90% front、軸距離
+  セル数、勾配スケール、高周波 tail)を全 snapshot で保存する
+  (`core_width.py`)。
+- 収束 fit は manufactured front で導出した前登録閾値
+  (`PREREGISTERED_MIN_POINTS_PER_FRONT = 7`)を満たすまで**禁止**
+  (`fit_precondition`)。外部公表値(20.5235 等)を fit の anchor に
+  しない(`extrapolation.py` は構造的に anchor を受け付けない)。
+
 ## 5. 候補昇格の停止規則
 
 次のいずれかがあれば、候補を昇格せず「偽陽性または未解像」と記録する。

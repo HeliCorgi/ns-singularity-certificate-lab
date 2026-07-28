@@ -113,6 +113,43 @@ Exit gate: multi-resolution trends recorded with raw checkpoints; either a
 resolution-consistent growth trend or a documented negative result.  Do not
 start candidate discovery from this phase alone.
 
+Status amendment (2026-07-28): the shipped Heun runs of this phase are
+reclassified **stability-unverified** by the frozen-coefficient von Neumann
+audit (`docs/numerical_stability_audit.md`); their amplification numbers must
+not feed candidate decisions unless corroborated by the Phase 2.8
+cross-integrator comparison, and no convergence fit may be attempted while
+the `core_width.fit_precondition` gate fails on their snapshots.
+
+## Phase 2.8 — numerical-stability and resolution gates (P0, 2026-07-28)
+
+Mandated by FABLE5_NEXT_TASK_AUDIT.md before any mid/late-time Hou run,
+blow-up-time fit, or AI candidate search:
+
+- **Gate 1 (stability)**: frozen-coefficient von Neumann audit of Heun with
+  centered differences (`von_neumann.py`); pre/predictor/post CFL recorded
+  per accepted step with optional predictor-stage rejection; SSPRK3/RK4
+  cross-checking integrators sharing the identical spatial discretization
+  (`run_integrator_comparison.py`).  Heun-only amplification is barred from
+  candidate decisions.
+- **Gate 2 (time convergence)**: dt, dt/2, dt/4 at fixed grid
+  (`outputs/hou_time_refinement_v1`, to be re-examined under the new
+  full-step streaming gates).
+- **Gate 3 (space convergence)**: resolution ladder with common-grid profile
+  differences and the preregistered points-per-scale precondition
+  (`core_width.py`, minimum 7 points per 10--90 front) before any fit;
+  blind extrapolation only (`extrapolation.py`, no external anchors) — the
+  current ladder is *not in its asymptotic range*.
+- **Gate 4 (whole-space transition)**: non-periodic \(z\), compact support
+  in \(r\) and \(z\), a free-space elliptic path, independent
+  \(R_{\max}\)/\(Z_{\max}\) enlargement, low-wavenumber stress tests
+  (`docs/whole_space_transition.md` §7).  Not yet implemented; the W-A
+  transparent radial condition covers the radial component only, and all
+  existing wall results are periodic-z radial-wall sensitivity observations.
+
+Exit gate: Gates 1–3 measured and recorded (pass or documented failure);
+Gate 4 implemented and passed.  Until then the Hou mechanism is not called
+an \(\mathbb R^3\) candidate.
+
 ## Phase 3 — preregistered candidate discovery (future)
 
 - Implement dynamically rescaled Type-II-compatible coordinates with separate

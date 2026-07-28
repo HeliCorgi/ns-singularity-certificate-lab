@@ -1,0 +1,23 @@
+{
+  "experiment_id": "integrator_comparison_v1",
+  "description": "Gate 1 (P0-A) cross-integrator comparison: Heun/RK2 versus SSPRK3 and classical RK4 on the identical spatial discretization, identical E-29 initial datum and identical fixed time-step series. Heun-only amplification must never be used for candidate decisions; this run measures whether the three schemes agree to far below the spatial error at the shipped operating point.",
+  "grid": {"nr": 65, "nz": 128},
+  "initial_amplitude": 12000.0,
+  "amplitude_scale": 1.0,
+  "viscosity_schedule": [[0.0, 0.0005]],
+  "t_final": 0.002191729,
+  "requested_time_steps": [6.0e-7, 3.0e-7],
+  "methods": ["heun", "ssprk3", "rk4"],
+  "diagnostic_stride": 100,
+  "seed": 20260728,
+  "acceptance": {
+    "pairwise_amplification_relative_tolerance": 1.0e-3,
+    "pairwise_max_u1_relative_tolerance": 1.0e-3,
+    "pairwise_field_linf_relative_tolerance": 5.0e-3,
+    "pairwise_differences_shrink_with_dt": true,
+    "argmax_within_one_cell": true,
+    "max_poisson_algebraic_residual_relative": 1.0e-12,
+    "max_wall_u1_abs": 1.0e-12
+  },
+  "preregistration_note": "Tolerances fixed before the run. The measured Heun temporal sensitivity of the final amplification on this grid is ~4.4e-6 relative per dt halving (outputs/hou_time_refinement_v1), so 1e-3 is two decades of headroom; a violation signals scheme-dependent dynamics (e.g. instability contamination), which is a Gate 1 stop condition, not a tuning target."
+}

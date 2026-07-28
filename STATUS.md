@@ -99,9 +99,12 @@ CFL 0.1、`max_time_step` 1e-6。全 8 受入検査合格。manifest+全 50 payl
 観察(すべて **numerical observation** の語彙水準):
 
 - 増幅率は解像度で単調増加し、Hou の 1536² 適応格子公表値 20.5235 へ
-  **下から接近**する。grid-scale での飽和はない。ただし隣接差
-  (6.58, 2.93)から見かけの収束次数は 1 未満であり、**収束していない**。
-  外挿で 20.52 への一致を主張することはできない。
+  **下から接近**する。ただし隣接差(6.58, 2.93)から見かけの収束次数は
+  1 未満であり、**収束していない**。外挿で 20.52 への一致を主張することは
+  できない。〔改版 2026-07-28(P0-D): 旧文の「grid-scale での飽和はない」
+  という表現を撤回する。増幅が plateau しないことは grid-scale saturation
+  の不在を意味しない。実際ピークの radial FWHM は 65/129/193 格子で約
+  4/5/6 点、ピークは軸から 3/5/6 セルであり、構造は grid-scale に近い。〕
 - ごく早期の \(\|u_1\|_\infty\) 減少([Hou21, §2] の定性ターゲット)を全
   解像度で確認: 3265.6 → 最小 2011〜2025 → その後成長し \(T_1\) で初期値の
   4.7〜5.7 倍。
@@ -126,10 +129,11 @@ CFL 0.1、`max_time_step` 1e-6。全 8 受入検査合格。manifest+全 50 payl
 - 257×512: 増幅率 **17.2588** at \(T_1\)(2298 steps、\(\min\Delta t\)
   2.85e-7)、\(\max|u_1|(T_1)=20306.5\)、argmax (0.0312, 0.0098)。
 - 4 点ラダー 6.11 → 12.70 → 15.63 → 17.26 は公表 1536² 値 20.5235 へ
-  単調接近を続け、grid-scale 飽和はない。隣接差 6.58, 2.93, 1.63 の
-  見かけの収束次数は依然 1 未満であり**未収束**。外挿による一致主張は
-  行わない。front 位置 \(r\approx0.031\) は 257 格子で約 8 セルであり
-  解像度限界が支配的。
+  単調接近を続ける。隣接差 6.58, 2.93, 1.63 の見かけの収束次数は依然
+  1 未満であり**未収束**。外挿による一致主張は行わない。front 位置
+  \(r\approx0.031\) は 257 格子で約 8 セルであり解像度限界が支配的。
+  〔改版 2026-07-28(P0-D): 旧文の「grid-scale 飽和はない」という表現を
+  撤回。plateau の不在は saturation の不在を意味しない。〕
 - 初期ノルム E-29b との相対誤差は 1.98e-3 → 4.99e-4(比 3.97、
   きれいな 2 次接近)。solver B との \(\psi_1\) cross-check 相対差は
   7.78e-3 → 2.95e-3。
@@ -413,6 +417,121 @@ primitive PDE項別残差を追加した。保存候補のchecksum検証付き�
 
 このリポジトリは有限時間特異点を発見・証明しておらず、Navier–Stokes
 ミレニアム問題を解決していない。
+
+## 2026-07-28 第 2 セッション: FABLE5_NEXT_TASK_AUDIT の P0/P1 ゲート
+
+指示書 `FABLE5_NEXT_TASK_AUDIT.md`(リポジトリルート、コミット済み)の
+記載順に実施した。開始時の確認: 作業ツリーはリモートと一致(2cb8e48)、
+全 565 テスト合格、`lake build` 成功(8659 jobs)、`formal` 内に
+sorry/admit/新規 axiom ゼロ。
+
+### P0-A: von Neumann 安定性監査(`von_neumann.py`、11 tests)
+
+- Heun+中心差分は純移流で厳密増幅(\(|G(i\alpha)|^2=1+\alpha^4/4\))。
+  凍結係数 advection–diffusion の全波数 scan、予測子段の別評価、
+  snapshot 監査 API、独立参照 propagator(シンボル経路と実配列経路の
+  相互一致 3.7e-16)を実装した。
+- **出荷済み運転点の判定は「stability-unverified」**: 出荷 v1 の記録
+  (min dt=2.76e-7、max advective CFL=0.10023)と自己整合な読みで
+  Heun worst \(|G|\) は 1.0000035(radial 支配)/ 1.0(axial 支配)/
+  1.000152(両方向同時)— tolerance 1e-12 では不合格。全波数 pass に
+  必要な dt は約 2.4e-8(出荷値の 1/11.5)。粘性 5e-4 の寄与は
+  増幅率 −6.1e-5 に留まる。詳細は `docs/numerical_stability_audit.md`。
+- 過去の Heun 実行はすべて stability-unverified に再分類。**Heun 単独の
+  増幅を候補判定に使うことを禁止**(決定規則として文書化)。
+
+### P0-A: 交差検証積分器(SSPRK3 / RK4)
+
+`take_step` に SSPRK3・古典 RK4 を追加(空間離散化・拘束順序・楕円
+solve は Heun と完全共有)。毎段 `constrain_state` 射影込みの実測時間
+次数: **Heun 1.97/2.00、SSPRK3 3.00/3.00、RK4 3.95/3.98** — 射影は
+観測次数を落とさなかった。ゼロ場不動点・小 dt 相互一致・誤差の大小
+関係(rk4 < ssprk3 < heun)をテストで固定。
+
+### P0-B/P0-C: 全 step streaming gate(`test_integrator_gates.py`、20 tests)
+
+- `IntegrationResult` に `step_stream`(全 accepted step × 28 量)と
+  `gate_summary`(streaming 極値)を追加。エネルギー増分、循環 defect、
+  奇対称相対、軸 parity 相対、相対発散、壁拘束、**solver A が実際に
+  解いた線形系の代数残差**(全 step 相対 <1e-12)、pre/predictor/post
+  CFL、粘性安定数、dt を縛った拘束の名前、エネルギー収支 defect を
+  全 step 保存。出力間引きは gate に作用しない。
+- 中間段 CFL 超過での step 棄却(`stage_cfl_limit`、dt 半減再試行)を
+  実装、受入 step の段 CFL が閾値以下であることをテストで固定。
+- **義務の合成違反テスト**: 記録行間だけの強制パルス注入→抽出で、
+  間引き history は単調減衰のみを示すが streaming は丸め床の
+  3×10¹² 倍の増加を捕捉する。
+
+### P1-C: エネルギー収支と viscosity_sign fault
+
+- E-27 壁は swirl のみ no-slip(\(u^z(1,z)\ne0\) の滑り壁)なので、
+  正しい恒等式は \(dE/dt=-\nu\int|\omega|^2dV-\nu\oint u^z\omega^\theta dS\)。
+  壁項込み/なしの両 defect と swirl エネルギーの項別仕事率
+  (移流・stretching・粘性)を全 step 記録。
+- **整合性の記録**: 初回実装は \(\int|\omega|^2dV\)(\(2\pi\) 測度)を
+  E-20 の \(\pi\) 正規化 enstrophy と取り違え、相対 defect が理論値
+  どおり厳密に 0.5 へ飽和(fault 時 1.5)。これを因子 2 の欠陥として
+  特定・修正した。修正後: 滑らか control で 5.9e-2 → 1.6e-2 → 4.2e-3
+  (空間時間同時細分で収束)。
+- 新 fault `viscosity_sign`: Hou 運転点(ν=5e-4)では項和の 3e-4 で
+  不可視(既知)だが、拡散支配 control(ν=2e-2)で相対 defect
+  clean 2.21e-2 vs 反転 **2.000**(理論値 2、比 90 倍)、エネルギー
+  単調性反転により確実に棄却される。
+
+### P0-D: core-width / points-per-scale(`core_width.py`、15 tests)
+
+- radial/axial FWHM、10–90% front thickness、subgrid 二次ピーク、
+  勾配長スケール、高周波 tail(z rfft / r DCT-II)、共通格子への
+  Catmull-Rom 補間比較、manufactured tanh front 研究を実装。
+- **前登録閾値 `PREREGISTERED_MIN_POINTS_PER_FRONT = 7`**(tanh front
+  で 10–90 幅の相対誤差 ≤2% となる最小整数点数。テストが研究を再計算し
+  定数との整合を強制するため事後調整不可)。
+- 出荷済み 193×384 の T₁ snapshot: points_per_fwhm_r 6.92、
+  **points_per_front 4.36**、ピークは軸から 6 セル、勾配スケールは
+  0.49dr / 0.98dz(1 セル未満)→ `fit_precondition` は**不合格**
+  (3 理由)。「grid-scale 飽和なし」という旧表現は撤回した(本文中に
+  改版注記)。**収束 fit は現データでは禁止**が機械化された。
+
+### P1-A: blind 外挿(`extrapolation.py`、10 tests)
+
+- 3 点厳密解・最小二乗 power law・固定次数 Richardson・全部分列感度。
+  署名は \((h, A)\) のみで外部 anchor を構造的に受け付けない
+  (`20.5235`・`20.52` の不在をテストが assert)。
+- 実ラダー (6.11, 12.70, 15.63, 17.26): 指示書の見積(全4点 27.38/0.54、
+  前 3 点 28.85/0.49、後 3 点 24.60/0.70)を独立実装+brute force で
+  すべて再現。A_inf 散らばり相対 **0.488**(前登録閾値 0.05 の 9.8 倍)、
+  p 幅 0.203 → **判定 not_in_asymptotic_range: 極限値は一切引用不可**。
+- 記録した偶然: 次数 1 固定 Richardson は 20.528(公表 20.5235 の
+  0.02% 以内)を与えるが、これは相互に矛盾する 7 外挿値の一つに
+  すぎず(次数 2 固定は 16.844)、確認としては読めない。テスト
+  docstring に非結果として明記。
+
+### Poisson 第三経路の SPOF 破壊(P0 §5、`test_realspace_poisson.py` 追加)
+
+solver A/B が共有する Fourier 機構の故障 3 種(モード正規化 slip、
+周期 seam ずれ、Nyquist 混入)を solver A 解の事後改変として合成し、
+実空間第三経路 C が **>10×**(実測 48× 等)で全て検出することを固定。
+A/B の一致を「continuum 精度」「完全独立」と呼ばない limitation は従来
+どおり。
+
+### P0-E: 語彙修正と Gate 4 仕様
+
+- `docs/whole_space_transition.md` §0 を新設: W-A と壁依存性の全結果を
+  「**periodic-z radial-wall sensitivity observation**」と固定し、
+  「whole-space validation」「R³ wall independence」の表現を禁止。
+- 同 §7 に真の全空間移行 gate(非周期 z、z 方向 C∞ compact 台、
+  free-space 楕円経路、R_max/Z_max 独立拡大、低波数 stress、
+  Cartesian 体積測度での有限エネルギー直接検査、有限円柱解との
+  同一視禁止)を**未実装の仕様**として定義。
+- STATUS/設計文書の「grid-scale 飽和なし」表現を撤回(改版注記付き)。
+
+### Lean 監査(P0 §7)
+
+`formal/AxiomAudit.lean` を追加し `lake env lean AxiomAudit.lean` を実行:
+**9 定理すべて `[propext, Classical.choice, Quot.sound]` のみ**に依存
+(記録は `docs/formalization_map.md`)。sorry/admit/新規 axiom ゼロ、
+toolchain/mathlib は v4.32.1 固定を再確認。「8659 jobs = 8659 定理」
+という読みの禁止を明文化。
 
 ## 数学的に確認できたこと
 
