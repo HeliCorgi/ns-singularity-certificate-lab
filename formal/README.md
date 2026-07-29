@@ -64,7 +64,8 @@ formal/
     ├── FiniteTime.lean         # 段階 1 / F-2(有限物理時間、証明あり、sorry なし)
     ├── GalerkinNoBlowup.lean   # 段階 1 / F-6(Galerkin エネルギー上界、証明あり、sorry なし)
     ├── FiniteModeNoGo.lean     # 段階 1 / F-7a,F-7b,F-12,F-13(証明あり、sorry なし)
-    └── GreenAndCascade.lean    # 段階 1 / F-14,F-15,F-16,F-7c 還元(証明あり、sorry なし)
+    ├── GreenAndCascade.lean    # 段階 1 / F-14,F-15,F-16,F-7c 還元(証明あり、sorry なし)
+    └── CertificateLayer.lean   # 段階 1 / F-17,F-18,F-19(証明あり、sorry なし)
 ```
 
 以降の段階(1: 有限次元恒等式、2: 解析的な橋、3: 数値証明書、4: 最終定理)は
@@ -302,3 +303,34 @@ Dissipative  A   :=  ∀ x, ⟪x, A x⟫ ≤ 0          -- ⟪u, νΔu⟫ = -ν�
    `F(x,s) = (g s + B x x + A x, 1)` の局所流の構成であり、公理化していない。
 4. `breakdown_time_set_empty` は係数 ODE の言葉での主張であり、
    `ClayStatement.lean` とは依然接続されていない。
+
+## 段階 1 — F-17 / F-18 / F-19(`NSSingularity/CertificateLayer.lean`)
+
+数値証明書が供給できるのは**有限個の非負実上界**だけである。この層は、それらが
+正しく合成されることだけを証明する。解析的 Green 積分を一度に形式化しようとは
+していない。
+
+| 定理 | 主張 |
+|---|---|
+| `velocity_radial_error_le`(F-17) | `|−r·δψ_z| ≤ R·ε₁` |
+| `velocity_axial_error_le`(F-17) | `|2δψ + r·δψ_r| ≤ 2ε₀ + R·ε₁` |
+| `product_difference`(F-18) | `ab − a'b' = (a−a')b + a'(b−b')` |
+| `product_error_le`(F-18) | `|ab − a'b'| ≤ ε_a|b| + |a'|ε_b` |
+| `advection_error_le`(F-18) | 移流項 `u^r f_r + u^z f_z` の誤差を 4 定数で抑える |
+| `gronwallBound_le_simple`(F-19) | mathlib の `gronwallBound` を `(δ+εt)e^{Kt}` で抑える |
+| `norm_le_simple_gronwall`(F-19) | `‖f'‖ ≤ K‖f‖+ε` から `‖f t‖ ≤ (δ+εt)e^{Kt}` |
+| `FixedBandwidthCandidate` | 固定有限帯域候補の**全仮定を構造体化** |
+| `FixedBandwidthCandidate.breakdown_times_empty` | その破綻時刻の集合は空 |
+| `FixedBandwidthCandidate.reaches_every_time` | 任意の正時刻で極限に到達する |
+
+`sorry`・`admit`・新規 `axiom` はない。全 10 定理の `#print axioms` は
+`[propext, Classical.choice, Quot.sound]`。
+
+### 証明していないこと
+
+1. **入力を計算していない。** すべて「与えられた実数」についての命題であり、
+   上界を供給するのは Python 側の区間証明書で、それは別の義務である。
+2. F-19 に渡す微分不等式を正当化する `L^∞` 最大値原理は**未形式化**であり、
+   F-19 は微分不等式を仮定として受け取る。
+3. `FixedBandwidthCandidate` は係数軌道についての構造体であり、
+   `ClayStatement.ClayPeriodicBreakdown` への橋は未着手のままである。

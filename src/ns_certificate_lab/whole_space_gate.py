@@ -594,8 +594,10 @@ class WholeSpaceEllipticSolver:
         """
         if grid.periodic_z:
             raise ValueError("Gate 4 requires a non-periodic z grid")
-        if boundary_mode not in {"zero", "monopole"}:
-            raise ValueError("boundary_mode must be 'zero' or 'monopole'")
+        if boundary_mode not in {"zero", "monopole", "dipole", "quadrupole"}:
+            raise ValueError(
+                "boundary_mode must be 'zero', 'monopole', 'dipole' or 'quadrupole'"
+            )
         interior = grid.nz - 2
         if interior < 1:
             raise ValueError("at least three axial nodes are required")
@@ -644,9 +646,11 @@ class WholeSpaceEllipticSolver:
     def boundary_trace(self, omega1: npt.ArrayLike) -> tuple[FloatArray, FloatArray, FloatArray]:
         """Dirichlet data ``(outer_r, low_z, high_z)`` for the chosen mode.
 
-        For ``boundary_mode='monopole'`` the trace is ``M/(3R^3)`` with ``M``
-        obtained from the *discrete source* by :func:`source_monopole_moment`.
-        The analytic reference is never consulted.
+        For every non-zero mode the trace is the multipole expansion of
+        :func:`ns_certificate_lab.free_space_recovery.multipole_boundary_trace`
+        with moments taken from the *discrete source* by quadrature.  The
+        analytic reference is never consulted, so raising the multipole order
+        stays non-circular.
         """
         grid = self.grid
         outer = np.zeros(grid.nz, dtype=np.float64)
@@ -654,19 +658,28 @@ class WholeSpaceEllipticSolver:
         high = np.zeros(grid.nr, dtype=np.float64)
         if self.boundary_mode == "zero":
             return outer, low, high
-        mass = source_monopole_moment(grid, omega1)
+        from .free_space_recovery import multipole_boundary_trace, source_moments
+
+        moments = source_moments(grid, omega1)
         r_max = float(grid.r[-1])
         z_low = float(grid.z[0])
         z_high = float(grid.z[-1])
-        outer = mass / (3.0 * np.hypot(r_max, grid.z) ** 3)
-        low = mass / (3.0 * np.hypot(grid.r, z_low) ** 3)
-        high = mass / (3.0 * np.hypot(grid.r, z_high) ** 3)
+        trace = self.boundary_mode
+        outer = multipole_boundary_trace(
+            grid, moments, np.full(grid.nz, r_max), grid.z, truncation=trace
+        )
+        low = multipole_boundary_trace(
+            grid, moments, grid.r, np.full(grid.nr, z_low), truncation=trace
+        )
+        high = multipole_boundary_trace(
+            grid, moments, grid.r, np.full(grid.nr, z_high), truncation=trace
+        )
         return outer, low, high
 
     # -- the solve --------------------------------------------------------- #
 
     def solve(self, omega1: npt.ArrayLike) -> FloatArray:
-        """Return ``ψ_1`` on the full grid, including the Dirichlet nodes."""
+        """Return ``psi_1`` on the full grid, including the Dirichlet nodes."""
         grid = self.grid
         source = grid.validate_field(omega1, name="omega1")
         outer, low, high = self.boundary_trace(source)
@@ -674,7 +687,7 @@ class WholeSpaceEllipticSolver:
         interior = grid.nz - 2
         radial_unknowns = grid.nr - 1
 
-        # -L5 ψ = ω, with known traces moved to the right-hand side.
+        # -L5 psi = omega, with known traces moved to the right-hand side.
         rhs = source[:radial_unknowns, 1:-1].copy()
         rhs[:, 0] += low[:radial_unknowns] / grid.dz**2
         rhs[:, -1] += high[:radial_unknowns] / grid.dz**2
@@ -683,8 +696,7 @@ class WholeSpaceEllipticSolver:
         # DST-I along z, then one tridiagonal solve per axial eigenvalue.
         transformed = rhs @ self.sine.T
         diagonal = (
-            self.radial_diagonal_base[:, None]
-            - self.axial_eigenvalues[None, :]
+            self.radial_diagonal_base[:, None] - self.axial_eigenvalues[None, :]
         )
         solution_hat = _thomas_batch(
             self.radial_lower,
@@ -703,8 +715,6 @@ class WholeSpaceEllipticSolver:
         psi[-1, 0] = 0.5 * (outer[0] + low[-1])
         psi[-1, -1] = 0.5 * (outer[-1] + high[-1])
         return psi
-
-    # -- diagnostics ------------------------------------------------------- #
 
     # -- item 10: the interface the nonlinear evolution will consume -------- #
 

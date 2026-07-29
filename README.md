@@ -231,6 +231,19 @@ Green 核の解析微分から導いた**微分 tail 上界**を閉形式参照�
 ([docs/research_notes/green_derivative_tail_bounds.md](docs/research_notes/green_derivative_tail_bounds.md)、
 [docs/research_notes/cascade_toy_model.md](docs/research_notes/cascade_toy_model.md))。
 
+### 13. 全空間 Gate 6(中振幅校正・振幅継続・区間証明書、十数分)
+
+```console
+python -m experiments.run_whole_space_gate6 --config configs/whole_space_gate6.json --output-dir outputs/whole_space_gate6_replay
+```
+
+境界条件 4 種(zero / monopole / dipole / quadrupole)の core 差を Richardson
+離散化誤差と比較して校正し、`dr`/`dz`/joint/`dt`/積分器/`Rmax`/`Zmax` を一因子ずつ
+分離し、明示的な初期値族について振幅・形状継続を実行して複合ゲートで順位付けし、
+動的領域拡大と**厳密有理数区間演算による snapshot 証明書**を生成・独立検査します。
+**2 つの前登録基準は不合格として記録されます**
+([docs/whole_space_transition.md](docs/whole_space_transition.md))。
+
 より厳密な再現プロトコルは [docs/reproducibility.md](docs/reproducibility.md)
 を参照してください。
 

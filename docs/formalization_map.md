@@ -10,7 +10,7 @@
 validated numerical object / connected physical solution /
 finite-time breakdown theorem / Clay-complete result)を用いる。
 
-最終更新: 2026-07-29(branch `fable5-mainline`、第 5 便)
+最終更新: 2026-07-29(branch `fable5-mainline`、第 6 便)
 
 **Lean 識別子 `F-1`〜`F-11` の確定登録簿は `docs/final_target.md` §4 にある。**
 外部ノート由来の採番衝突はそこで解消済みで、本書の節見出しはその登録簿に従う。
@@ -401,6 +401,23 @@ M0 (Clay命題固定)
   `⟨u,(u·∇)u⟩` と `advectionForm` の同一視の解析側、および
   Navier–Stokes の局所一意性理論(いずれも mathlib になし)。
 
+### F-17 / F-18 / F-19 証明書合成層 — **形式化済み**(2026-07-29 第 6 便)
+
+- **状態:** `formal/NSSingularity/CertificateLayer.lean`。`lake build` 成功、
+  `sorry`・`admit`・新規 `axiom` なし。
+- **F-17:** ポテンシャル誤差 → 速度誤差。`velocity_radial_error_le`、
+  `velocity_axial_error_le`。回復が線型なので積の規則は不要。
+- **F-18:** 積差恒等式 `ab − a'b' = (a−a')b + a'(b−b')`(`product_difference`)と
+  そこから `product_error_le`、`advection_error_le`。
+- **F-19:** 短時間 Grönwall。mathlib の
+  `norm_le_gronwallBound_of_norm_deriv_right_le` と `gronwallBound_of_K_ne_0` を
+  使い、証明書が検査しやすい `(δ+εt)e^{Kt}` 形へ落とす
+  (`K` で割らないので微小 Lipschitz 定数でも検査可能)。
+- **Clay 制限の梱包:** `FixedBandwidthCandidate` 構造体と
+  `breakdown_times_empty` / `reaches_every_time`。
+- **形式化していないこと:** 上界の**計算**、`L^∞` 最大値原理、
+  `ClayStatement.lean` への橋。
+
 ### F-5 最終 Clay 反例命題までの依存関係
 
 段階 0 として `formal/NSSingularity/ClayStatement.lean` に (A)–(D) と
@@ -437,8 +454,8 @@ F-5 (Clay命題定義)
 'NSSingularity.tendsto_physicalTime_atTop' depends on axioms: [propext, Classical.choice, Quot.sound]
 ```
 
-2026-07-29 第 5 便で F-14/F-15/F-16/F-7c 還元の 10 定理をさらに追記し、
-`lake env lean AxiomAudit.lean` は**全 34 行**について同じ古典公理
+2026-07-29 第 6 便で F-17/F-18/F-19 の 10 定理をさらに追記し、
+`lake env lean AxiomAudit.lean` は**全 43 行**について同じ古典公理
 `[propext, Classical.choice, Quot.sound]` のみを報告した。第 3 便で追記した
 F-6 の 5 定理は次のとおり:
 
@@ -453,8 +470,8 @@ F-6 の 5 定理は次のとおり:
 同日、`git ls-files formal | xargs grep -InE '\bsorry\b|\badmit\b|^[[:space:]]*axiom '`
 は文書コメント中の言及のみを返し、コード中の `sorry`/`admit`/新規 `axiom` は
 ゼロ。`lake build` は 2026-07-28 に 8659 jobs、F-6 追加後は 8660 jobs、
-F-7a/F-7b/F-12/F-13 追加後は 8661 jobs、F-14/F-15/F-16 追加後は 8662 jobs で成功 —
-これは**コンパイルジョブ数**であり、「8662 個の定理を証明した」ことを
+F-7a/F-7b/F-12/F-13 追加後は 8661 jobs、F-14/F-15/F-16 追加後は 8662 jobs、F-17/F-18/F-19 追加後は 8663 jobs で成功 —
+これは**コンパイルジョブ数**であり、「8663 個の定理を証明した」ことを
 意味しない。証明済みの命題は本書に列挙されたもののみである。
 `lean-toolchain` は leanprover/lean4:v4.32.1、mathlib は v4.32.1 タグに固定。
 

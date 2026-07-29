@@ -1,0 +1,25 @@
+{
+  "payloads": {
+    "calibration.csv": {
+      "bytes": 2308,
+      "sha256": "3c7f816a3afb97e4002412b40ef01149c31523aae0c8fe865e90caef0aa0eb39"
+    },
+    "config.snapshot.json": {
+      "bytes": 2727,
+      "sha256": "95eba710330106fec5ed781f0484c3f85b5ba722bd134c7bcc2146383b47a753"
+    },
+    "continuation.csv": {
+      "bytes": 6411,
+      "sha256": "d1a8bcbbbaa8efff79ba6be923385143735113c13731b24214b3155b09ef4f22"
+    },
+    "summary.json": {
+      "bytes": 83304,
+      "sha256": "989a427c0f2c84ce5db4c0d494d5bd282c35b56df197c21f4dffbcd27a0ebe96"
+    },
+    "verification.csv": {
+      "bytes": 4477,
+      "sha256": "34fb30530a3fa73b8c672a5b9c043145f78832e3445eac1f2363f2dfb4fec5ca"
+    }
+  },
+  "schema_version": 1
+}

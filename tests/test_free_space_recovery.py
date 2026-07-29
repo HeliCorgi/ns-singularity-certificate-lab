@@ -87,7 +87,7 @@ def test_exact_second_derivatives_match_finite_differences():
 
 
 def test_green_derivative_constants_are_the_documented_multiples():
-    expected = (1.0, 3.0, 12.0, 150.0, 1620.0, 21420.0)
+    expected = (1.0, 3.0, 12.0, 150.0, 1620.0, 21420.0, 335160.0)
     for order, multiple in enumerate(expected):
         assert green_derivative_constant(order) == pytest.approx(
             GREEN_CONSTANT * multiple

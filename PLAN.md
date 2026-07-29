@@ -212,6 +212,31 @@ boundary-order comparison all produce identical answers, because the temporal
 error is far below the spatial one and the field never reaches the boundary.
 They must be repeated at an amplitude that exercises them.
 
+## Phase 2.87 — Gate 6: mid-amplitude calibration and continuation (2026-07-29)
+
+- **Nonlinear tail propagation** (`tail_propagation.py`): explicit constants from
+  the potential error bounds through the velocity error to every right-hand-side
+  term, using only the product-difference identity, plus a short-time Gronwall
+  step.  The Lean side is the certificate layer F-17/F-18/F-19.
+- **An explicit initial-data family** (`initial_data.py`): smooth, compactly
+  supported, axis-regular, exactly divergence-free pure swirl with the radial
+  factor a function of `r^2`.  Fixed positive viscosity; no two-stage protocol.
+- **Multipole hierarchy** to quadrupole, and a `tail_bound_available` flag for
+  the boxes where no multipole bound exists at all.
+- **Domain expansion** with preregistered triggers and before/after invariants.
+- **An interval-arithmetic snapshot certificate** in exact rational arithmetic,
+  with an independent checker: PO-05/06/07/13 are no longer design-only.
+
+Two preregistered criteria **failed and were not retuned**:
+the core boundary-condition difference is `7.9e-3` times the Richardson
+discretisation error rather than the required `8`, and the amplitude
+continuation never left the quadratic-response regime (`max|omega1|` scales as
+`A^2` to better than `5e-5` across a factor of ten).  Both failures are
+quantified in `outputs/whole_space_gate6_v1` and neither is hidden.
+
+Status: the entry point is instrumented; **no candidate was promoted**, and the
+three best were rejected with named reasons.
+
 ## Phase 2.9 — Track F fixed-finite-mode class closed (completed, 2026-07-29)
 
 `START_NEW_SESSION_NAVIER_STOKES.md` section 6 "candidate A" proposed a symbolic

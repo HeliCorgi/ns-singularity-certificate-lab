@@ -6,3 +6,4 @@ import NSSingularity.FiniteTime
 import NSSingularity.GalerkinNoBlowup
 import NSSingularity.FiniteModeNoGo
 import NSSingularity.GreenAndCascade
+import NSSingularity.CertificateLayer

@@ -1,7 +1,7 @@
 # Project status
 
-最終更新: 2026-07-29 第 5 便(branch `fable5-mainline`)
-状態: **FABLE5_NEXT_TASK_AUDIT の P0 ゲート(von Neumann 安定性監査、全 step streaming acceptance、core-width fit 前提、blind 外挿、エネルギー収支、Gate 1 積分器相互比較)を実装・実行済み。出荷済み Heun 実行は stability-unverified に再分類(時間スキーム依存の実測上界は ~6 ppm)。T₁ 増幅ラダーの収束 fit は前提不合格により機械的に禁止。Gate 4(真の全空間移行)は仕様のみで未実装。未知候補探索は未開始。第 3 便で Track F の**固定有限次元・固定帯域** ansatz 族を除外定理として閉じ、その中核不等式を Lean 4(F-6)で証明した。最終目標までの単一依存グラフを `docs/final_target.md` に確定した。**第 4 便で Track U の線形 Gate 4(非周期 `z`・自由空間楕円回復・非 FFT 軸方向経路)を実装し前登録受入検査 20 件すべてに合格、固定有限モード no-go を Lean でF-7a/F-7b/F-12/F-13 まで完成(F-7c のみ未着手)、帯域幅発散候補の実現可能指数領域(`0<γ<1` の三角形。現在の shell ansatz と非退化仮定の下で `γ≥1` は排除)を導出した。**第 5 便で Gate 5 に合格: Green 核の解析微分による**微分 tail 上界**、自由空間速度回復 API(2 独立経路)、小振幅全空間非線形 run。Lean は F-14/F-15/F-16 と F-7c 還元を追加し全 34 定理が古典公理のみ。外力の役割を 5 経路に分離し、低周波のみの外力が直接注入ゼロのまま高シェルを駆動しうることを有限 cascade 模型で確認した。**
+最終更新: 2026-07-29 第 6 便(branch `fable5-mainline`)
+状態: **FABLE5_NEXT_TASK_AUDIT の P0 ゲート(von Neumann 安定性監査、全 step streaming acceptance、core-width fit 前提、blind 外挿、エネルギー収支、Gate 1 積分器相互比較)を実装・実行済み。出荷済み Heun 実行は stability-unverified に再分類(時間スキーム依存の実測上界は ~6 ppm)。T₁ 増幅ラダーの収束 fit は前提不合格により機械的に禁止。Gate 4(真の全空間移行)は仕様のみで未実装。未知候補探索は未開始。第 3 便で Track F の**固定有限次元・固定帯域** ansatz 族を除外定理として閉じ、その中核不等式を Lean 4(F-6)で証明した。最終目標までの単一依存グラフを `docs/final_target.md` に確定した。**第 4 便で Track U の線形 Gate 4(非周期 `z`・自由空間楕円回復・非 FFT 軸方向経路)を実装し前登録受入検査 20 件すべてに合格、固定有限モード no-go を Lean でF-7a/F-7b/F-12/F-13 まで完成(F-7c のみ未着手)、帯域幅発散候補の実現可能指数領域(`0<γ<1` の三角形。現在の shell ansatz と非退化仮定の下で `γ≥1` は排除)を導出した。**第 5 便で Gate 5 に合格: Green 核の解析微分による**微分 tail 上界**、自由空間速度回復 API(2 独立経路)、小振幅全空間非線形 run。Lean は F-14/F-15/F-16 と F-7c 還元を追加し全 34 定理が古典公理のみ。外力の役割を 5 経路に分離し、低周波のみの外力が直接注入ゼロのまま高シェルを駆動しうることを有限 cascade 模型で確認した。**第 6 便で非線形 tail 伝播の明示上界、明示的全空間初期値族、動的領域拡大、単一 snapshot の区間証明書(独立 checker つき)、Lean F-17/F-18/F-19 を追加し、中振幅 Gate 6 を実行した。Gate 6 は 2 つの前登録基準に不合格(境界差が離散化誤差の 8e-3 倍しかない、振幅継続が二次応答領域を離れない)であり、候補は 1 つも昇格しなかった。**
 
 ## 2026-07-28 セッションの追加結果(fable5-mainline)
 
@@ -1439,6 +1439,225 @@ PYTHONPATH=src .venv/Scripts/python.exe -m pytest -q
 外力の役割についての設計可否判定であって PDE の定理ではない。
 候補は依然として一つも構成されていない。過去の結果は書き換えていない。
 
+## 2026-07-29(第 6 便): 非線形 tail 伝播、明示的初期値族、Gate 6、区間証明書
+
+主作業は Gate 5 の小振幅健全性試験を**中振幅 Gate 6** へ昇格させ、その後
+明示的候補族の**振幅・形状継続**を実行すること。副作業は Lean 証明書層と
+区間演算の開始。
+
+### 数学的に証明したこと
+
+**(1) 非線形領域打切り誤差の伝播(新規、U-X8)。**
+`ε₀ ≥ |δψ₁|`、`ε₁ ≥ |∇δψ₁|`、`ε₂ ≥ |D²δψ₁|` から、回復が線型であることから
+
+```text
+|δu^r| ≤ R_max·ε₁,        |δu^z| ≤ 2ε₀ + R_max·ε₁
+```
+
+積差恒等式 `ab − ãb̃ = (a−ã)b + ã(b−b̃)` から移流項について
+
+```text
+|δ(u^r f_r + u^z f_z)| ≤ |δu^r|·‖f_r‖ + |δu^z|·‖f_z‖ + ‖ũ^r‖·‖δf_r‖ + ‖ũ^z‖·‖δf_z‖
+```
+
+(末尾 2 項は状態誤差に比例するので Lipschitz 定数へ集約)。旋回源
+`2u₁ψ_{1,z}` は `2‖ũ₁‖ε₁ + 2‖ψ_{1,z}‖|δu₁|`、伸長源 `∂_z(u₁²)` は
+`(u₁−ũ₁)(u₁+ũ₁)` の分解から得られ、**tail は直接には入らない**(`u₁` は
+状態変数でありポテンシャル微分ではない)ので定数項はゼロ、寄与は
+Lipschitz 定数のみ。最後に `L^∞` 最大値原理(発散ゼロ移流 + `L₅` 拡散)から
+
+```text
+d/dt‖e‖_∞ ≤ D + Λ‖e‖_∞  ⟹  ‖e(t)‖_∞ ≤ (‖e(0)‖ + D t) e^{Λ t}.
+```
+
+**これが要求された「証明書形式」である。** 全定数は
+`src/ns_certificate_lab/tail_propagation.py` に明示実装した。
+**限界を明記する**: 状態誤差 `e_ω` から速度誤差への変換は自由空間解作用素の
+ノルムを要し、Biot–Savart は `L^∞→L^∞` で有界ではないので、その定数は
+**入力**として持ち回り、厳密供給は未解決義務である。
+
+**(2) 明示的全空間初期値族(新規)。** `src/ns_certificate_lab/initial_data.py`:
+
+```text
+u₁(0,r,z) = A·χ(r²/R₀²)·χ(z²/Z₀²)·(z/Z₀)/(1+c(z/Z₀)²),   ω₁(0)=0,
+χ(s) = exp(−1/(1−s))  (0≤s<1),  0  (s≥1).
+```
+
+**radial 因子は `r²` の関数**である。物理旋回は `u^θ = ru₁`、Cartesian では
+`u₁·(−y,x,0)` なので、`u₁` が `(r²,z)` の滑らかな関数であるときにのみ原点で
+`C^∞` になる。`χ(r/R₀)` と書くと軸上で Lipschitz どまりになる。
+紙上とテストの両方で確認: Cartesian 滑らかさ(軸を跨ぐ 4 階差分 `<1e-9`)、
+**厳密な発散ゼロ**(純旋回なので恒等的に 0、Cartesian ステンシルでは
+2 次収束を確認)、コンパクト台、有限エネルギー、有限 `L³`、軸正則性。
+粘性は**固定正定数**で、Hou の二段階粘性は候補計算に使わない。
+
+**(3) 対称性による多重極の退化(新規、U-X9)。** コンパクト台の初期値では
+`∫ω₁dV₅ = 0`(実測 `1.5e-17` 相対)。したがって **zero トレースと monopole
+トレースは同一**であり、軸方向四重極も消えるので **dipole と quadrupole も同一**
+(退化/非退化の比 `5.2e-11`)。有効な比較は 1 段だけである。
+**これが第 5 便で「monopole 対 zero が空虚だった」ことの真因**であり、
+場が境界に届かなかったこと以上の構造的理由である。
+
+### Lean 4 で証明したこと(新規 10 定理、`CertificateLayer.lean`)
+
+| ID | 定理 | 主張 |
+|---|---|---|
+| **F-17** | `velocity_radial_error_le`, `velocity_axial_error_le` | ポテンシャル誤差 → 速度誤差 |
+| **F-18** | `product_difference`, `product_error_le`, `advection_error_le` | 積差恒等式と移流項誤差 |
+| **F-19** | `gronwallBound_le_simple`, `norm_le_simple_gronwall` | mathlib の Grönwall を `(δ+εt)e^{Kt}` へ(`K` で割らない) |
+| — | `FixedBandwidthCandidate` 構造体 + 2 定理 | 固定有限帯域候補の**全仮定を構造体化**し、破綻時刻集合の空性と各時刻での到達性 |
+
+`lake build` **8663 jobs 成功**。`sorry`・`admit`・新規 `axiom` ゼロ。
+`lake env lean AxiomAudit.lean` は**全 43 定理**が
+`[propext, Classical.choice, Quot.sound]` のみ。
+解析的 Green 積分を一度に形式化しようとはしていない — 証明書が供給できるのは
+有限個の非負上界だけなので、この層はその**合成**だけを担う。
+
+### 区間演算で証明したこと(新規、PO-13 着手)
+
+`src/ns_certificate_lab/snapshot_certificate.py`。**単一 snapshot** について、
+すべて**厳密有理数演算**(binary64 値は二進有理数なので入力は無近似)で:
+
+| 量 | 結果 |
+|---|---|
+| Poisson 残差上界 | **1.626e-19**(25×49 格子、382 内部節点) |
+| 発散上界 | 3.479e-08 |
+| エネルギー区間 | 浮動小数点値を包含 |
+| `L³` ノルム区間 | 立方根の整数二分法による包含 |
+| 移流項区間 | `[−3.605e-08, 3.605e-08]` |
+| 独立 checker | **10 検査すべて合格** |
+
+生成器と checker は分離されており、checker は保存された有理数データだけから
+不等式を再検証する(元の浮動小数点配列を一切読まない)。改竄したペイロードが
+拒否されることもテストで確認した。
+**限界**: 包含しているのは**離散量**であって連続解ではない。離散化誤差そのものは
+包含していないので **PO-05 は未解決のまま**である。
+
+### 数値的に観測したこと
+
+`outputs/whole_space_gate6_v1`。
+
+**多重極階層**(閉形式参照解、`R=5`): monopole 誤差 > dipole > quadrupole、
+全段で対応する tail 上界が支配。
+
+**Gate 6 校正表**(振幅 10、`ω₁` コア差の相対値)
+
+| box | `n_r` | zero↔mono | mono↔dip | dip↔quad | Richardson | 比 |
+|---|---:|---:|---:|---:|---:|---:|
+| 2.50×2.50 | 193 | 1.66e-24 | 1.99e-07 | 8.5e-27 | 9.78e-04 | 2.03e-04 |
+| 1.60×1.90 | 193 | 2.22e-18 | 6.44e-07 | 4.5e-24 | 4.47e-04 | 1.44e-03 |
+| 1.35×1.65 | 193 | 7.07e-25 | 1.375e-06 | 7.1e-17 | 1.74e-04 | **7.93e-03** |
+
+境界差は**解像度に依存しない**(3 桁一致、解像度間広がり `9.97e-2`)。
+
+**一因子分離**(振幅 10、`1.6×1.9` box): joint 細分差 `1.17e-2 → 1.66e-3`、
+`dr` のみ `3.19e-7 → 8.02e-8`、`dz` のみ `1.17e-2 → 1.66e-3`、
+時間細分差 `3.13e-15 → 1.28e-15`、積分器差 `7.11e-13`、
+`R_max` 広がり `1.01e-8`、`Z_max` 広がり `4.23e-4`。
+
+**領域拡大**: トリガ発火、`ω_max` は完全一致、エネルギー相対差 `2.3e-9`、
+`L³` 相対差 `4e-10`、補間欠損 `2.66e-15`(格子座標の丸め)。
+
+**振幅・形状継続**(32 組合せ、上位 3 を 3 解像度へ昇格):
+すべての候補で `L³` は**減少**(`0.9977`)、臨界幅はほぼ不変、
+実効 shell 数の変化 `+0.0073`。**上位 3 候補すべて明示的に棄却**
+(理由: `global_l3_increases` 不成立、`shell_count_increases` 不成立、
+`tail_bound_below_signal` 不成立)。
+
+**非線形 tail 伝播**: Grönwall 上界 `3.489e-03` < 信号 `8.027e-03`(比 0.43)。
+
+### 合格した gate
+
+`spatial_refinement_converges`、`time_refinement_converges`、
+`integrators_agree_within_1e_3`、`radial_domain_independent_within_1e_3`、
+`axial_domain_independent_within_1e_3`、`expansion_trigger_fires`、
+`expansion_preserves_invariants`、`snapshot_certificate_verifies`、
+`tail_propagation_bound_below_signal`、`every_candidate_resolved`(全 11 件)。
+
+### 失敗した gate(2 件。閾値は結果を見た後に変更していない)
+
+**1. `boundary_difference_exceeds_richardson`。** 前登録基準は「境界条件差 ≥
+Richardson 推定の 8 倍」。最良値は **`7.93e-3`**、要求の **1/1000**。
+比が 8 に達するには 2 次収束のまま更に 5〜6 段の細分が要り、実行不能。
+**解釈**: この設定で律速なのは離散化であって外側境界ではない。良い境界条件を
+使う限り「境界誤差が支配する領域」は存在せず、基準はその領域を要求している。
+
+**2. `continuation_left_the_quadratic_regime`。** `max|ω₁|` は
+`A = 2→5→10→20` で厳密に `A²` 比例(相対残差 `2.9e-6`, `1.0e-5`, `4.1e-5`)。
+第一 Picard 反復が支配しており、**順位付けは非線形挙動を一切見ていない**。
+どの候補も実力で昇格することはあり得なかった。離れるのに必要なのは振幅ではなく
+**時間**であり、現在 `max|ω₁|·T ≈ 7e-4 ≪ 1`。
+
+**さらに**: 境界条件差が測れるほど box を絞ると、源が評価球に到達して
+**多重極 tail 上界がそもそも存在しない**。`recover_free_space_velocity` は
+`tail_bound_available = False` を返して数値を捏造しない。これは 2 つの
+Gate-6 基準の間の実在する緊張である。
+
+### 作成した候補
+
+**明示的初期値族 1 つ**(`SwirlFamily`)を固定し、`(A, R₀, Z₀, c)` の
+32 点で継続を実行した。**特異点候補は 1 つも生成されていない。**
+
+### 棄却した候補
+
+継続の上位 3 候補 `A2_R1.2_Z1.5_c2`、`A5_R1.2_Z1.5_c2`、`A10_R1.2_Z1.5_c2` を
+3 解像度で検証し、**すべて棄却**した。棄却理由は各候補について
+`global_l3_increases`(`L³` は増加せず減少)、`shell_count_increases`(shell 数は
+実質不変)、`tail_bound_below_signal`(pilot box が tail 上界の存在条件を満たさない)。
+残る 29 点は複合スコアが下位で昇格対象にならなかった。
+
+### 変更・追加したファイル
+
+新規: [tail_propagation.py](src/ns_certificate_lab/tail_propagation.py)、
+[initial_data.py](src/ns_certificate_lab/initial_data.py)、
+[domain_expansion.py](src/ns_certificate_lab/domain_expansion.py)、
+[snapshot_certificate.py](src/ns_certificate_lab/snapshot_certificate.py)、
+[test_gate6_modules.py](tests/test_gate6_modules.py)(20 件)、
+[run_whole_space_gate6.py](experiments/run_whole_space_gate6.py)、
+[whole_space_gate6.json](configs/whole_space_gate6.json)、
+`outputs/whole_space_gate6_v1/`、
+[CertificateLayer.lean](formal/NSSingularity/CertificateLayer.lean)。
+
+更新: [free_space_recovery.py](src/ns_certificate_lab/free_space_recovery.py)
+(`A_6`、四重極、`tail_bound_available`)、
+[whole_space_gate.py](src/ns_certificate_lab/whole_space_gate.py)(境界 4 種)、
+`formal/NSSingularity.lean`、`formal/AxiomAudit.lean`、`formal/README.md`、
+`docs/final_target.md`、`docs/formalization_map.md`、
+`docs/whole_space_transition.md`、`PLAN.md`(Phase 2.87)、
+`README.md`(再現コマンド 13)、`.github/workflows/tests.yml`、本書。
+
+### テスト結果
+
+```text
+PYTHONPATH=src .venv/Scripts/python.exe -m pytest -q
+  -> 907 passed, 1 skipped(第 5 便時点)
+  -> 927 passed, 1 skipped(本便追加後)
+```
+
+`lake build`: **Build completed successfully (8663 jobs)**。
+`lake env lean AxiomAudit.lean`: 全 43 定理が古典公理のみ。
+
+### 未解決の証明義務・限界
+
+- **非線形 tail 伝播の Grönwall は解作用素ノルムを入力として要求する。**
+  Biot–Savart は `L^∞→L^∞` で有界でないので、既定値 0 は「tail 寄与のみを
+  抑える」意味であり、状態誤差経由の寄与は抑えていない。
+- 区間証明書は**離散量**の包含であり、離散化誤差は未包含。PO-05 は未解決。
+- 区間証明書は単一 snapshot のみ。時間発展の証明書は未着手。
+- 振幅継続が二次応答領域を離れていないので、複合ゲートは非線形挙動を
+  判定していない。長時間積分の安定性と計算量が次の設計判断である。
+- 外側境界条件は「律速ではない」ことが分かっただけで、
+  境界差が離散化誤差を超える設定での検証は依然できていない。
+- F-7c、`ClayStatement.lean` への橋、`L^∞` 最大値原理の形式化は未着手。
+
+### Clay 問題について
+
+**本便は Navier–Stokes ミレニアム問題を解決していない。** Gate 6 は
+入口の計装と校正であり、2 つの前登録基準に**不合格**である。
+振幅継続は実行したが、二次応答領域を離れておらず、**候補は 1 つも昇格せず
+上位 3 件はすべて明示的に棄却**した。区間証明書は離散量の包含にとどまる。
+過去の結果は書き換えていない。
+
 ## 数学的に確認できたこと
 
 - 外力なしの3次元非圧縮 Navier–Stokes 方程式から、指定した curl と
@@ -1784,7 +2003,13 @@ Gate 1 は合格、Gate 2/3 は既存証拠+新監査で部分的、Gate 4 は�
 (低次 Fourier ansatz の記号探索)は**証明により空なので実行しない**。
 今後この探索を再登録してはならない。〕
 
-0. 〔第 5 便で更新〕**中振幅での再ゲートが Track U の新しい律速である。**
+0. 〔第 6 便で更新〕**弱非線形領域を離れることが Track U の新しい律速である。**
+   Gate 6 の振幅継続は `max|ω₁| ∝ A²` を相対 `5e-5` で満たし、二次応答領域を
+   一度も離れていない。必要なのは振幅ではなく**時間**(現在
+   `max|ω₁|·T ≈ 7e-4 ≪ 1`)であり、長時間積分の安定性と計算量が次の設計判断。
+   外側境界は律速ではないことが測定で分かった(境界差は離散化誤差の `8e-3` 倍)。
+   区間証明書は単一 snapshot から時間発展へ広げる。
+   〔第 5 便の記述、参考〕**中振幅での再ゲート**
    Gate 5 は小振幅で通ったが、時間細分・領域拡大・境界次数の 3 部分ゲートは
    この振幅では情報を持たなかった(答えが桁まで一致)。場が外側境界に到達する
    振幅で 3 つを再実行するまで、**外側境界条件は未検証**であり、

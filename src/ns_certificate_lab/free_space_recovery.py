@@ -88,8 +88,12 @@ GREEN_CONSTANT = 1.0 / (8.0 * math.pi**2)
 #: giving 45+105 = 150, 45+630+945 = 1620 and 315+1260+5670+3780+10395 = 21420.
 #: The observed sharp value of ``A_3`` is ``60``, so the high-order bounds are
 #: conservative by a known factor rather than by "some constant".
+#: ``A_6 <= 335160`` follows from the same rule: differentiating a term
+#: ``c delta^a Z^b |Z|^{-p}`` produces terms of total magnitude at most
+#: ``c(b+p)`` on unit vectors.  Applied to the ``A_4`` term list that rule
+#: reproduces ``A_5 = 21420`` exactly, which is why it is trusted for ``A_6``.
 _GREEN_DERIVATIVE_MULTIPLES: tuple[float, ...] = (
-    1.0, 3.0, 12.0, 150.0, 1620.0, 21420.0,
+    1.0, 3.0, 12.0, 150.0, 1620.0, 21420.0, 335160.0,
 )
 GREEN_DERIVATIVE_CONSTANTS: tuple[float, ...] = tuple(
     GREEN_CONSTANT * value for value in _GREEN_DERIVATIVE_MULTIPLES
@@ -135,6 +139,9 @@ class SourceMoments:
     axial_dipole: float
     support_radius: float
     neglected_absolute_mass: float
+    third_absolute_moment: float
+    axial_quadrupole: float
+    transverse_quadrupole: float
 
     @property
     def newtonian_mass(self) -> float:
@@ -149,6 +156,9 @@ class SourceMoments:
             "monopole": self.monopole,
             "axial_dipole": self.axial_dipole,
             "support_radius": self.support_radius,
+            "third_absolute_moment": self.third_absolute_moment,
+            "axial_quadrupole": self.axial_quadrupole,
+            "transverse_quadrupole": self.transverse_quadrupole,
             "neglected_absolute_mass": self.neglected_absolute_mass,
             "neglected_fraction": self.neglected_fraction,
         }
@@ -200,8 +210,13 @@ def source_moments(
         absolute_mass=SPHERE3_MEASURE * integrate(magnitude),
         first_absolute_moment=SPHERE3_MEASURE * integrate(magnitude * radius5),
         second_absolute_moment=SPHERE3_MEASURE * integrate(magnitude * radius5**2),
+        third_absolute_moment=SPHERE3_MEASURE * integrate(magnitude * radius5**3),
         monopole=SPHERE3_MEASURE * integrate(values),
         axial_dipole=SPHERE3_MEASURE * integrate(values * z_mesh),
+        axial_quadrupole=SPHERE3_MEASURE * integrate(values * z_mesh**2),
+        # Q_ij = q_t delta_ij on the four transverse axes, so
+        # 4 q_t = int |y'|^2 omega dV_5.
+        transverse_quadrupole=0.25 * SPHERE3_MEASURE * integrate(values * r_mesh**2),
         support_radius=support,
     )
 
@@ -225,14 +240,35 @@ class DerivativeTailBounds:
     def __getitem__(self, order: int) -> float:
         return (self.value, self.gradient, self.hessian, self.third)[order]
 
+    @property
+    def available(self) -> bool:
+        """False when the source reaches the evaluation sphere and no bound applies.
+
+        A box tight enough for the outer boundary treatment to matter is often
+        too tight for the multipole bound to exist at all.  That tension is real
+        and is reported rather than papered over with a fabricated number.
+        """
+        return math.isfinite(self.value)
+
+    @staticmethod
+    def unavailable(truncation: str, distance: float) -> "DerivativeTailBounds":
+        return DerivativeTailBounds(
+            truncation=truncation, distance=distance,
+            value=math.inf, gradient=math.inf, hessian=math.inf, third=math.inf,
+        )
+
     def as_dict(self) -> dict[str, object]:
+        def finite(value: float) -> float | None:
+            return value if math.isfinite(value) else None
+
         return {
             "truncation": self.truncation,
             "distance": self.distance,
-            "value": self.value,
-            "gradient": self.gradient,
-            "hessian": self.hessian,
-            "third": self.third,
+            "available": self.available,
+            "value": finite(self.value),
+            "gradient": finite(self.gradient),
+            "hessian": finite(self.hessian),
+            "third": finite(self.third),
         }
 
 
@@ -271,8 +307,8 @@ def multipole_tail_bounds(
     Neither line uses a maximum principle: both come from differentiating the
     Green kernel and bounding the remainder of a Taylor expansion.
     """
-    if truncation not in {"monopole", "dipole"}:
-        raise ValueError("truncation must be 'monopole' or 'dipole'")
+    if truncation not in {"monopole", "dipole", "quadrupole"}:
+        raise ValueError("truncation must be 'monopole', 'dipole' or 'quadrupole'")
     distance = float(evaluation_radius) - moments.support_radius
     if distance <= 0.0:
         raise ValueError(
@@ -283,9 +319,12 @@ def multipole_tail_bounds(
     if truncation == "monopole":
         moment = moments.first_absolute_moment
         shift, factor = 1, 1.0
-    else:
+    elif truncation == "dipole":
         moment = moments.second_absolute_moment
         shift, factor = 2, 0.5
+    else:
+        moment = moments.third_absolute_moment
+        shift, factor = 3, 1.0 / 6.0
     values = [
         factor
         * green_derivative_constant(order + shift)
@@ -365,17 +404,23 @@ def multipole_boundary_trace(
     ``+3 c_5 P_z z |X|^{-5}``.  Transverse dipole components vanish by
     axisymmetry, which is why only ``P_z`` appears.
     """
-    if truncation not in {"monopole", "dipole"}:
-        raise ValueError("truncation must be 'monopole' or 'dipole'")
+    if truncation not in {"monopole", "dipole", "quadrupole"}:
+        raise ValueError("truncation must be 'monopole', 'dipole' or 'quadrupole'")
     radius5 = np.hypot(
         np.asarray(radius, dtype=np.float64), np.asarray(axial, dtype=np.float64)
     )
     safe = np.maximum(radius5, 1.0e-300)
+    axial_values = np.asarray(axial, dtype=np.float64)
     out = moments.monopole * GREEN_CONSTANT / safe**3
-    if truncation == "dipole":
-        out = out + 3.0 * GREEN_CONSTANT * moments.axial_dipole * np.asarray(
-            axial, dtype=np.float64
-        ) / safe**5
+    if truncation in {"dipole", "quadrupole"}:
+        out = out + 3.0 * GREEN_CONSTANT * moments.axial_dipole * axial_values / safe**5
+    if truncation == "quadrupole":
+        # (1/2) Q : D^2 G reduces, by axisymmetry and harmonicity of G away from
+        # the origin, to (1/2)(q_z - q_t)(15 z^2 |X|^-7 - 3 |X|^-5) c_5.
+        gap = moments.axial_quadrupole - moments.transverse_quadrupole
+        out = out + 0.5 * GREEN_CONSTANT * gap * (
+            15.0 * axial_values**2 / safe**7 - 3.0 / safe**5
+        )
     return out
 
 
@@ -503,6 +548,10 @@ class FreeSpaceRecovery:
     poisson_residual_max: float
 
     @property
+    def tail_bound_available(self) -> bool:
+        return self.interior_tail.available
+
+    @property
     def velocity_tail_bound(self) -> float:
         """Bound on the recovered velocity error induced by the elliptic tail.
 
@@ -565,16 +614,25 @@ def recover_free_space_velocity(
 
     moments = source_moments(grid, source, support_threshold=support_threshold)
     boundary_radius = min(float(grid.r[-1]), float(abs(grid.z[0])), float(grid.z[-1]))
-    boundary = multipole_tail_bounds(
-        moments, evaluation_radius=boundary_radius, truncation=truncation
-    )
+    if boundary_radius > moments.support_radius:
+        boundary = multipole_tail_bounds(
+            moments, evaluation_radius=boundary_radius, truncation=truncation
+        )
+    else:
+        # The source reaches the box boundary: no multipole tail bound exists.
+        # Reporting that is the honest outcome; inventing one is not.
+        boundary = DerivativeTailBounds.unavailable(
+            truncation, boundary_radius - moments.support_radius
+        )
     if interior_radius is None:
         interior_radius = boundary_radius - max(grid.dr, grid.dz)
     distance = boundary_radius - float(interior_radius)
     if distance <= 0.0:
         raise ValueError("interior_radius must lie strictly inside the box")
-    interior = interior_derivative_tail_bounds(
-        boundary.value, distance_to_boundary=distance
+    interior = (
+        interior_derivative_tail_bounds(boundary.value, distance_to_boundary=distance)
+        if boundary.available
+        else DerivativeTailBounds.unavailable("box_truncation", distance)
     )
     return FreeSpaceRecovery(
         psi1=psi,

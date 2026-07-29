@@ -4,6 +4,7 @@ import NSSingularity.FiniteTime
 import NSSingularity.GalerkinNoBlowup
 import NSSingularity.FiniteModeNoGo
 import NSSingularity.GreenAndCascade
+import NSSingularity.CertificateLayer
 
 /-!
 # Axiom audit (P0 Lean gate)
@@ -79,3 +80,20 @@ open NSSingularity
 -- Limited Clay connection and the F-7c reduction.
 #print axioms NSSingularity.breakdown_time_set_empty
 #print axioms NSSingularity.galerkin_solution_of_autonomised
+
+-- F-17: potential error to velocity error.
+#print axioms NSSingularity.velocity_radial_error_le
+#print axioms NSSingularity.velocity_axial_error_le
+
+-- F-18: the product-difference identity and the advection error.
+#print axioms NSSingularity.product_difference
+#print axioms NSSingularity.product_error_le
+#print axioms NSSingularity.advection_error_le
+
+-- F-19: the short-time Gronwall step.
+#print axioms NSSingularity.gronwallBound_le_simple
+#print axioms NSSingularity.norm_le_simple_gronwall
+
+-- The packaged Clay restriction.
+#print axioms NSSingularity.FixedBandwidthCandidate.breakdown_times_empty
+#print axioms NSSingularity.FixedBandwidthCandidate.reaches_every_time
