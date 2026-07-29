@@ -315,9 +315,10 @@ M0 (Clay命題固定)
   `NSSingularity.contDiff_galerkinField`。使用した mathlib:
   `ContDiffAt.exists_forall_mem_closedBall_exists_eq_forall_mem_Ioo_hasDerivAt₀`、
   `ContDiff.clm_apply`、`ContinuousLinearMap.contDiff`。
-- **F-7c(時間依存外力、未着手)**: 上記 API は **`f : E → E` の自励系専用**で
-  あり、`g(t)` が時間依存だと直接適用できない。必要な継続補題は
-  `docs/final_target.md` §4.1 に 2 経路として明記した。**公理化していない。**
+- **F-7c(時間依存外力、形式化済み)**: 上記 API は確かに `f : E → E` の自励系
+  専用だが、それは*その定理*の性質であって mathlib の ODE API 全体の性質では
+  なかった。`IsPicardLindelof` 自体は `f : ℝ → E → E` の時間依存場に対して
+  述べられている。下の「F-7c」節を参照。**公理化していない。**
 - **論理接続**: `NSSingularity.not_isBreakdownCandidate_of_galerkin` が
   F-6 の状態上界 → 速度上界 → F-7a を連結し、
   「固定有限モード候補は破綻候補になれない」を結論する。
@@ -383,14 +384,40 @@ M0 (Clay命題固定)
 - **形式化していないこと:** 4 つの不等式を PDE から導く部分。それは紙上であり
   端点正則性定理を**引用**する(`F-11`)。本定理は指数の算術である。
 
-### F-7c 還元 — **部分的に形式化済み**(2026-07-29 第 5 便)
+### F-7c 時間依存外力での局所延長 — **形式化済み**(2026-07-29 第 7 便)
+
+- **ファイル:** `formal/NSSingularity/TimeDependentGalerkin.lean`。
+- **定理:**
+  - `galerkin_isPicardLindelof` — 射影 Galerkin 場
+    `f t x = g t + B x x + A x` に対する mathlib の `IsPicardLindelof` の
+    4 条件。実質的な内容は `B x x` の**局所** Lipschitz 評価であり、
+    `B x x - B y y = B x (x-y) + B (x-y) y` から定数 `2‖B‖(‖x₀‖+a)` を得る。
+    球半径 `a` が必ず入り、大域定数にはできない。
+  - `galerkin_local_solution` — 両側局所解の存在。
+  - `galerkin_local_solution_of_continuous` — 外力の上界を連続性から取り出す版。
+- **使用した mathlib:** `IsPicardLindelof`(**時間依存**構造体)、
+  `IsPicardLindelof.exists_eq_forall_mem_Icc_hasDerivWithinAt₀`、
+  `ContinuousLinearMap.le_opNorm₂`、`LipschitzOnWith.of_dist_le_mul`。
+- **2 経路の比較**(セッション指示による):
+
+  | | 自励化経路 | 直接経路(採用) |
+  |---|---|---|
+  | 構成空間 | `E × ℝ` | `E` |
+  | 追加 instance 義務 | `CompleteSpace (E × ℝ)`、Prod ノルム評価 | なし |
+  | 追加定理 | `galerkin_solution_of_autonomised`(70 行) | なし |
+  | 第 2 成分の恒等性 | 必要 | 不要 |
+
+  直接経路が仮定・行数ともに厳密に少ない。
+
+### F-7c 還元(放棄した自励化経路の記録) — 第 5 便
 
 - **定理:** `galerkin_solution_of_autonomised`。自励化した場
   `F(x,s) = (g s + B x x + A x, 1)` の局所流 `α` が `(L,T)` を通るなら、
   時間依存 Galerkin 系は `L` を通る局所解を持つ。
   証明は第 2 成分が `s' = 1`、`s(T) = T` から `s(t) = t` であることによる
   (`Convex.norm_image_sub_le_of_norm_hasDerivWithin_le` で導関数ゼロ ⇒ 定数)。
-- **残る義務:** 自励化した場の局所流そのものの構成。**公理化していない。**
+- **状態:** 定理として正しく、公理を含まないので残置するが、F-7c は上の直接
+  経路で閉じており、これに依存するものは無い。
 
 ### Clay への限定的接続 — **形式化済み**(2026-07-29 第 5 便)
 
@@ -454,9 +481,18 @@ F-5 (Clay命題定義)
 'NSSingularity.tendsto_physicalTime_atTop' depends on axioms: [propext, Classical.choice, Quot.sound]
 ```
 
-2026-07-29 第 6 便で F-17/F-18/F-19 の 10 定理をさらに追記し、
-`lake env lean AxiomAudit.lean` は**全 43 行**について同じ古典公理
-`[propext, Classical.choice, Quot.sound]` のみを報告した。第 3 便で追記した
+2026-07-29 第 7 便で F-7c の 3 定理をさらに追記し、
+`lake env lean AxiomAudit.lean` は**全 46 行**について同じ古典公理
+`[propext, Classical.choice, Quot.sound]` のみを報告した(第 6 便は 43 行)。
+新規 3 行:
+
+```text
+'NSSingularity.galerkin_isPicardLindelof' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NSSingularity.galerkin_local_solution' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NSSingularity.galerkin_local_solution_of_continuous' depends on axioms: [propext, Classical.choice, Quot.sound]
+```
+
+第 3 便で追記した
 F-6 の 5 定理は次のとおり:
 
 ```text
@@ -470,8 +506,9 @@ F-6 の 5 定理は次のとおり:
 同日、`git ls-files formal | xargs grep -InE '\bsorry\b|\badmit\b|^[[:space:]]*axiom '`
 は文書コメント中の言及のみを返し、コード中の `sorry`/`admit`/新規 `axiom` は
 ゼロ。`lake build` は 2026-07-28 に 8659 jobs、F-6 追加後は 8660 jobs、
-F-7a/F-7b/F-12/F-13 追加後は 8661 jobs、F-14/F-15/F-16 追加後は 8662 jobs、F-17/F-18/F-19 追加後は 8663 jobs で成功 —
-これは**コンパイルジョブ数**であり、「8663 個の定理を証明した」ことを
+F-7a/F-7b/F-12/F-13 追加後は 8661 jobs、F-14/F-15/F-16 追加後は 8662 jobs、F-17/F-18/F-19 追加後は 8663 jobs、
+F-7c 追加後は 8664 jobs で成功 —
+これは**コンパイルジョブ数**であり、「8664 個の定理を証明した」ことを
 意味しない。証明済みの命題は本書に列挙されたもののみである。
 `lean-toolchain` は leanprover/lean4:v4.32.1、mathlib は v4.32.1 タグに固定。
 

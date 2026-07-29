@@ -1,0 +1,73 @@
+{
+  "bounds": {
+    "divergence": "64306204137782925239/302231454903657293676544",
+    "green_tail": 0.0019295977105372303,
+    "hermite_remainder": "997165806874295/6489450966259517620224",
+    "poisson_residual": "1897928667/1208925819614629174706176",
+    "simpson_local_defect": "997165806874295/1208925819614629174706176",
+    "trapezoid_local_defect": "2838594367432465393/1208925819614629174706176"
+  },
+  "certificate": "space_time_slab",
+  "claims": [
+    "Every stated bound holds for the computed space-time object on every point of every enclosed cell and every instant of the slab, conditional on H1 and H2.",
+    "Nothing here is a statement about the continuous Navier-Stokes solution, and nothing here bears on the Clay problem."
+  ],
+  "enclosures": {
+    "domega1_dt": [
+      "-35457033861234579/576460752303423488",
+      "35457033861234589/576460752303423488"
+    ],
+    "du1_dt": [
+      "-35384006976839729/4611686018427387904",
+      "70768013953679663/9223372036854775808"
+    ],
+    "omega1": [
+      "-449728703980272696328649/1208925819614629174706176",
+      "224864351990136633251551/604462909807314587353088"
+    ],
+    "u1": [
+      "-129527241802315560972735/1208925819614629174706176",
+      "129527241802315720698057/1208925819614629174706176"
+    ]
+  },
+  "endpoint_inclusion": {
+    "omega1_end": true,
+    "omega1_start": true,
+    "u1_end": true,
+    "u1_start": true
+  },
+  "grid": {
+    "dr": "1/16",
+    "dz": "84442493013197/1125899906842624",
+    "nr": 49,
+    "nz": 97,
+    "r_max": 3.0,
+    "z_max": 3.6,
+    "z_min": -3.6
+  },
+  "hypotheses": {
+    "H1_cell_lipschitz": {
+      "inflation": 1.0,
+      "proved": false,
+      "statement": "Between adjacent nodes the field's first spatial derivative is enclosed by 'inflation' times the measured divided differences.  Unproved: needs a second-derivative bound the numerical state does not carry."
+    },
+    "H2_hermite_remainder": {
+      "fourth_derivative_bound": "5007448973439117525819926936205567440764146683634940853105152230902726656/913196199960794385719547238282675824787582543153094211136626492866194973625",
+      "inflation": 8.0,
+      "proved": false,
+      "remainder": "997165806874295/6489450966259517620224",
+      "source": "estimated from the measured Simpson defect and inflated",
+      "statement": "|y(t) - H(t)| <= Delta^4 M4 / 384 on the slab, with M4 a bound on the fourth time derivative.  Unproved: M4 is estimated from the measured Simpson defect and inflated, not derived."
+    }
+  },
+  "schema_version": 1,
+  "slab": {
+    "cells": 706,
+    "encloses_cell_interiors": true,
+    "interior_radius": 1.5,
+    "time_end": 4.192725271041735,
+    "time_start": 3.870648389517532,
+    "time_step": "2901010647234105/9007199254740992"
+  },
+  "viscosity": 0.00025835464743018105
+}

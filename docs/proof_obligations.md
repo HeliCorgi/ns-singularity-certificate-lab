@@ -2,7 +2,19 @@
 
 > **2026-07-29 追記**: 本書の PO-01〜PO-15 を Clay 命題 (A)〜(D)、Track U /
 > Track F の最終定理、Lean 識別子 `F-1`〜`F-11` と一つの依存グラフへまとめた
-> 全体図は [final_target.md](final_target.md) にある(第 5 便で PO-06/PO-14 を更新)。状態語彙
+> 全体図は [final_target.md](final_target.md) にある(第 5 便で PO-06/PO-14 を更新)。
+>
+> **2026-07-29 第 7 便追記**: PO-05(離散化誤差)と PO-13(区間演算検証)に
+> 関して、`src/ns_certificate_lab/slab_certificate.py` が `[t_n, t_{n+1}]` 上で
+> **cell 内部・全時刻**を包含する時空スラブ証明書を厳密有理数で生成するように
+> なった。ただしこれは **2 つの未証明仮説 H1(cell Lipschitz)・H2(Hermite
+> 剰余)の下での条件付き**であり、payload に `proved: false` として明記される。
+> 連続 PDE への接続に必要な補題は
+> [`research_notes/hs_error_propagation.md`](research_notes/hs_error_propagation.md)
+> に **HS-1〜HS-6** として列挙した。**最大の欠落は HS-5**(離散残差 →
+> `‖R‖_{H^s}`)であり、これが無い限り証明書は計算対象についての言明であって
+> PDE についての言明ではない。既存の `L^∞` Grönwall 鎖(Lean F-17/F-18/F-19)を
+> **無条件の PDE 安定性証明として提示してはならない**。状態語彙
 > (M 数学的に閉じた / L Lean で閉じた / I 区間演算が必要 / N 数値観測のみ /
 > O 未着手)もそちらで定義している。本書は個々の義務の詳細台帳である。
 

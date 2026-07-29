@@ -31,9 +31,10 @@ Scope caveats, stated before the mathematics rather than after.
   as an abstract "all norms on a finite-dimensional space are equivalent"
   statement.  The explicit form is what the note quotes and what the Python
   implementation computes.
-* (4) is closed here only for a **time-independent** vector field (F-7b).  The
-  time-dependent case is stated as an explicit open obligation, F-7c, with the
-  mathlib route named; it is *not* axiomatized.
+* (4) is closed here for a **time-independent** vector field (F-7b).  The
+  time-dependent case, F-7c, is closed in `TimeDependentGalerkin.lean` by the
+  direct route through mathlib's time-dependent `IsPicardLindelof`; nothing is
+  axiomatized in either file.
 
 This file contains no `sorry`, no `admit`, and introduces no axioms.
 -/
@@ -287,15 +288,15 @@ mathlib supplies it for a **time-independent** `C^1` field
 (`exists_forall_mem_closedBall_exists_eq_forall_mem_Ioo_hasDerivAt₀`), which
 covers the Galerkin system with a time-independent projected force.
 
-**F-7c, open.**  For a genuinely time-dependent projected force the same
-statement needs either the autonomisation trick on `E × ℝ` or a direct
-construction of `IsPicardLindelof` for the field `(t,x) ↦ g t + B x x + A x`
-(continuity of the uncurried map, a uniform Lipschitz constant in `x` on a ball,
-and a bound on the norm).  Both routes exist inside mathlib's current API; the
-work is not done here, and — per `LEAN4_VERIFICATION_POLICY.md` — it is **not**
-axiomatised.  Until F-7c is closed the Lean chain covers the time-independent
-case only, and the general case rests on the paper proof in
-`docs/research_notes/track_f_finite_mode_nogo.md` §3.
+**F-7c, closed** in `TimeDependentGalerkin.lean`.  The remark above that
+mathlib's local existence theorem is autonomous-only was true of the theorem
+named here, but not of the API as a whole: `IsPicardLindelof` is stated for
+`f : ℝ → E → E`, so a genuinely time-dependent projected force needs no
+autonomisation.  What it does need is the local Lipschitz estimate for `B x x`
+— `B x x - B y y = B x (x-y) + B (x-y) y`, hence a constant `2‖B‖(‖x₀‖+a)` that
+carries the ball radius — and that is `galerkin_isPicardLindelof`.  The Lean
+chain therefore now covers time-dependent projected forcing, matching the paper
+proof in `docs/research_notes/track_f_finite_mode_nogo.md` §3.
 -/
 
 section Continuation
@@ -340,7 +341,8 @@ What this does **not** do, stated plainly:
   of `⟨u,(u·∇)u⟩` with `advectionForm` (F-12 is the algebraic half; the analytic
   half needs torus function spaces mathlib does not have), and the local
   uniqueness theory for Navier–Stokes, which mathlib also does not have;
-* it does not treat time-dependent forcing in the continuation step (F-7c).
+* the continuation step for time-dependent forcing is F-7c, closed separately
+  in `TimeDependentGalerkin.lean` rather than here.
 -/
 
 section ClayConnection

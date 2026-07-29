@@ -283,6 +283,37 @@ toward a singularity.
 Exit gate: a candidate survives independent discretizations, precision levels,
 domain sizes, and withheld diagnostic tests.  This remains numerical evidence.
 
+## Phase 2.88 — Gate 7: leaving the Picard region (2026-07-29)
+
+The single parameter is `Re = A L^2 / nu`; amplitude, length and viscosity are
+not three search directions and `deduplicate_settings` now enforces that.
+
+Reclassifying the Gate 6 sweep in `(Re, aspect, c, tau)` showed why all
+thirty-two runs stayed inside the first Picard iterate: the nominal amplitude
+overstated the field's peak by about twenty-three, so the sweep reached
+`tau <= 0.0233`, forty-three times short of the `tau = 1` it needed.
+
+`PicardLadder` integrates levels 0, 1, 2 and the full solution together, with
+the same integrator and the same accepted steps, so the distance to the iterates
+is measured rather than inferred, and the solver's exact right-hand side is
+stored at every accepted step rather than reconstructed from snapshots.
+
+Eighteen runs (Re = 10..400 x families S, A, H) reached `tau = 1`.  The
+preregistered departure gate passed on all nine checks.  **No candidate was
+promoted:** the critical `L^3` norm decays in every run and the dyadic shell
+count grows in sixteen of eighteen, i.e. the fields spread rather than
+concentrate.  The one amendment — adding a 145x289 grid — changed no threshold
+and is recorded with its reason in the config.
+
+F-7c is closed in Lean by the direct route: mathlib's `IsPicardLindelof` was
+already time-dependent, so the autonomisation on `E x R` was never needed.
+
+The `H^s` derivation (`docs/research_notes/hs_error_propagation.md`) is
+deliberately incomplete, with HS-1..HS-6 named.  HS-5 — discrete residual to
+`||R||_{H^s}` — is the step that would make any certificate a statement about
+the PDE, and it is not done.  Until it is, the `L^infty` certificate is not
+presented as an unconditional PDE proof.
+
 ## Phase 4 — validated numerics (future)
 
 - Replace floating-point residual estimates with interval enclosures.

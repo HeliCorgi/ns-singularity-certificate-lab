@@ -65,7 +65,8 @@ formal/
     ├── GalerkinNoBlowup.lean   # 段階 1 / F-6(Galerkin エネルギー上界、証明あり、sorry なし)
     ├── FiniteModeNoGo.lean     # 段階 1 / F-7a,F-7b,F-12,F-13(証明あり、sorry なし)
     ├── GreenAndCascade.lean    # 段階 1 / F-14,F-15,F-16,F-7c 還元(証明あり、sorry なし)
-    └── CertificateLayer.lean   # 段階 1 / F-17,F-18,F-19(証明あり、sorry なし)
+    ├── CertificateLayer.lean   # 段階 1 / F-17,F-18,F-19(証明あり、sorry なし)
+    └── TimeDependentGalerkin.lean # 段階 1 / F-7c 本体(証明あり、sorry なし)
 ```
 
 以降の段階(1: 有限次元恒等式、2: 解析的な橋、3: 数値証明書、4: 最終定理)は
@@ -237,7 +238,15 @@ Dissipative  A   :=  ∀ x, ⟪x, A x⟫ ≤ 0          -- ⟪u, νΔu⟫ = -ν�
    個別のモード集合については `src/ns_certificate_lab/galerkin_obstruction.py`
    が厳密整数演算(`ℤ[i]` 係数の全単項式検査、浮動小数点なし)で機械検証する。
    Lean 側は仮定として受け取るだけである。
-2. **常微分方程式の延長(Theorem 1(iii))は未形式化**である(`F-7`)。
+2. ~~**常微分方程式の延長(Theorem 1(iii))は未形式化**である(`F-7`)。~~
+   **2026-07-29 第 7 便で解消。** F-7a・F-7b(`FiniteModeNoGo.lean`)に加え、
+   時間依存外力の場合 F-7c を `TimeDependentGalerkin.lean` で閉じた。
+   第 4 便の「mathlib の局所存在定理は自励系専用」という判定は、その*定理*に
+   ついては正しいが API 全体については誤りで、`IsPicardLindelof` は最初から
+   `f : ℝ → E → E` の時間依存場に対して述べられている。自励化 (`E × ℝ`) と
+   直接構成の 2 経路を比較し、仮定・行数ともに厳密に少ない直接経路を採った。
+   実質は `B x x` の局所 Lipschitz 評価
+   (`B x x - B y y = B x (x-y) + B (x-y) y`、定数 `2‖B‖(‖x₀‖+a)`)1 点である。
    本ファイルはノルムの有界性までしか言わない。有界性から `T` を越える
    滑らかな延長を出すには mathlib の Picard–Lindelöf が要る。
 3. 有限次元性を使う部分(全ノルムの同値、`‖u‖_{H^s}` と `‖u‖_{L^∞}` の評価)は

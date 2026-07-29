@@ -17,8 +17,9 @@ of a step that the numerical side already relies on:
   `γ < 1`.  Stating it in Lean is what makes the "under the current shell ansatz
   and non-degeneracy assumptions" qualifier machine-checkable rather than a
   footnote.
-* **F-7c, reduction** — the provable half of the open continuation obligation:
-  if the *autonomised* field on `E × ℝ` has a local flow, the time-dependent
+* **F-7c, reduction** — a step of the *abandoned* autonomisation route, kept as
+  a record of it: if the autonomised field on `E × ℝ` has a local flow, the
+  time-dependent
   Galerkin system has one.  The remaining half is constructing that flow.
 
 Scope caveats.
@@ -30,7 +31,7 @@ Scope caveats.
   from the PDE — that derivation is on paper in
   `docs/research_notes/track_f_shell_constraints.md` and quotes the endpoint
   regularity theorem.
-* The F-7c reduction does **not** close F-7c.  It splits it, which is what
+* The F-7c reduction does **not** close F-7c; `TimeDependentGalerkin.lean` does, by a shorter route.  This splits it, which is what
   `docs/final_target.md` §4.1 asked for.
 
 This file contains no `sorry`, no `admit`, and introduces no axioms.
@@ -208,14 +209,15 @@ end ClayConnection
 
 /-! ## F-7c, the reduction step
 
-`docs/final_target.md` §4.1 records that mathlib's local existence theorem for
-`C^1` vector fields is **autonomous only**, so a time-dependent projected force
-needs either an autonomisation on `E × ℝ` or a direct `IsPicardLindelof`
-construction.  The theorem below closes the first half of the first route: given
-a flow for the autonomised field, the original system has a local solution.
+The theorem below is a step of the autonomisation route: given a flow for the
+autonomised field on `E × ℝ`, the original system has a local solution.
 
-The remaining obligation is therefore sharply delimited: build the flow for
-`F(x,s) = (g s + B x x + A x, 1)`.  It is **not** axiomatized here.
+That route was abandoned.  `IsPicardLindelof` in the pinned mathlib is already
+time-dependent, so the direct construction in `TimeDependentGalerkin.lean`
+closes F-7c without ever forming `F(x,s) = (g s + B x x + A x, 1)`, without the
+product-space instances, and without this reduction.  The theorem is kept
+because it is correct and because it records what the alternative would have
+cost; nothing depends on it.
 -/
 
 section Autonomisation

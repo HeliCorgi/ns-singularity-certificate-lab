@@ -73,3 +73,9 @@ jobs:
           python -m experiments.run_whole_space_gate6
           --config configs/whole_space_gate6.json
           --output-dir outputs/ci-whole-space-gate6
+
+      - name: Replay whole-space Gate 7
+        run: >-
+          python -m experiments.run_tau_continuation
+          --config configs/tau_continuation_gate7.json
+          --output-dir outputs/ci-whole-space-gate7

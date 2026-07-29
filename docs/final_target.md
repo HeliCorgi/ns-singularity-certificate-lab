@@ -101,7 +101,7 @@ CLAY-C / CLAY-D  (via Track F)
 
 | ID | 状態 | 現況 |
 |---|---|---|
-| F-α1(**固定有限次元・固定帯域**のみ) | **M + L** | **除外定理として閉じた**。`docs/research_notes/track_f_finite_mode_nogo.md` Theorem 1 と Corollary 1–3。Lean 側は `F-6`(a priori 上界)、`F-12`(三線型相殺の Fourier 版)、`F-13`(有限 Fourier 空間のノルム同値)、`F-7a`(端点到達)、`F-7b`(自励系の局所延長)がすべて **L**。時間依存外力での延長 `F-7c` のみ **O** |
+| F-α1(**固定有限次元・固定帯域**のみ) | **M + L** | **除外定理として閉じた**。`docs/research_notes/track_f_finite_mode_nogo.md` Theorem 1 と Corollary 1–3。Lean 側は `F-6`(a priori 上界)、`F-12`(三線型相殺の Fourier 版)、`F-13`(有限 Fourier 空間のノルム同値)、`F-7a`(端点到達)、`F-7b`(自励系の局所延長)がすべて **L**。時間依存外力での延長 `F-7c` も第 7 便で **L**(`TimeDependentGalerkin.lean`)|
 | F-α(残り = 帯域幅発散族) | **M(必要条件のみ)** | `docs/research_notes/track_f_shell_constraints.md`。**現在の shell ansatz と非退化仮定の下で**実現可能領域は `0<γ<1`、`max(0,2γ−1) ≤ σ < γ`、`β>0` の三角形に限られ、同じ仮定の下で `γ ≥ 1` は排除される。候補は一つも構成していない |
 | F-β | **O** | — |
 | F-γ | **O** | — |
@@ -138,7 +138,7 @@ CLAY-C / CLAY-D  (via Track F)
 | **F-6** | **Galerkin エネルギー上界(Track F 有限モード除外の中核)** | **L** | `formal/NSSingularity/GalerkinNoBlowup.lean` |
 | **F-7a** | **有界な軌道が有限時刻端点で極限を持つ** | **L** | `formal/NSSingularity/FiniteModeNoGo.lean` |
 | **F-7b** | **自励 Galerkin 系の端点からの局所延長(Picard–Lindelöf)** | **L** | 同上 |
-| **F-7c** | **時間依存外力での局所延長** | **O**(還元のみ **L**) | 還元は `GreenAndCascade.lean`;残るのは自励化場の局所流の構成 |
+| **F-7c** | **時間依存外力での局所延長** | **L** | `TimeDependentGalerkin.lean`。mathlib の `IsPicardLindelof` が時間依存なので自励化は不要だった。放棄した自励化経路の還元は `GreenAndCascade.lean` に記録として残置 |
 | **F-14** | **5 次元 Green 動径プロファイルの調和性** | **L** | `formal/NSSingularity/GreenAndCascade.lean` |
 | **F-15** | **Newton の flux 恒等式 `R⁴ψ' = −m`** | **L** | 同上 |
 | **F-16** | **shell 指数領域(仮定を構造体で明示)** | **L** | 同上 |
@@ -156,26 +156,45 @@ CLAY-C / CLAY-D  (via Track F)
 定理インタフェースを要する。**未証明の project 固有 axiom として挿入しては
 ならない**(`LEAN4_VERIFICATION_POLICY.md`)。
 
-### 4.1 F-7c — 実際に mathlib API を確認した結果
+### 4.1 F-7c — **閉じた**(直接経路)
 
-「F-7 は既存定理の単純な適用」という当初の見立ては**誤りだった**。実測:
+「F-7 は既存定理の単純な適用」という当初の見立ては誤りだったが、「mathlib の
+局所存在定理は自励系専用」という第 4 便の判定**も誤りだった**。実測:
 
 - **F-7a** は `intervalIntegral.integral_eq_sub_of_hasDerivAt` +
   `intervalIntegral.continuousOn_primitive_interval` +
   `Integrable.of_bound` で閉じた。
 - **F-7b** は `ContDiffAt.exists_forall_mem_closedBall_exists_eq_forall_mem_Ioo_hasDerivAt₀`
-  が直接使えたが、これは **`f : E → E` の自励系専用**である。
-- **F-7c(未着手)**: `g(t)` が時間依存だと上記は適用できない。必要な継続補題は
-  次のいずれかで、どちらも既存 API の範囲内だが未実施である。
-  1. `E × ℝ` 上での自励化 `F(x,s) = (g s + B x x + A x, 1)` を作り、
-     `ContDiff ℝ 1 g` から `ContDiffAt ℝ 1 F` を導き、得られた流れの
-     第 2 成分が `s(t) = t + c` であることを `ODE_solution_unique` で示す。
-  2. 場 `(t,x) ↦ g t + B x x + A x` に対し `IsPicardLindelof` を直接構成する。
-     必要なのは (i) uncurry の連続性、(ii) 球上で `x` について一様な
-     Lipschitz 定数、(iii) ノルム上界 `L` の 3 点で、
-     `IsPicardLindelof.of_time_independent` / `of_contDiffAt_one` が雛形になる。
-  **公理化はしない。** F-7c が閉じるまで、時間依存外力の場合の延長は
-  `docs/research_notes/track_f_finite_mode_nogo.md` §3 の紙上証明に依存する。
+  が直接使えた。これは確かに `f : E → E` の自励系専用である。
+- **F-7c(閉じた、`formal/NSSingularity/TimeDependentGalerkin.lean`)**:
+  自励系専用なのは*この定理*であって API 全体ではない。pin されている
+  mathlib の `IsPicardLindelof` は最初から `f : ℝ → E → E` の**時間依存**場に
+  対して述べられており、`IsPicardLindelof.exists_eq_forall_mem_Icc_hasDerivWithinAt₀`
+  が解を直接与える。したがって自励化は不要だった。
+
+  **2 経路の比較(セッション指示による)**:
+
+  | | 自励化経路 | 直接経路(採用) |
+  |---|---|---|
+  | `IsPicardLindelof` を作る空間 | `E × ℝ` | `E` |
+  | 追加の instance 義務 | `CompletePace (E × ℝ)`、Prod ノルムでの Lipschitz 評価 | なし |
+  | 追加で必要な定理 | `galerkin_solution_of_autonomised`(70 行) | なし |
+  | 第 2 成分の恒等性の議論 | 必要 | 不要 |
+
+  直接経路が仮定・行数ともに厳密に少ないため、こちらを採用した。
+
+  実質的な内容は `B x x` の**局所** Lipschitz 評価 1 点である:
+  `B x x - B y y = B x (x-y) + B (x-y) y` なので Lipschitz 定数は
+  `2‖B‖(‖x₀‖+a)` となり、球半径 `a` が必ず入る。これを大域定数にすることは
+  できない。`galerkin_isPicardLindelof` がこの 4 条件を与え、
+  `galerkin_local_solution` が両側局所解を出す。`#print axioms` は 3 定理とも
+  `[propext, Classical.choice, Quot.sound]` のみ。
+
+  `galerkin_solution_of_autonomised`(`GreenAndCascade.lean`)は放棄した経路の
+  記録として残すが、依存するものは無くなった。
+
+  これで固定有限モード除外は Lean だけで完結する(残る仮定は `advectionForm`
+  と実 PDE の同一視のみ)。
 
 ## 5. 証明義務の状態一覧(`docs/proof_obligations.md` の PO と対応)
 
@@ -229,9 +248,7 @@ CLAY-C / CLAY-D  (via Track F)
    既存の `core_width.fit_precondition`(front ≥ 7 点)を全空間 box で
    評価し、適応 mesh か半周期 sine 実装かの設計判断を行う。
    **この判断の前に非線形全空間実行を開始しない。**
-2. **F-7c の形式化**: §4.1 の 2 経路のどちらかで時間依存外力の延長を閉じる。
-   これで固定有限モード除外が Lean だけで完結する(残る仮定は
-   `advectionForm` と実 PDE の同一視のみ)。
+2. ~~**F-7c の形式化**~~ — 第 7 便で完了(§4.1)。
 3. **F-1 の形式化**: 再スケーリング恒等式。F-8/F-9 の前提でもある。
 4. Track F の帯域幅発散族については、`Π_j` の**鋭い**上界を導く。
    現在の粗い評価は `(γ,σ)` に追加制約を与えない。

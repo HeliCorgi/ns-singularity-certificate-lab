@@ -5,6 +5,7 @@ import NSSingularity.GalerkinNoBlowup
 import NSSingularity.FiniteModeNoGo
 import NSSingularity.GreenAndCascade
 import NSSingularity.CertificateLayer
+import NSSingularity.TimeDependentGalerkin
 
 /-!
 # Axiom audit (P0 Lean gate)
@@ -77,9 +78,15 @@ open NSSingularity
 #print axioms NSSingularity.ShellAdmissible.sigma_mem
 #print axioms NSSingularity.not_shellAdmissible_of_one_le
 
--- Limited Clay connection and the F-7c reduction.
+-- Limited Clay connection, and the abandoned autonomised route to F-7c.
 #print axioms NSSingularity.breakdown_time_set_empty
 #print axioms NSSingularity.galerkin_solution_of_autonomised
+
+-- F-7c, closed: local existence for a genuinely time-dependent projected force,
+-- taken by the direct route through mathlib's time-dependent `IsPicardLindelof`.
+#print axioms NSSingularity.galerkin_isPicardLindelof
+#print axioms NSSingularity.galerkin_local_solution
+#print axioms NSSingularity.galerkin_local_solution_of_continuous
 
 -- F-17: potential error to velocity error.
 #print axioms NSSingularity.velocity_radial_error_le

@@ -244,6 +244,21 @@ python -m experiments.run_whole_space_gate6 --config configs/whole_space_gate6.j
 **2 つの前登録基準は不合格として記録されます**
 ([docs/whole_space_transition.md](docs/whole_space_transition.md))。
 
+### 14. 全空間 Gate 7(Picard 領域からの離脱・τ/Re 継続・時空スラブ証明書、数分)
+
+```console
+python -m experiments.run_tau_continuation --config configs/tau_continuation_gate7.json --output-dir outputs/tau_continuation_gate7_replay
+```
+
+第 6 便の 32 点スイープを無次元座標 `(Re, aspect, c, τ)` へ再分類し(到達 `τ` は
+最大 0.0233 だったことが判明)、Picard 梯子(level 0/1/2 + 完全解を同時積分)で
+第一 Picard 反復からの乖離を**実測**し、前登録 τ = {0.025 … 1.0} と
+Re = {10 … 400} × 族 S/A/H の 18 run を実行し、乖離ゲート 9 項目と昇格 2 基準で
+判定し、`[t_n, t_{n+1}]` の**時空スラブ証明書**(cell 内部・全時刻を包含、
+厳密有理数、独立 checker + 改竄拒否)を生成します。
+**乖離ゲートは全項目合格、昇格候補はゼロ**
+([docs/research_notes/tau_continuation_gate7.md](docs/research_notes/tau_continuation_gate7.md))。
+
 より厳密な再現プロトコルは [docs/reproducibility.md](docs/reproducibility.md)
 を参照してください。
 

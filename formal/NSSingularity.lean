@@ -7,3 +7,4 @@ import NSSingularity.GalerkinNoBlowup
 import NSSingularity.FiniteModeNoGo
 import NSSingularity.GreenAndCascade
 import NSSingularity.CertificateLayer
+import NSSingularity.TimeDependentGalerkin
