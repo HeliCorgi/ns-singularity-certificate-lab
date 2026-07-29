@@ -6,39 +6,65 @@ about a space-time region, and a bound that holds at isolated nodes at isolated
 instants constrains nothing between them.  This module encloses a whole slab --
 every point of every cell, at every instant of ``[t_n, t_{n+1}]``.
 
-What is rigorous and what is not
---------------------------------
-Being explicit about this is the point of the module, so it is stated up front
-and repeated in the payload.
+Name the object before certifying it
+------------------------------------
+Three different things could be meant by "the solution over the slab", and the
+earlier version of this module conflated them.
 
-**Rigorous, given the two endpoint states and the exact solver right-hand sides
-as inputs.**  All arithmetic is exact rational arithmetic with outward rounding
-(:class:`~ns_certificate_lab.snapshot_certificate.Interval`).  The temporal
-enclosure of the cubic Hermite interpolant uses exact ranges of its basis
-polynomials.  The integrator's local defect -- trapezoid and, when a midpoint
-right-hand side is supplied, Simpson -- is an exactly computed number, not an
-estimate.  The endpoint inclusion test is exact.
+* **A** -- the piecewise interpolant of the stored nodal data.  A *defined*
+  function; every claim about it is algebra, with no hypotheses at all.
+* **B** -- the exact solution of the semi-discrete system ``Y' = F(Y)`` through
+  the stored initial state.  Reachable by a rigorous ODE enclosure.
+* **C** -- the continuum Navier-Stokes solution.  **Not reachable from nodal
+  data by any argument.**
 
-**Hypotheses, named and quantified, not proved here.**
+This module certifies **A**, exactly and unconditionally, and records the gap to
+**C** as a named unproved hypothesis.  Reaching **B** needs the Picard
+self-mapping enclosure implemented in
+:mod:`ns_certificate_lab.control_ode`; it is not attempted here for the full
+field.
 
-``H1`` (*cell Lipschitz*).  Between adjacent nodes the field is enclosed by the
-corner hull inflated by ``inflation * (|d_r f| dr + |d_z f| dz) / 2`` with the
-one-sided differences measured on the grid.  This is exact for a field whose
-first derivative on the cell is enclosed by ``inflation`` times the measured
-divided differences.  Proving that needs a bound on the second spatial
-derivative, which the numerical state does not carry.
+``H1`` is now a theorem
+-----------------------
+The previous version inflated the corner hull by the measured divided
+differences and called the result a hypothesis.  That was doubly wrong: it used
+stored nodal data as a derivative proxy, which the certificate discipline
+forbids, and it was unnecessary.
 
-``H2`` (*Hermite remainder*).  ``|y(t) - H(t)| <= Delta^4 M_4 / 384`` where
-``M_4`` bounds the fourth time derivative on the slab.  ``M_4`` is estimated
-from the measured Simpson defect when a midpoint is supplied, and inflated;
-otherwise it must be supplied by the caller.  Proving a value for ``M_4`` needs
-the ``H^s`` machinery of :doc:`../docs/research_notes/hs_error_propagation`, which
-is at present an incomplete derivation with named unproved constants.
+The fix is to **define** the interpolant and then bound it exactly.  With the
+nodal slopes fixed by the recorded stencils, the tensor-product cubic Hermite
+interpolant on a cell is a bicubic polynomial; converting its Hermite
+coefficients to the **Bernstein** basis gives sixteen coefficients whose hull
+contains the polynomial at every point of the cell, because the tensor Bernstein
+basis is nonnegative and partitions unity.  No derivative bound appears
+anywhere.  See :func:`bernstein_cell_envelope`.
 
-Consequently this certificate does **not** establish a property of the
-continuous Navier-Stokes solution.  It establishes, exactly, a property of the
-computed space-time object, conditional on ``H1`` and ``H2``.  Anything stronger
-would require the missing lemmas, and they are listed rather than assumed away.
+``H2`` was not fixable and has been removed
+-------------------------------------------
+The old ``H2`` asserted ``|y(t) - H(t)| <= \Delta^4 M_4/384``, the two-point
+Hermite remainder.  That bound is valid only when ``H`` interpolates **one**
+trajectory at both ends with matching slopes.  Here the end state is the RK4
+output, not the value at ``t_{n+1}`` of the trajectory through the start state,
+and the end slope is the slope of a *different* trajectory.  Supplying a proved
+``M_4`` would not have rescued it; the hypothesis was false as framed.
+
+What replaces it is honest bookkeeping.  The temporal enclosure below is a
+statement about the *interpolant* -- object **A** -- and the exact ranges of the
+Hermite basis polynomials make it a theorem.  The distance from **A** to **B**
+is the integrator's local defect, computed exactly (trapezoid and Simpson) and
+reported as a diagnostic; the distance from **B** to **C** is ``H3``.
+
+The one remaining hypothesis
+----------------------------
+``H3`` (*semi-discrete to continuum*), **not proved**: the consistency error
+``||F(\Pi u) - \Pi(N(u))||``, of order ``h^2`` times fourth continuum spatial
+derivatives, multiplied by the discrete stability constant, plus the elliptic
+solve's truncation and the multipole domain truncation.  It needs regularity the
+numerical state does not carry.  It is the same gap as ``HS-5``.
+
+Consequently this certificate establishes, exactly and unconditionally, a
+property of the computed space-time object, and establishes **nothing** about
+the continuous Navier-Stokes solution.
 """
 
 from __future__ import annotations
@@ -61,6 +87,9 @@ __all__ = [
     "verify_slab_certificate",
     "HERMITE_BASIS_RANGES",
     "SLAB_HYPOTHESES",
+    "SLAB_THEOREMS",
+    "bernstein_cell_envelope",
+    "hermite_slopes",
 ]
 
 #: Exact ranges of the cubic Hermite basis on ``[0, 1]``.
@@ -78,19 +107,55 @@ HERMITE_BASIS_RANGES = {
     "h11": (Fraction(-4, 27), Fraction(0)),
 }
 
+#: The one remaining hypothesis.  ``H1`` became :func:`bernstein_cell_envelope`
+#: and ``H2`` was withdrawn as unsound; see the module docstring.
 SLAB_HYPOTHESES = {
-    "H1_cell_lipschitz": (
-        "Between adjacent nodes the field's first spatial derivative is "
-        "enclosed by 'inflation' times the measured divided differences.  "
-        "Unproved: needs a second-derivative bound the numerical state does "
-        "not carry."
-    ),
-    "H2_hermite_remainder": (
-        "|y(t) - H(t)| <= Delta^4 M4 / 384 on the slab, with M4 a bound on the "
-        "fourth time derivative.  Unproved: M4 is estimated from the measured "
-        "Simpson defect and inflated, not derived."
+    "H3_semidiscrete_to_continuum": (
+        "The certified object is the interpolant of the semi-discrete state, not "
+        "the continuum Navier-Stokes solution.  Bridging them needs the "
+        "consistency error ||F(Pi u) - Pi(N(u))|| = O(h^2) times fourth "
+        "continuum spatial derivatives, multiplied by the discrete stability "
+        "constant, plus the elliptic truncation and the multipole domain "
+        "truncation.  Unproved: it needs regularity the numerical state does not "
+        "carry.  Same gap as HS-5."
     ),
 }
+
+#: Theorems this module proves outright, recorded in the payload so a checker can
+#: insist they are marked proved rather than assumed.
+SLAB_THEOREMS = {
+    "T1_bernstein_cell_envelope": (
+        "For every point of the closed cell, the tensor-product cubic Hermite "
+        "interpolant with slopes given by the recorded stencils lies in the hull "
+        "of its sixteen Bernstein coefficients.  Proof: the tensor Bernstein "
+        "basis is nonnegative and partitions unity, so the interpolant is a "
+        "convex combination of those coefficients."
+    ),
+    "T2_hermite_time_range": (
+        "For every instant of the slab, the cubic Hermite interpolant in time "
+        "lies in the hull of its endpoint values plus Delta times the exact "
+        "ranges [0, 4/27] and [-4/27, 0] of the tangent basis polynomials.  "
+        "Proof: h00 + h01 = 1 with both nonnegative on [0,1], so the value part "
+        "is a convex combination; the tangent bases attain their extrema at "
+        "t = 1/3 and t = 2/3."
+    ),
+}
+
+
+def _nodes_inside(
+    hull: Interval, field: FloatArray, cells: list[tuple[int, int]]
+) -> bool:
+    """Whether every corner of every enclosed cell lies in the hull.
+
+    The interpolant reproduces the nodal values exactly, so a node escaping the
+    hull would mean the Bernstein argument had been mis-assembled -- which is
+    precisely what this check is for.
+    """
+    for i, j in cells:
+        for a, b in ((i, j), (i + 1, j), (i, j + 1), (i + 1, j + 1)):
+            if not hull.contains(Fraction(float(field[a, b]))):
+                return False
+    return True
 
 
 @dataclass(frozen=True)
@@ -109,32 +174,92 @@ def _hull(*intervals: Interval) -> Interval:
     )
 
 
-def _cell_hull(
-    field: FloatArray, i: int, j: int, *, dr: Fraction, dz: Fraction, inflation: Fraction
-) -> Interval:
-    """Enclose ``field`` over the whole cell ``[r_i, r_{i+1}] x [z_j, z_{j+1}]``.
+#: Hermite-to-Bernstein change of basis for one cubic, acting on the coefficient
+#: vector ``(v_0, m_0, v_1, m_1)`` (value and scaled slope at each end).
+#:
+#: ``h00 = B_0 + B_1``, ``h10 = B_1/3``, ``h01 = B_2 + B_3``, ``h11 = -B_2/3``
+#: in the cubic Bernstein basis ``B_k(t) = C(3,k) t^k (1-t)^{3-k}``, so
+#: ``b_0 = v_0``, ``b_1 = v_0 + m_0/3``, ``b_2 = v_1 - m_1/3``, ``b_3 = v_1``.
+HERMITE_TO_BERNSTEIN = (
+    (Fraction(1), Fraction(0), Fraction(0), Fraction(0)),
+    (Fraction(1), Fraction(1, 3), Fraction(0), Fraction(0)),
+    (Fraction(0), Fraction(0), Fraction(1), Fraction(-1, 3)),
+    (Fraction(0), Fraction(0), Fraction(1), Fraction(0)),
+)
 
-    Hypothesis ``H1``: the corner hull inflated by ``inflation`` times half the
-    measured variation across the cell in each direction.  With ``inflation = 1``
-    and a monotone field the corner hull alone is already valid; the inflation
-    covers an interior extremum whose size is bounded by the same differences.
+
+def hermite_slopes(
+    grid: AxisymmetricGrid, field: FloatArray, *, even_at_axis: bool
+) -> tuple[FloatArray, FloatArray, FloatArray]:
+    r"""Nodal slopes that **define** the interpolant, by the audited stencils.
+
+    Second-order central differences in the interior, one-sided at the ends, and
+    ``\partial_r f(0, z) = 0`` for a field that is even in ``r``.  The mixed
+    slope is the axial stencil applied to the radial one.
+
+    These are a *definition*, not an estimate: the certified object is the
+    interpolant built from exactly these numbers, and the payload records which
+    stencil was used so the statement is unambiguous.  Nothing below infers a
+    derivative bound from them.
     """
-    corners = [
-        Interval.exact(float(field[a, b]))
-        for a in (i, i + 1)
-        for b in (j, j + 1)
+    from .operators import derivative_r, derivative_z
+
+    slope_r = derivative_r(grid, field, even_at_axis=even_at_axis)
+    slope_z = derivative_z(grid, field)
+    slope_rz = derivative_z(grid, slope_r)
+    return slope_r, slope_z, slope_rz
+
+
+def bernstein_cell_envelope(
+    values: FloatArray,
+    slope_r: FloatArray,
+    slope_z: FloatArray,
+    slope_rz: FloatArray,
+    i: int,
+    j: int,
+    *,
+    dr: Fraction,
+    dz: Fraction,
+) -> Interval:
+    r"""**Theorem T1.**  An exact enclosure of the bicubic Hermite interpolant.
+
+    The interpolant on the cell is
+    ``I(\xi,\eta) = \sum_{a,b} H_a(\xi) H_b(\eta) C_{ab}`` with
+    ``H = (h_{00}, h_{10}, h_{01}, h_{11})`` and ``C`` the four-by-four matrix of
+    corner values and scaled slopes.  Changing basis with
+    :data:`HERMITE_TO_BERNSTEIN` on both sides gives the Bernstein net
+    ``B = T C T^{\mathsf T}``, and
+
+    .. math::  I(\xi,\eta) = \sum_{k,l} B^3_k(\xi)B^3_l(\eta)\,b_{kl}
+
+    with every ``B^3_k \ge 0`` and ``\sum_k B^3_k \equiv 1``.  The interpolant is
+    therefore a convex combination of the ``b_{kl}`` at every point of the closed
+    cell, so ``[\min b, \max b]`` encloses it.  This is a proof, not a bound:
+    no Lipschitz constant, no inflation, no derivative estimate.
+    """
+    def entry(a: int, b: int) -> Fraction:
+        row, col = i + (a >= 2), j + (b >= 2)
+        if a % 2 == 0 and b % 2 == 0:
+            return Fraction(float(values[row, col]))
+        if a % 2 == 1 and b % 2 == 0:
+            return dr * Fraction(float(slope_r[row, col]))
+        if a % 2 == 0 and b % 2 == 1:
+            return dz * Fraction(float(slope_z[row, col]))
+        return dr * dz * Fraction(float(slope_rz[row, col]))
+
+    coefficients = [[entry(a, b) for b in range(4)] for a in range(4)]
+    transform = HERMITE_TO_BERNSTEIN
+    # B = T C T^T, done in two passes so the intermediate stays rational.
+    left = [
+        [sum(transform[k][a] * coefficients[a][b] for a in range(4)) for b in range(4)]
+        for k in range(4)
     ]
-    base = _hull(*corners)
-    variation_r = max(
-        abs(Fraction(float(field[i + 1, b])) - Fraction(float(field[i, b])))
-        for b in (j, j + 1)
-    )
-    variation_z = max(
-        abs(Fraction(float(field[a, j + 1])) - Fraction(float(field[a, j])))
-        for a in (i, i + 1)
-    )
-    pad = inflation * (variation_r + variation_z) / 2
-    return Interval(base.lower - pad, base.upper + pad)
+    net = [
+        [sum(left[k][b] * transform[l][b] for b in range(4)) for l in range(4)]
+        for k in range(4)
+    ]
+    flat = [value for row in net for value in row]
+    return Interval(min(flat), max(flat))
 
 
 def _time_hull(
@@ -172,12 +297,15 @@ def build_slab_certificate(
     green_tail_bound: float,
     domega1_mid: FloatArray | None = None,
     interior_radius: float | None = None,
-    cell_inflation: float = 1.0,
-    remainder_inflation: float = 8.0,
-    fourth_derivative_bound: float | None = None,
     precision_bits: int = DEFAULT_PRECISION_BITS,
 ) -> SlabCertificate:
-    """Enclose one slab, exactly, under the two named hypotheses.
+    """Enclose one slab, exactly and unconditionally, as a statement about the
+    interpolant.
+
+    There is no inflation parameter and no fourth-derivative bound: the spatial
+    enclosure is the Bernstein theorem T1 and the temporal one is T2, both
+    proved.  The earlier signature took two inflation factors, which is what a
+    hypothesis looks like when it is pretending to be a theorem.
 
     ``du1_*`` and ``domega1_*`` must be the **solver's own** right-hand sides at
     the accepted steps.  They are never reconstructed from snapshot differences:
@@ -206,7 +334,6 @@ def build_slab_certificate(
     dr = Fraction(float(grid.dr))
     dz = Fraction(float(grid.dz))
     step = Fraction(float(time_step))
-    inflation = Fraction(float(cell_inflation))
     radius = (
         float(interior_radius)
         if interior_radius is not None
@@ -234,37 +361,53 @@ def build_slab_certificate(
 
     r_rat = [Fraction(float(value)) for value in grid.r]
 
+    # The nodal slopes that DEFINE the interpolant.  u1 and omega1 are even in r
+    # so their radial slope vanishes on the axis; the right-hand sides inherit
+    # that parity because every term of the equations preserves it.
+    slopes = {
+        name: hermite_slopes(grid, field, even_at_axis=True)
+        for name, field in (
+            ("u1_start", u1_start), ("u1_end", u1_end),
+            ("omega1_start", omega1_start), ("omega1_end", omega1_end),
+            ("du1_start", du1_start), ("du1_end", du1_end),
+            ("domega1_start", domega1_start), ("domega1_end", domega1_end),
+        )
+    }
+    arrays = {
+        "u1_start": u1_start, "u1_end": u1_end,
+        "omega1_start": omega1_start, "omega1_end": omega1_end,
+        "du1_start": du1_start, "du1_end": du1_end,
+        "domega1_start": domega1_start, "domega1_end": domega1_end,
+    }
+
+    def envelope(name: str, i: int, j: int) -> Interval:
+        return bernstein_cell_envelope(
+            arrays[name], *slopes[name], i, j, dr=dr, dz=dz
+        )
+
     for i, j in cells:
-        def slab(start: FloatArray, end: FloatArray,
-                 dstart: FloatArray, dend: FloatArray) -> Interval:
+        def slab(start: str, end: str, dstart: str, dend: str) -> Interval:
             return _time_hull(
-                _cell_hull(start, i, j, dr=dr, dz=dz, inflation=inflation),
-                _cell_hull(end, i, j, dr=dr, dz=dz, inflation=inflation),
-                _cell_hull(dstart, i, j, dr=dr, dz=dz, inflation=inflation),
-                _cell_hull(dend, i, j, dr=dr, dz=dz, inflation=inflation),
-                step,
+                envelope(start, i, j), envelope(end, i, j),
+                envelope(dstart, i, j), envelope(dend, i, j), step,
             ).round_outward(precision_bits)
 
-        u1_hull = _hull(u1_hull, slab(u1_start, u1_end, du1_start, du1_end))
+        u1_hull = _hull(
+            u1_hull, slab("u1_start", "u1_end", "du1_start", "du1_end")
+        )
         omega1_hull = _hull(
-            omega1_hull, slab(omega1_start, omega1_end, domega1_start, domega1_end)
+            omega1_hull,
+            slab("omega1_start", "omega1_end", "domega1_start", "domega1_end"),
         )
         du1_hull = _hull(
             du1_hull,
-            _time_hull(
-                _cell_hull(du1_start, i, j, dr=dr, dz=dz, inflation=inflation),
-                _cell_hull(du1_end, i, j, dr=dr, dz=dz, inflation=inflation),
-                Interval(Fraction(0), Fraction(0)),
-                Interval(Fraction(0), Fraction(0)),
-                step,
-            ).round_outward(precision_bits),
+            _hull(envelope("du1_start", i, j), envelope("du1_end", i, j))
+            .round_outward(precision_bits),
         )
         domega1_hull = _hull(
             domega1_hull,
-            _hull(
-                _cell_hull(domega1_start, i, j, dr=dr, dz=dz, inflation=inflation),
-                _cell_hull(domega1_end, i, j, dr=dr, dz=dz, inflation=inflation),
-            ).round_outward(precision_bits),
+            _hull(envelope("domega1_start", i, j), envelope("domega1_end", i, j))
+            .round_outward(precision_bits),
         )
 
         # -- the elliptic constraint at both endpoints, node by node -------- #
@@ -331,22 +474,9 @@ def build_slab_certificate(
                 (increment - simpson).round_outward(precision_bits).magnitude,
             )
 
-    # -- hypothesis H2 --------------------------------------------------------- #
-    if fourth_derivative_bound is not None:
-        m4 = Fraction(float(fourth_derivative_bound))
-        m4_source = "supplied by the caller"
-    elif simpson_defect is not None:
-        # Simpson's defect is  -(Delta^5/2880) y^{(4)}(xi)  for one step, so
-        # M4 <= 2880 * defect / Delta^5, inflated to cover the sampling.
-        m4 = (
-            Fraction(2880) * simpson_defect * Fraction(float(remainder_inflation))
-            / step**5
-        )
-        m4_source = "estimated from the measured Simpson defect and inflated"
-    else:
-        m4 = Fraction(0)
-        m4_source = "unavailable: no midpoint right-hand side and no caller bound"
-    hermite_remainder = m4 * step**4 / 384
+    # The Simpson and trapezoid defects are kept, but as DIAGNOSTICS of the
+    # distance from the interpolant to the semi-discrete flow, not as the input
+    # to a fourth-derivative estimate.  Nothing downstream consumes them.
 
     payload: dict[str, object] = {
         "schema_version": 1,
@@ -366,20 +496,27 @@ def build_slab_certificate(
             "encloses_cell_interiors": True,
         },
         "viscosity": float(viscosity),
+        "theorems": {
+            name: {"statement": statement, "proved": True}
+            for name, statement in SLAB_THEOREMS.items()
+        },
+        "interpolant": {
+            "spatial": "tensor-product cubic Hermite, bicubic per cell",
+            "slope_stencil": (
+                "second-order central differences in the interior, one-sided at "
+                "the ends, d_r f(0, z) = 0 for fields even in r; the mixed slope "
+                "is the axial stencil applied to the radial one"
+            ),
+            "temporal": "cubic Hermite from the endpoint states and the exact "
+                        "solver right-hand sides",
+            "enclosure_method": "Bernstein convex hull in space, exact basis "
+                                "ranges in time",
+        },
         "hypotheses": {
-            "H1_cell_lipschitz": {
-                "statement": SLAB_HYPOTHESES["H1_cell_lipschitz"],
-                "inflation": float(cell_inflation),
+            "H3_semidiscrete_to_continuum": {
+                "statement": SLAB_HYPOTHESES["H3_semidiscrete_to_continuum"],
                 "proved": False,
-            },
-            "H2_hermite_remainder": {
-                "statement": SLAB_HYPOTHESES["H2_hermite_remainder"],
-                "fourth_derivative_bound": str(m4),
-                "source": m4_source,
-                "inflation": float(remainder_inflation),
-                "remainder": str(hermite_remainder),
-                "proved": False,
-            },
+            }
         },
         "enclosures": {
             "u1": u1_hull.as_pair(),
@@ -395,24 +532,31 @@ def build_slab_certificate(
                 str(simpson_defect) if simpson_defect is not None else None
             ),
             "green_tail": float(green_tail_bound),
-            "hermite_remainder": str(hermite_remainder),
         },
+        # The endpoint states must lie inside the tube -- but only where the tube
+        # exists.  The enclosure covers the cells inside `interior_radius`, so
+        # comparing against the extremes over the *whole* grid would test the
+        # tube against data it never claimed to bound.
         "endpoint_inclusion": {
-            "u1_start": u1_hull.contains(Fraction(float(np.max(u1_start))))
-            and u1_hull.contains(Fraction(float(np.min(u1_start)))),
-            "u1_end": u1_hull.contains(Fraction(float(np.max(u1_end))))
-            and u1_hull.contains(Fraction(float(np.min(u1_end)))),
-            "omega1_start": omega1_hull.contains(Fraction(float(np.max(omega1_start))))
-            and omega1_hull.contains(Fraction(float(np.min(omega1_start)))),
-            "omega1_end": omega1_hull.contains(Fraction(float(np.max(omega1_end))))
-            and omega1_hull.contains(Fraction(float(np.min(omega1_end)))),
+            name: _nodes_inside(hull, field, cells)
+            for name, hull, field in (
+                ("u1_start", u1_hull, u1_start),
+                ("u1_end", u1_hull, u1_end),
+                ("omega1_start", omega1_hull, omega1_start),
+                ("omega1_end", omega1_hull, omega1_end),
+            )
         },
         "claims": [
-            "Every stated bound holds for the computed space-time object on "
-            "every point of every enclosed cell and every instant of the slab, "
-            "conditional on H1 and H2.",
-            "Nothing here is a statement about the continuous Navier-Stokes "
-            "solution, and nothing here bears on the Clay problem.",
+            "Unconditional: every stated enclosure holds at every point of every "
+            "enclosed cell and every instant of the slab, for the interpolant "
+            "defined by the recorded stencils.  Theorems T1 and T2; no "
+            "hypothesis is used.",
+            "The trapezoid and Simpson defects are diagnostics of the distance "
+            "from that interpolant to the semi-discrete flow.  They are not an "
+            "input to any bound.",
+            "Conditional on H3 only: nothing here is a statement about the "
+            "continuous Navier-Stokes solution, and nothing here bears on the "
+            "Clay problem.",
         ],
     }
     return SlabCertificate(payload)
@@ -476,7 +620,6 @@ def _verify(payload: dict[str, object]) -> dict[str, object]:
     if isinstance(bounds, dict):
         for name in (
             "poisson_residual", "divergence", "trapezoid_local_defect",
-            "hermite_remainder",
         ):
             require(Fraction(str(bounds[name])) >= 0, f"{name} must be nonnegative")
         simpson = bounds.get("simpson_local_defect")
@@ -488,30 +631,47 @@ def _verify(payload: dict[str, object]) -> dict[str, object]:
                 "for a smooth integrand on one step",
             )
 
+    theorems = payload.get("theorems")
+    require(isinstance(theorems, dict), "missing theorems block")
+    if isinstance(theorems, dict):
+        require(
+            set(theorems) == set(SLAB_THEOREMS),
+            "the payload must carry exactly the two named theorems",
+        )
+        for name, entry in theorems.items():
+            require(
+                entry.get("proved") is True,
+                f"{name} is a theorem and must be marked proved",
+            )
+            require(
+                entry.get("statement") == SLAB_THEOREMS[name],
+                f"{name} statement does not match the audited text",
+            )
+
+    interpolant = payload.get("interpolant")
+    require(isinstance(interpolant, dict), "missing interpolant definition")
+    if isinstance(interpolant, dict):
+        require(
+            "slope_stencil" in interpolant and interpolant["slope_stencil"],
+            "the certified object is undefined without its slope stencil",
+        )
+
     hypotheses = payload.get("hypotheses")
     require(isinstance(hypotheses, dict), "missing hypotheses")
     if isinstance(hypotheses, dict):
         require(
             set(hypotheses) == set(SLAB_HYPOTHESES),
-            "the payload must carry exactly the two named hypotheses",
+            "the payload must carry exactly the one named hypothesis",
         )
         for name, entry in hypotheses.items():
             require(
                 entry.get("proved") is False,
-                f"{name} claims to be proved; this module proves neither",
+                f"{name} claims to be proved; this module does not prove it",
             )
             require(
                 entry.get("statement") == SLAB_HYPOTHESES[name],
                 f"{name} statement does not match the audited text",
             )
-    if isinstance(hypotheses, dict) and isinstance(bounds, dict):
-        h2 = hypotheses.get("H2_hermite_remainder", {})
-        m4 = Fraction(str(h2.get("fourth_derivative_bound", "0")))
-        step = Fraction(str(slab["time_step"])) if isinstance(slab, dict) else Fraction(1)
-        require(
-            Fraction(str(bounds["hermite_remainder"])) == m4 * step**4 / 384,
-            "the Hermite remainder does not equal M4 Delta^4 / 384",
-        )
 
     inclusion = payload.get("endpoint_inclusion")
     require(isinstance(inclusion, dict), "missing endpoint inclusion block")

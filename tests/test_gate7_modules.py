@@ -32,8 +32,12 @@ from ns_certificate_lab.picard_continuation import (
 )
 from ns_certificate_lab.slab_certificate import (
     HERMITE_BASIS_RANGES,
+    HERMITE_TO_BERNSTEIN,
     SLAB_HYPOTHESES,
+    SLAB_THEOREMS,
+    bernstein_cell_envelope,
     build_slab_certificate,
+    hermite_slopes,
     verify_slab_certificate,
 )
 
@@ -392,15 +396,101 @@ def test_slab_certificate_verifies_and_encloses_cell_interiors() -> None:
     assert verify_slab_certificate(payload)["verified"]
 
 
-def test_slab_certificate_records_both_hypotheses_as_unproved() -> None:
-    """The point of the module is that these two are *not* theorems, so a
-    payload that quietly drops or promotes one must fail the checker."""
+def test_slab_certificate_separates_theorems_from_the_one_hypothesis() -> None:
+    """The spatial and temporal enclosures are now theorems, not hypotheses.
+
+    A payload that demoted a theorem to a hypothesis, or promoted the remaining
+    semi-discrete-to-continuum gap to a theorem, would be claiming something the
+    module does not establish, in either direction.
+    """
     certificate = _build(*_slab_inputs())
     payload = json.loads(json.dumps(certificate.as_dict(), allow_nan=False))
+    assert set(payload["theorems"]) == set(SLAB_THEOREMS)
+    assert all(entry["proved"] is True for entry in payload["theorems"].values())
     assert set(payload["hypotheses"]) == set(SLAB_HYPOTHESES)
     assert all(
         entry["proved"] is False for entry in payload["hypotheses"].values()
     )
+    # The certified object must be identified, or the theorem is about nothing.
+    assert payload["interpolant"]["slope_stencil"]
+
+
+def test_bernstein_envelope_is_exact_on_a_bilinear_field() -> None:
+    """A field with zero mixed and zero one-sided curvature reduces the bicubic
+    to a bilinear, whose range over the cell is exactly the corner hull.  If the
+    Bernstein assembly were transposed or mis-scaled this would widen."""
+    from fractions import Fraction
+
+    grid = _grid(9, 9)
+    r_mesh, z_mesh = grid.mesh()
+    field = 2.0 * z_mesh          # linear, so every interpolant is exact
+    slope_r, slope_z, slope_rz = hermite_slopes(grid, field, even_at_axis=True)
+    dr, dz = Fraction(float(grid.dr)), Fraction(float(grid.dz))
+    box = bernstein_cell_envelope(field, slope_r, slope_z, slope_rz, 3, 3,
+                                  dr=dr, dz=dz)
+    corners = [float(field[a, b]) for a in (3, 4) for b in (3, 4)]
+    assert float(box.lower) == pytest.approx(min(corners), abs=1e-12)
+    assert float(box.upper) == pytest.approx(max(corners), abs=1e-12)
+
+
+def test_bernstein_envelope_contains_the_interpolant_it_bounds() -> None:
+    """The convex-hull property is the whole proof, so it is checked against a
+    direct evaluation of the interpolant on a fine sub-grid of one cell."""
+    from fractions import Fraction
+
+    grid = _grid(17, 17)
+    r_mesh, z_mesh = grid.mesh()
+    field = np.sin(3.0 * r_mesh) * np.cos(2.0 * z_mesh)
+    slope_r, slope_z, slope_rz = hermite_slopes(grid, field, even_at_axis=False)
+    dr, dz = Fraction(float(grid.dr)), Fraction(float(grid.dz))
+    i, j = 7, 7
+    box = bernstein_cell_envelope(field, slope_r, slope_z, slope_rz, i, j,
+                                  dr=dr, dz=dz)
+
+    def basis(t: float) -> np.ndarray:
+        return np.array([
+            2 * t**3 - 3 * t**2 + 1, t**3 - 2 * t**2 + t,
+            -2 * t**3 + 3 * t**2, t**3 - t**2,
+        ])
+
+    coefficients = np.zeros((4, 4))
+    for a in range(4):
+        for b in range(4):
+            row, col = i + (a >= 2), j + (b >= 2)
+            if a % 2 == 0 and b % 2 == 0:
+                coefficients[a, b] = field[row, col]
+            elif a % 2 == 1 and b % 2 == 0:
+                coefficients[a, b] = float(dr) * slope_r[row, col]
+            elif a % 2 == 0 and b % 2 == 1:
+                coefficients[a, b] = float(dz) * slope_z[row, col]
+            else:
+                coefficients[a, b] = float(dr) * float(dz) * slope_rz[row, col]
+    grid_t = np.linspace(0.0, 1.0, 41)
+    values = np.array([
+        basis(x) @ coefficients @ basis(y) for x in grid_t for y in grid_t
+    ])
+    assert values.min() >= float(box.lower) - 1e-12
+    assert values.max() <= float(box.upper) + 1e-12
+
+
+def test_hermite_to_bernstein_matrix_reproduces_the_basis_relations() -> None:
+    """h00 = B0 + B1, h10 = B1/3, h01 = B2 + B3, h11 = -B2/3.  A transposed or
+    sign-flipped row here would silently break every spatial enclosure."""
+    from fractions import Fraction
+    from math import comb
+
+    t = np.linspace(0.0, 1.0, 501)
+    hermite = np.array([
+        2 * t**3 - 3 * t**2 + 1, t**3 - 2 * t**2 + t,
+        -2 * t**3 + 3 * t**2, t**3 - t**2,
+    ])
+    bernstein = np.array([comb(3, k) * t**k * (1 - t) ** (3 - k) for k in range(4)])
+    transform = np.array(
+        [[float(v) for v in row] for row in HERMITE_TO_BERNSTEIN]
+    )
+    # transform maps Hermite coefficients to Bernstein coefficients, so its
+    # transpose maps the Bernstein basis functions to the Hermite ones.
+    assert np.allclose(transform.T @ bernstein, hermite, atol=1e-12)
 
 
 def test_simpson_defect_is_far_below_the_trapezoid_defect() -> None:
@@ -426,19 +516,27 @@ def test_slab_checker_rejects_a_narrowed_enclosure() -> None:
 def test_slab_checker_rejects_a_forged_proof_claim() -> None:
     certificate = _build(*_slab_inputs())
     payload = json.loads(json.dumps(certificate.as_dict(), allow_nan=False))
-    payload["hypotheses"]["H2_hermite_remainder"]["proved"] = True
+    payload["hypotheses"]["H3_semidiscrete_to_continuum"]["proved"] = True
     verdict = verify_slab_certificate(payload)
     assert not verdict["verified"]
     assert any("proved" in failure for failure in verdict["failures"])
 
 
-def test_slab_checker_rejects_an_inconsistent_remainder() -> None:
-    """The remainder must equal ``M4 Delta^4 / 384``; a payload that inflates
-    ``M4`` while leaving the remainder alone is claiming a tighter tube than
-    its own hypothesis supports."""
+def test_slab_checker_rejects_a_demoted_theorem() -> None:
+    """A payload that marks the Bernstein envelope unproved is understating what
+    was established; the checker must reject that too, not only overstatement."""
     certificate = _build(*_slab_inputs())
     payload = json.loads(json.dumps(certificate.as_dict(), allow_nan=False))
-    payload["hypotheses"]["H2_hermite_remainder"]["fourth_derivative_bound"] = "1"
+    payload["theorems"]["T1_bernstein_cell_envelope"]["proved"] = False
+    assert not verify_slab_certificate(payload)["verified"]
+
+
+def test_slab_checker_rejects_an_undefined_interpolant() -> None:
+    """Without the slope stencil the certified object is not identified, so the
+    theorem statement has no referent."""
+    certificate = _build(*_slab_inputs())
+    payload = json.loads(json.dumps(certificate.as_dict(), allow_nan=False))
+    payload["interpolant"]["slope_stencil"] = ""
     assert not verify_slab_certificate(payload)["verified"]
 
 

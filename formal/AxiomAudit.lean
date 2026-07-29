@@ -6,6 +6,8 @@ import NSSingularity.FiniteModeNoGo
 import NSSingularity.GreenAndCascade
 import NSSingularity.CertificateLayer
 import NSSingularity.TimeDependentGalerkin
+import NSSingularity.ControlODE
+import NSSingularity.L3Generation
 
 /-!
 # Axiom audit (P0 Lean gate)
@@ -104,3 +106,53 @@ open NSSingularity
 -- The packaged Clay restriction.
 #print axioms NSSingularity.FixedBandwidthCandidate.breakdown_times_empty
 #print axioms NSSingularity.FixedBandwidthCandidate.reaches_every_time
+
+-- The control-ODE layer: the Chaplygin-Dini comparison lemma.
+#print axioms NSSingularity.nonpos_of_deriv_le_mul_of_pos
+
+-- HS-6: Gronwall with a time-dependent coefficient, in both forms.
+#print axioms NSSingularity.gronwall_variable_coefficient
+#print axioms NSSingularity.gronwall_variable_coefficient_integral
+
+-- The undamped quadratic control ODE and its explicit blow-up majorant.
+#print axioms NSSingularity.riccati_comparison
+#print axioms NSSingularity.le_quadratic_bound
+
+-- The rough enclosure: the rigorous replacement for the slab certificate's H2.
+#print axioms NSSingularity.clampTo_mem
+#print axioms NSSingularity.clampTo_eq_self
+#print axioms NSSingularity.abs_clampTo_sub_clampTo_le
+#print axioms NSSingularity.roughEnclosure_isPicardLindelof
+#print axioms NSSingularity.exists_roughEnclosure_solution
+#print axioms NSSingularity.roughEnclosure_solution_unique
+
+-- The L^3 generation identity, algebraic core: the chain rule at exponent
+-- three and the transport cancellation.
+#print axioms NSSingularity.hasDerivAt_norm_cube
+#print axioms NSSingularity.hasDerivAt_cube
+#print axioms NSSingularity.transport_eq_one_third_deriv
+
+-- The regularised speed used in place of |u| by the interval certificate.
+#print axioms NSSingularity.eps_le_regSpeed
+#print axioms NSSingularity.norm_le_regSpeed
+#print axioms NSSingularity.regSpeed_le_norm_add
+#print axioms NSSingularity.contDiff_regSpeed
+#print axioms NSSingularity.hasDerivAt_regSpeed
+
+-- Signs, the Kato split without division by the speed, and the scaling
+-- criterion that defines Re_crit.
+#print axioms NSSingularity.viscous_contribution_nonpos
+#print axioms NSSingularity.kato_split_le
+#print axioms NSSingularity.positive_generation_forces_pressure
+#print axioms NSSingularity.generation_pos_iff_reynolds_gt
+
+-- The pure-swirl no-go: divergence freedom and orthogonality to the gradient
+-- of every axisymmetric scalar.
+#print axioms NSSingularity.swirl_cartesianDiv_eq_zero
+#print axioms NSSingularity.swirl_dot_grad_axisymmetric_eq_zero
+
+-- The equality case of the no-go.
+#print axioms NSSingularity.eventually_eq_of_fderiv_eq_zero_on
+#print axioms NSSingularity.eq_of_locallyConstant_of_ne_zero
+#print axioms NSSingularity.eq_zero_of_locallyConstant_of_tendsto_cocompact
+#print axioms NSSingularity.pure_swirl_equality_case
