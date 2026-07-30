@@ -339,6 +339,15 @@ class MixedFamily:
     stream: tuple[GeneratorComponent, ...]
     reference_length: float
 
+    #: Whether this family may be treated as a Clay candidate.  ``True`` here
+    #: because every generator is ``C^\infty``.  A finite-``C^k`` surrogate
+    #: basis — a spline, say — must set this ``False``: such objects may drive
+    #: the interval checker, an HS-5 prototype or an optimisation surrogate, and
+    #: may be *mollified into* a smooth candidate, but they are never themselves
+    #: candidates, and :func:`ns_certificate_lab.l3_optimizer.require_clay_admissible`
+    #: enforces that at every entry point that scores or certifies a datum.
+    clay_admissible: bool = True
+
     def __post_init__(self) -> None:
         if not self.swirl and not self.stream:
             raise ValueError("a family needs at least one generator component")

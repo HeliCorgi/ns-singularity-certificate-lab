@@ -599,13 +599,17 @@ This explains the outcome of Gate 7 completely, in the following exact sense.  A
 preregistered whole-space families S, A and H are pure swirls (`u^r = u^z = 0` in the
 datum, meridional flow generated only through the elliptic solve at order `t`).  The
 eighteen runs swept `Re ∈ {10, 25, 50, 100, 200, 400}` looking for growth of the critical
-norm.  By the corollary the initial rate was negative in every one of them **before any
+norm.  By the corollary the **initial** rate was non-positive in every one of them **before any
 computation was performed**, and by the scaling analysis of §7 the sweep in `Re` was
-searching along a direction that could not possibly change that sign.  The uniform decay
-recorded in `outputs/tau_continuation_gate7_v1/` was not an experimental finding about
-Navier–Stokes; it was a consequence of the choice of data class.  Leaving that class
-requires meridional flow **in the datum**, which is what
-`ns_certificate_lab.mixed_initial_data` exists to supply.
+searching along a direction that could not possibly change that initial sign.
+
+What the theorem does *not* cover: pure swirl is not preserved, meridional flow is
+generated at order `t` through vortex stretching, and from `t = 0^+` onward the pressure
+channel is active with indefinite sign.  The **sustained** decrease over `0 < τ ≤ 1`
+recorded in `outputs/tau_continuation_gate7_v1/` is therefore a numerical observation —
+consistent with the theorem, not implied by it.  What the theorem does explain is why no
+run could *start* upward.  Leaving the excluded class requires meridional flow **in the
+datum**, which is what `ns_certificate_lab.mixed_initial_data` exists to supply.
 
 ---
 

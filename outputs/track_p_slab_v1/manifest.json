@@ -1,0 +1,65 @@
+{
+  "payloads": {
+    "config.snapshot.json": {
+      "bytes": 565,
+      "sha256": "839d6d14ed723bd943a706b30fb3c0258a3cc93e13534a47168f787f3927feee"
+    },
+    "preregistration.json": {
+      "bytes": 392,
+      "sha256": "b1a142a05df5f8f93b9a1735db20d826fb0051caf84ada4c109610b975424552"
+    },
+    "slab_P1_h1024.json": {
+      "bytes": 16817,
+      "sha256": "1a3c1152637ecfa3add2f5302b10d0a152d9f2a767e13dba1799d6a592fa1d86"
+    },
+    "slab_P1_h2048.json": {
+      "bytes": 16809,
+      "sha256": "b4bd09e2159997d2a46fa5f0dac504a5f205b7cf5e4ce9169ab6c861828fc28a"
+    },
+    "slab_P1_h256.json": {
+      "bytes": 16829,
+      "sha256": "0ec6594e4f82a2173e8a1727d0ec352f60913f4fd8369d275338ca0dd382cf6e"
+    },
+    "slab_P1_h512.json": {
+      "bytes": 16830,
+      "sha256": "f350a0aaa09810616ddacd4bb1d445143a34b5482af0b7e918a99582baa00130"
+    },
+    "slab_P2_h1024.json": {
+      "bytes": 17236,
+      "sha256": "de0a43a60ce6d0790c15837b75213ecb8309ed634a5d03b63c85759b8a1e7737"
+    },
+    "slab_P2_h2048.json": {
+      "bytes": 17221,
+      "sha256": "6e780179e5f92d2ef35a4ca8c0a7f99ce5b0b5e3452f86d261d60b8bfafc3bb7"
+    },
+    "slab_P2_h256.json": {
+      "bytes": 17226,
+      "sha256": "75a85d1da3a3470873f339357d78a0c1d1f33fb7d48b2ecb384ee4876e5db111"
+    },
+    "slab_P2_h512.json": {
+      "bytes": 17227,
+      "sha256": "469be18583e58462083c4b52db067aab5bbfa912a5eff350dc05413f6090ff00"
+    },
+    "slab_P3_h1024.json": {
+      "bytes": 17114,
+      "sha256": "0742f60a43f0d8df7346c31e00e93bbdc55c94f06d65b2cc103a7b99b5f6754d"
+    },
+    "slab_P3_h2048.json": {
+      "bytes": 17110,
+      "sha256": "9b525049095af342f695e83822cb228873b5db817c4d5af002e0c157dbaf36a5"
+    },
+    "slab_P3_h256.json": {
+      "bytes": 17060,
+      "sha256": "94d1f9855898c226c0cf13bc50b92e0d7f21e1109cc7e2c7e733a8bcb789cbf0"
+    },
+    "slab_P3_h512.json": {
+      "bytes": 17128,
+      "sha256": "c77eb28fce396743ec448f43028b62925c9437123906fa4e8686bd12de07b296"
+    },
+    "summary.json": {
+      "bytes": 6510,
+      "sha256": "f5462ab96f1df1504a9ae1e2745423f56c21dce1cc3812aaf191d180af253420"
+    }
+  },
+  "schema_version": 1
+}

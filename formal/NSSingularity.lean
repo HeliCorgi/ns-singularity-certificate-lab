@@ -10,3 +10,5 @@ import NSSingularity.CertificateLayer
 import NSSingularity.TimeDependentGalerkin
 import NSSingularity.L3Generation
 import NSSingularity.ControlODE
+import NSSingularity.TrackPFourier
+import NSSingularity.GaussianTransfer

@@ -36,9 +36,12 @@ features of it drive everything here.
 
 That last point is the **pure-swirl no-go**: no purely azimuthal initial datum
 can increase the global critical norm at ``t = 0``.  Every family the repository
-has run so far — S, A, H — is a pure swirl, so Gate 7's uniform decay was
-forced.  It is a statement about ``t = 0`` only and says nothing about later
-times; see :func:`pure_swirl_no_go`.
+has run so far — S, A, H — is a pure swirl.  What the theorem forces is only
+the *initial* sign ``F'(0) \le 0``: vortex stretching generates meridional flow
+immediately, after which the pressure channel switches on with indefinite sign
+and the theorem says nothing.  The sustained decay Gate 7 observed over
+``0 < \tau \le 1`` is a numerical observation — consistent with the theorem,
+not implied by it.  See :func:`pure_swirl_no_go`.
 
 Numerical form
 --------------

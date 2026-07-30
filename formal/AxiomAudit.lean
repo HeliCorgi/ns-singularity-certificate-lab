@@ -8,6 +8,8 @@ import NSSingularity.CertificateLayer
 import NSSingularity.TimeDependentGalerkin
 import NSSingularity.ControlODE
 import NSSingularity.L3Generation
+import NSSingularity.TrackPFourier
+import NSSingularity.GaussianTransfer
 
 /-!
 # Axiom audit (P0 Lean gate)
@@ -156,3 +158,45 @@ open NSSingularity
 #print axioms NSSingularity.eq_of_locallyConstant_of_ne_zero
 #print axioms NSSingularity.eq_zero_of_locallyConstant_of_tendsto_cocompact
 #print axioms NSSingularity.pure_swirl_equality_case
+
+-- Track P (periodic lane), F1: the Leray multiplier as finite algebra.
+#print axioms NSSingularity.inner_leray_eq_zero
+#print axioms NSSingularity.leray_eq_self_of_inner_eq_zero
+#print axioms NSSingularity.leray_leray
+#print axioms NSSingularity.inner_leray_left_eq_inner_leray_right
+#print axioms NSSingularity.norm_leray_le
+
+-- Track P, F2: a single Fourier mode with transverse amplitude is
+-- divergence free as a classical field.
+#print axioms NSSingularity.slotDivergence_cosMode
+#print axioms NSSingularity.slotDivergence_sinMode
+
+-- Track P, F3: finite trigonometric polynomials are C-infinity.
+#print axioms NSSingularity.contDiff_trigPolynomial
+
+-- Track P, F4: the fixed-band / finite-band distinction, its one-line
+-- implication, its counterexample, and the restated scope of the no-go.
+#print axioms NSSingularity.FixedBandTrajectory.finiteBandDatum
+#print axioms NSSingularity.exists_finiteBandDatum_not_fixedBandTrajectory
+#print axioms NSSingularity.FixedBandwidthCandidate.fixedBand_scope
+
+-- Track P, F5: the homogeneous-norm ladder for weights at least one.
+#print axioms NSSingularity.weighted_sum_succ_mono
+#print axioms NSSingularity.weighted_sum_pow_mono
+
+-- Track P, F6: the slab composition shell through riccati_comparison.
+#print axioms NSSingularity.trackP_slab_error_le
+
+-- G1: the Gaussian-Hermite class is closed under differentiation, with the
+-- witness polynomial exhibited.
+#print axioms NSSingularity.hasDerivAt_poly_mul_gaussian
+#print axioms NSSingularity.gaussianDerivPoly_eval
+#print axioms NSSingularity.hasDerivAt_poly_gaussian
+
+-- G2: the pointwise J-continuity bricks of the spline-to-smooth transfer.
+#print axioms NSSingularity.abs_cube_sub_cube_le
+#print axioms NSSingularity.abs_norm_cube_sub_norm_cube_le
+#print axioms NSSingularity.norm_smul_sub_smul_le
+
+-- G3: the Track-P torus specialisation of the Riccati comparison.
+#print axioms NSSingularity.torus_control_bound

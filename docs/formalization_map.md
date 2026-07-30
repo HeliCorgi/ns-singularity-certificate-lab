@@ -522,3 +522,28 @@ F-7c 追加後は 8664 jobs で成功 —
 3. 浮動小数点→厳密データ変換(二進有理数化)の器は `CertificateFormat.lean`
    設計時に固定する。発見コード側の出力仕様(NPZ v2 schema)からの変換器は
    独立実装とする。
+
+
+### Track P / Gaussian transfer 層 — **形式化済み**(2026-07-30 第 9 便)
+
+- **ファイル:** `formal/NSSingularity/TrackPFourier.lean`(14 定理)、
+  `formal/NSSingularity/GaussianTransfer.lean`(7 定理)。
+- **TrackPFourier:** Leray 乗数の有限代数(直交性・冪等性・自己共役性・縮小性、
+  `k = 0` でも Lean の `0/0 = 0` 規約で恒等写像となり全主張が成立)、
+  単一モードの slot-divergence 定理(`k·a = 0` ⇒ 発散ゼロ)、有限三角多項式の
+  `ContDiff ℝ ⊤`、**固定帯域軌道と有限帯域初期値の区別**
+  (`FixedBandTrajectory → FiniteBandDatum` は自明、逆は反例
+  `u t = (1, t)` で棄却: `exists_finiteBandDatum_not_fixedBandTrajectory`)、
+  重み付き和の Ḣ 梯子単調性、`trackP_slab_error_le`(control ODE 層との合成)。
+- **GaussianTransfer:** 多項式×Gaussian の微分閉包(witness 多項式
+  `p' − 2αXp` を明示)、J 連続性の有限不等式
+  (`|a³−b³| ≤ 3max²|a−b|`、`|‖u‖³−‖v‖³| ≤ 3(‖u‖+‖v‖)²‖u−v‖`、
+  `‖‖u‖•u−‖v‖•v‖ ≤ (‖u‖+‖v‖)‖u−v‖`)、`torus_control_bound`
+  (Riccati 比較の Track-P 形への特殊化)。
+- **形式化していないこと(モジュール docstring に記録):** H⁴ エネルギー評価
+  そのもの(mathlib にトーラス Sobolev/Fourier 等距がない; F6 では仮定として
+  消費)、Galerkin tail の作用素恒等式、Ȧ 格子和(Python 層の有限有理計算)、
+  EXT-P1/2/3(古典外部定理; **Lean 公理としては決して挿入しない** — 全 Lean
+  定理は記述どおり無条件に真)。
+- `lake build` 8668 jobs 成功、`#print axioms` 全 96 定理が
+  `[propext, Classical.choice, Quot.sound]` のみ。

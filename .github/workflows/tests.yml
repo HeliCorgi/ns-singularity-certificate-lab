@@ -79,3 +79,9 @@ jobs:
           python -m experiments.run_tau_continuation
           --config configs/tau_continuation_gate7.json
           --output-dir outputs/ci-whole-space-gate7
+
+      - name: Replay Track P slab certificates
+        run: >-
+          python -m experiments.run_track_p_slab
+          --config configs/track_p_slab.json
+          --output-dir outputs/ci-track-p-slab

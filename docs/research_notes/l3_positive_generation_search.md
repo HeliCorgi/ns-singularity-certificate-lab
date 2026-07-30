@@ -21,8 +21,14 @@ swirls, and for a pure swirl
   and `u₀·∇p = u^θ r⁻¹∂_θ p = 0` pointwise;
 * the viscous contribution is a sum of two nonnegative integrands.
 
-So `J(u₀) := F'(0) ≤ 0` was forced, with equality only for `u₀ ≡ 0`.  Gate 7's
-uniform decay is a theorem, not a measurement.
+So `J(u₀) := F'(0) ≤ 0` was forced, with equality only for `u₀ ≡ 0`.
+
+**What the theorem covers, precisely.**  It guarantees only that the initial
+generation rate is non-positive.  Pure swirl is not preserved: vortex stretching
+generates meridional flow immediately, the pressure channel switches on at
+`t = 0⁺` with indefinite sign, and the theorem then says nothing.  The sustained
+decrease Gate 7 observed across `0 < τ ≤ 1` in all eighteen runs is a
+**numerical observation** — consistent with the theorem, not implied by it.
 
 This is a **kill**, not support: a pure swirl has `u ⊥ ∇|u|` identically, so it
 is the exact zero of the only channel that can produce growth.
@@ -206,3 +212,33 @@ Both are separate experiments and neither is done.
 * Even `J > 0` throughout a short interval gives bounded growth, not divergence.
 * Viscosity is fixed and positive everywhere; no time-dependent or two-stage
   protocol appears.
+
+
+## 8. Gate 9 update (2026-07-30)
+
+Three changes recorded after this note was written.
+
+* **The certificate basis changed.**  Section 6 diagnosed the flat-bump
+  enclosures as structurally unfixable by subdivision; the basis is now
+  Gaussian–Hermite (`gaussian_hermite.py`,
+  [`gaussian_hermite_basis.md`](gaussian_hermite_basis.md)).  Measured effect:
+  the divergence enclosure went from ±1.45e2 around an exact zero (gradient
+  scale 5e-2) to ±0.38 on a 1/8-cell at gradient scale ~1, and the rigorous
+  viscous lower bound from 47 orders of magnitude off to within a factor 7 of
+  the true value.
+* **The retried `J > 0` interval certificate still does not close.**  With the
+  enclosure catastrophe gone, the remaining obstacle is the *product* of the
+  discrete-pressure corner hull with the signed-flux enclosure: margin
+  −2464 → −266 → −47 → −17 under refinement (9×17 → 33×65, sub=2), converging
+  roughly linearly toward the barely-positive float value (+3.5e-3 at the
+  favourable seed), i.e. about 2⁷ more linear refinement than is practical.
+  The exterior Gaussian tails are *not* the obstacle (≤3.6e-6 viscous at box
+  extent 4).  Recorded next step: evaluate the pressure term as
+  `−3∫|u|u·∇p_h` with `∇p_h` an exact linear combination of nodal values,
+  instead of `3∫p_h g` with the wide `g` enclosure.  No candidate is
+  promoted; that remains the rule.
+* **The spline rule became a guard.**  `require_clay_admissible` in
+  `l3_optimizer.py` refuses to score or certify any family with
+  `clay_admissible = False`; finite-C^k surrogates are tools (checker
+  development, HS-5 prototyping, optimisation, mollification sources), never
+  candidates.

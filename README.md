@@ -244,6 +244,20 @@ python -m experiments.run_whole_space_gate6 --config configs/whole_space_gate6.j
 **2 つの前登録基準は不合格として記録されます**
 ([docs/whole_space_transition.md](docs/whole_space_transition.md))。
 
+### 13.5 Track P 周期スラブ証明書(数分)
+
+```console
+python -m experiments.run_track_p_slab --config configs/track_p_slab.json --output-dir outputs/track-p-replay
+```
+
+周期 T³ 上の有理 Fourier 初期値 3 族(P1/P2/P3)について、厳密有理数演算で
+Galerkin 軌道の Picard 包含・厳密な連続 NS 残差(= Galerkin tail)・H⁴ control
+不等式・control ODE 管を組み立て、「真の周期強解がスラブ全体に存在し
+‖u−u_a‖_Ḣ⁴ ≤ R(t)」の条件付き証明書(古典外部定理 EXT-P1/P2/P3 は忠実記録、
+Lean 公理化なし)を 12 スラブ分生成・独立検査します
+([docs/research_notes/track_p_periodic.md](docs/research_notes/track_p_periodic.md))。
+**これは特異点証明ではなく、軌道近傍の正則性の証明です。**
+
 ### 14. 全空間 Gate 7(Picard 領域からの離脱・τ/Re 継続・時空スラブ証明書、数分)
 
 ```console

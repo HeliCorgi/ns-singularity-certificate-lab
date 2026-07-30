@@ -1,0 +1,316 @@
+{
+  "certificate": "torus_slab_aposteriori",
+  "claims": [
+    "Rigorous and unconditional: the datum checks, the Picard enclosure of the finite-dimensional Galerkin trajectory over the slab, every constant of the control inequality as a bound valid on the whole slab, and the scalar control-ODE tube.",
+    "Conditional on EXT-P1, EXT-P2, EXT-P3 (classical, named, never axiomatised in Lean): a strong periodic solution exists on the slab with the stated H4-dot and H3 distances to the trajectory.",
+    "This certifies regularity near a computed trajectory.  It is not a singularity result, and nothing here bears on the Clay problem."
+  ],
+  "conclusion": {
+    "conditional_on": [
+      "EXT-P1",
+      "EXT-P2",
+      "EXT-P3"
+    ],
+    "distance_h3": "1484027517976159999093/288230376151711744000000",
+    "distance_h4_dot": "2098731193406599/1152921504606846976",
+    "proved": true,
+    "sqrt8_upper": "707107/250000",
+    "statement": "a strong periodic Navier-Stokes solution exists on the whole slab and its H4-dot distance to the certified Galerkin trajectory is at most distance_h4_dot at every instant; the H^3 distance is at most distance_h3"
+  },
+  "constants": {
+    "K1": "230543291993859855315626557877088163876550328916603273150410313708550434803769184468992474103585667/2135987035920910082395021706169552114602704522356652769947041607822219725780640550022962086936576",
+    "K2": "6058551239489034056197092119929884755170233073240949434645346122506961526233697328444427787242336127349678436508764571/39402006196394479212279040100143613805079739270465446667948293404245721771497210611414266254884915640806627990306816",
+    "adot_squared_upper": "76184872701079715181675290854271046577767850279920834245478862735827310395253148336059243821833384010278084860445653285479323997724909674456691440984767646957824012853378956311232422337936067110164795508084856028589632026049440517997619390453487892871578736976771595641444401152577681566091601777456396323939491513384888903716899159372392744873758435248643407595746754614333182632302121228592885583850578194940825000141633717118384243905410363115755048764572869076813405237344190347438775095878383015986172665420674470082027318435078686179248640605009877457183796395125787983321344084210540288806294036746479049623953960753281558110601909360036863/4397916284045797685774663589135371684822972152833744047893705701890832102901574501161485890273878860282748476644206338307889430938129192413677792128643695179565173840910915213457934358485130999820290054247025306881313523497434510517322002481171633137064710634978783689377027669739906243591998938035743842918710389592872397099809947971261361495230249322030485180979898405797216733723400181709892030922467434509357359981189064398895616916612956204987540695678565475252926170735400499173029479905793401944551420312750444574150250865811321998981700446295112013777183472109092505854569034542708350253925322659669163401703655736653064407616855040000000",
+    "adot_upper": "76776907740002717555/18446744073709551616",
+    "derivation": "d+R/dt <= (-nu + 9(K1+K2)) R + 135 Adot R^2 + ||e||_{H4-dot}, R(0) = 0; K1 = 4M1+6M2+4M3+M4, K2 = M5+4M4+6M3+4M2+M1; the 9 is sqrt(81) from the multinomial weights of the Hdot4 form, the binomials are multi-Vandermonde, and 135 = 9 x 15 with 15 = sum_{j=1..4} C(4,j).  Full derivation: docs/research_notes/track_p_periodic.md",
+    "lattice_cut": 20,
+    "linear_coefficient": "463989894513363460461539875171573087541466529811880889115759350678832785250314327781011187168508210393156883687542206527/197010030981972396061395200500718069025398696352327233339741467021228608857486053057071331274424578204033139951534080",
+    "quadratic_coefficient": "10364882544900366869925/18446744073709551616",
+    "residual_h4_sq_upper": "280670128900783977457/9223372036854775808",
+    "residual_h4_upper": "101759029446706426267/18446744073709551616",
+    "sup_derivative_bounds_M1_to_M5": [
+      "1750139904790720146925610910599417071943/340282366920938463463374607431768211456",
+      "41160484816655582428979103536964861631483431802205412873059/6277101735386680763835789423207666416102355444464034512896",
+      "1024906084405317260965050040814117063171436956924868510240003743261586393307883/115792089237316195423570985008687907853269984665640564039457584007913129639936",
+      "26938222923134557231830885850804296605868022753551932951825222249717155834369064986676955072338819/2135987035920910082395021706169552114602704522356652769947041607822219725780640550022962086936576",
+      "742189854874703672751664254510438193942990072711849438765207716423733296001780227271833069528804893281183395306801563/39402006196394479212279040100143613805079739270465446667948293404245721771497210611414266254884915640806627990306816"
+    ]
+  },
+  "control_certificate": {
+    "certificate": "scalar_control_ode_slab",
+    "claims": [
+      "Rigorous and unconditional, given the coefficient intervals as inputs: the scalar initial value problem has a solution on the whole certified slab, that solution is unique for each admissible coefficient selection, and it stays inside the recorded rough box.",
+      "Rigorous, given the same inputs and a coefficient selection constant on the slab: the solution stays inside the recorded Taylor tube, which is the Bernstein hull of the truncated Taylor polynomial plus an interval remainder evaluated on the rough box.",
+      "Conditional on HS-5: if the coefficient intervals bound the true Sobolev-norm dynamics then the true norm obeys the same enclosures.  That step is not proved anywhere in this repository.",
+      "This certifies a scalar control ODE.  It is not a regularity result, it is not a singularity result, and nothing here bears on the Clay problem."
+    ],
+    "coefficients": {
+      "forcing": [
+        "0",
+        "101759029446706426267/18446744073709551616"
+      ],
+      "linear": [
+        "463989894513363460461539875171573087541466529811880889115759350678832785250314327781011187168508210393156883687542206527/197010030981972396061395200500718069025398696352327233339741467021228608857486053057071331274424578204033139951534080",
+        "463989894513363460461539875171573087541466529811880889115759350678832785250314327781011187168508210393156883687542206527/197010030981972396061395200500718069025398696352327233339741467021228608857486053057071331274424578204033139951534080"
+      ],
+      "quadratic": [
+        "10364882544900366869925/18446744073709551616",
+        "10364882544900366869925/18446744073709551616"
+      ]
+    },
+    "initial": [
+      "0",
+      "0"
+    ],
+    "label": "track_p_P2",
+    "limitations": {
+      "C1_frozen_coefficients": {
+        "closed": false,
+        "statement": "The rough box holds for every measurable coefficient selection inside the stated intervals, because its proof uses nothing about the right-hand side beyond the bound F(B).  The tight Taylor tube is proved for selections that are constant on the slab: the Taylor recurrence differentiates the vector field, and a time-varying coefficient would contribute derivatives of that coefficient which the interval data does not carry."
+      },
+      "HS5_coefficients_to_pde": {
+        "closed": false,
+        "statement": "The coefficient intervals a, b, e are an input, not a conclusion.  Deriving them from a computed trajectory so that they provably dominate the true Sobolev-norm dynamics is HS-5, and HS-5 is not closed.  What is certified here is the implication: if the control ODE dominates the true dynamics then the true norm stays inside the stated tube for the stated time."
+      },
+      "R3_has_no_spectral_gap": {
+        "closed": false,
+        "statement": "The -nu R damping term of the periodic-domain control ODE is absent here.  On the torus the Laplacian spectrum on zero-mean fields starts at |k| = 1 and supplies that term; on R^3 the spectrum is [0,infinity) and it vanishes.  The existence interval certified here is therefore strictly shorter than a periodic-domain analogue would give, and quoting a torus result for the whole space would be wrong."
+      }
+    },
+    "picard": {
+      "gronwall_growth_factor": [
+        "16407483485576640509/9223372036854775808",
+        "32814966971153281019/18446744073709551616"
+      ],
+      "lipschitz_bound_on_box": "464802427651979575140520144762180857101815356329342777096378229577748260786273625882928418317086573558581712324791742527/197010030981972396061395200500718069025398696352327233339741467021228608857486053057071331274424578204033139951534080",
+      "lipschitz_times_step": "464802427651979575140520144762180857101815356329342777096378229577748260786273625882928418317086573558581712324791742527/806953086902158934267474741250941210728033060259132347759581048918952381880262873321764172900043072323719741241483591680",
+      "statement": "If B is a compact interval containing the initial interval [R_0] and [R_0] + [0,h] F(B) is contained in B, where F(B) = a B + b B^2 + e is evaluated in interval arithmetic, then for every selection of coefficients inside a, b, e and every initial value in [R_0] the initial value problem has a solution on the whole of [t_n, t_n + h] and that solution stays in B.  The Picard operator maps C([t_n,t_n+h], B) into itself; B is nonempty, convex, closed and bounded; the right-hand side is a polynomial and hence Lipschitz on B; and in the Bielecki norm the operator is a contraction for every h, so the conclusion carries no smallness hypothesis."
+    },
+    "precision_bits": 64,
+    "schema_version": 1,
+    "self_mapping": {
+      "attempts": 165,
+      "box": [
+        "-67701424606506607/18446744073709551616",
+        "67701424606506607/18446744073709551616"
+      ],
+      "doublings": 0,
+      "field_on_box": [
+        "-4982737538953645987/576460752303423488",
+        "261346241988013820421/18446744073709551616"
+      ],
+      "image": [
+        "-1216488656971105/576460752303423488",
+        "63805234860354937/18446744073709551616"
+      ],
+      "inflation": "138652517594125529499/37778931862957161709568",
+      "proved": true,
+      "statement": "If B is a compact interval containing the initial interval [R_0] and [R_0] + [0,h] F(B) is contained in B, where F(B) = a B + b B^2 + e is evaluated in interval arithmetic, then for every selection of coefficients inside a, b, e and every initial value in [R_0] the initial value problem has a solution on the whole of [t_n, t_n + h] and that solution stays in B.  The Picard operator maps C([t_n,t_n+h], B) into itself; B is nonempty, convex, closed and bounded; the right-hand side is a polynomial and hence Lipschitz on B; and in the Bielecki norm the operator is a contraction for every h, so the conclusion carries no smallness hypothesis.",
+      "verdict": "self-mapping proved after 0 doubling(s) and 4 halving(s) of the slab length"
+    },
+    "slab": {
+      "halvings": 4,
+      "requested_step": "1/256",
+      "step": "1/4096",
+      "time_end": 0.000244140625,
+      "time_start": 0.0
+    },
+    "tube": {
+      "bernstein_coefficients": [
+        [
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "2070292754042693/9223372036854775808"
+        ],
+        [
+          "0",
+          "4378665002953597/9223372036854775808"
+        ],
+        [
+          "0",
+          "1739844580629605/2305843009213693952"
+        ],
+        [
+          "0",
+          "19706565935495683/18446744073709551616"
+        ],
+        [
+          "0",
+          "3277431711817849/2305843009213693952"
+        ],
+        [
+          "0",
+          "8394790178375061/4611686018427387904"
+        ]
+      ],
+      "bernstein_property": "The Bernstein basis of degree p on [0,1] is nonnegative and sums to one, so a polynomial written in that basis takes, at every point, a convex combination of its Bernstein coefficients.  Its range on [0,h] is therefore contained in the hull of the coefficients b_j, with no derivative bound, no subdivision and no hypothesis.  Cargo and Shisha, J. Res. Nat. Bur. Standards 70B (1966) 79-81.",
+      "order": 6,
+      "polynomial_enclosure": [
+        "0",
+        "8394790178375061/4611686018427387904"
+      ],
+      "refined_tube": [
+        "-159543704809/9223372036854775808",
+        "2098731193406599/1152921504606846976"
+      ],
+      "refined_tube_width": "16790009090957601/9223372036854775808",
+      "remainder": [
+        "-159543704809/9223372036854775808",
+        "134595251335/4611686018427387904"
+      ],
+      "remainder_coefficient": [
+        "-771506016400353976038285275720297899/2305843009213693952",
+        "5206901585164803497049776253070092557/9223372036854775808"
+      ],
+      "rough_box_width": "67701424606506607/9223372036854775808",
+      "taylor_coefficients": [
+        [
+          "0",
+          "0"
+        ],
+        [
+          "0",
+          "101759029446706426267/18446744073709551616"
+        ],
+        [
+          "0",
+          "119829333317246248200565/18446744073709551616"
+        ],
+        [
+          "0",
+          "94177502405785120501768849/18446744073709551616"
+        ],
+        [
+          "0",
+          "55636449942088944372295713239/18446744073709551616"
+        ],
+        [
+          "0",
+          "13205385782711793786562594727145/9223372036854775808"
+        ],
+        [
+          "0",
+          "10538990459643993501125713604846467/18446744073709551616"
+        ]
+      ],
+      "tightness_ratio": 0.2480008240379621,
+      "tube": [
+        "-159543704809/9223372036854775808",
+        "2098731193406599/1152921504606846976"
+      ],
+      "tube_width": "16790009090957601/9223372036854775808"
+    }
+  },
+  "control_verified": {
+    "failures": [],
+    "proves_existence": true,
+    "verified": true
+  },
+  "datum": {
+    "divergence_free_exact": true,
+    "energy": "131/288",
+    "enstrophy": "95/72",
+    "h4_norm_sq": "227/18",
+    "mean_zero": true,
+    "modes": {
+      "(0, 0, 1)": {
+        "cos": [
+          "1/3",
+          "0",
+          "0"
+        ],
+        "sin": [
+          "0",
+          "1/3",
+          "0"
+        ]
+      },
+      "(0, 1, 0)": {
+        "cos": [
+          "0",
+          "0",
+          "1/2"
+        ],
+        "sin": [
+          "1/2",
+          "0",
+          "0"
+        ]
+      },
+      "(1, 0, 0)": {
+        "cos": [
+          "0",
+          "1/2",
+          "0"
+        ],
+        "sin": [
+          "0",
+          "0",
+          "1/2"
+        ]
+      },
+      "(1, 1, 0)": {
+        "cos": [
+          "0",
+          "0",
+          "1/2"
+        ],
+        "sin": [
+          "1/4",
+          "-1/4",
+          "0"
+        ]
+      },
+      "(1, 1, 1)": {
+        "cos": [
+          "1/6",
+          "-1/6",
+          "0"
+        ],
+        "sin": [
+          "1/6",
+          "1/6",
+          "-1/3"
+        ]
+      }
+    },
+    "smoothness": "a finite trigonometric polynomial, hence C-infinity (Lean: TrackPFourier.lean)"
+  },
+  "distinction": {
+    "finite_band_datum": "NOT excluded: the true solution leaves the band immediately (the residual below is nonzero); Track P bounds its distance to the band-limited trajectory instead",
+    "fixed_band_trajectory": "excluded by the finite-mode no-go (Track F): a trajectory that REMAINS in the band for all time cannot blow up"
+  },
+  "external_theorems": {
+    "EXT-P1": {
+      "axiomatised_in_lean": false,
+      "proved": false,
+      "statement": "Local existence and uniqueness of a strong solution of the incompressible Navier-Stokes equations on the torus T^3 in H^4, for mean-zero divergence-free H^4 initial data and fixed positive viscosity.  Classical: Kato's quasi-linear theory; Temam, Navier-Stokes Equations, Ch. III (periodic H^m theory, m >= 2)."
+    },
+    "EXT-P2": {
+      "axiomatised_in_lean": false,
+      "proved": false,
+      "statement": "The strong solution of EXT-P1 satisfies u in C([0,T]; H^4) cap C^1([0,T]; H^2), the H^4 energy estimate for the difference with a smooth trajectory holds, and t -> ||w(t)||_{H^4-dot} admits a right Dini derivative bounded by that estimate.  Standard regularity of strong solutions."
+    },
+    "EXT-P3": {
+      "axiomatised_in_lean": false,
+      "proved": false,
+      "statement": "H^4 continuation: the strong solution extends in time for as long as its H^4 norm remains finite.  Classical continuation criterion for periodic strong solutions."
+    }
+  },
+  "family": "P2",
+  "galerkin_box": {
+    "doublings": 0,
+    "halvings": 0,
+    "proved": true,
+    "radius": "582865871773461527/295147905179352825856",
+    "step": "1/256",
+    "worst_margin": "423396141729764903/295147905179352825856"
+  },
+  "galerkin_cutoff_sq": 4,
+  "residual_note": "the residual is the EXACT continuous Navier-Stokes residual of the trajectory -- a finite trigonometric polynomial computed in rational arithmetic with no spatial discretisation; the periodic HS-5 gap closes by construction",
+  "schema_version": 1,
+  "viscosity": "1/10"
+}

@@ -320,7 +320,20 @@ def build_generation_certificate(
     remedy.
     """
     from .l3_generation import AxisymmetricPressureSolver, l3_generation_rate
+    from .l3_optimizer import require_clay_admissible
 
+    require_clay_admissible(family)
+    # Deprecation, recorded rather than silent: this flat-bump builder uses
+    # NATURAL interval arithmetic on chi-bump generators, whose chi'' carries
+    # (1-sigma)^{-4} at the support edge; the measured result was ~60 orders of
+    # magnitude of dependency widening and no certifiable margin
+    # (docs/research_notes/l3_positive_generation_search.md section 6).  It is
+    # retained solely so that negative result stays reproducible.  New
+    # candidate certification must use the Gaussian-Hermite route
+    # (interval_gaussian.build_gaussian_generation_certificate); if the
+    # flat-bump basis is ever certified again the recorded plan is a Taylor
+    # model with the y = 1/(1-s) substitution evaluating y^m e^{-y} as a unit,
+    # never the natural intervals below.
     if viscosity <= 0.0:
         raise ValueError("a Clay candidate requires a fixed positive viscosity")
     if grid.periodic_z:
@@ -455,6 +468,11 @@ def build_generation_certificate(
             "pressure_error_threshold": str(threshold),
             "margin_is_positive": bool(margin > 0),
             "cells_enclosed": cells,
+            "basis_deprecation": (
+                "flat-bump natural-interval enclosures; retained only to keep "
+                "the recorded negative result reproducible -- new candidate "
+                "certification must use the Gaussian-Hermite route"
+            ),
             "widest_flux_enclosure": str(widest_flux),
             "divergence_excursion": str(divergence_excursion),
         },

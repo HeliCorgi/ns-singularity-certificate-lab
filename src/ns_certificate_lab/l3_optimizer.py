@@ -93,11 +93,32 @@ __all__ = [
     "KILL_CONDITION_CRITICAL_REYNOLDS",
     "SEARCH_BASIS",
     "critical_reynolds",
+    "require_clay_admissible",
     "evaluate_shape",
     "normalise_amplitudes",
     "optimise",
     "search_basis",
 ]
+
+
+def require_clay_admissible(family) -> None:
+    """Refuse to score or certify a family that is not a legitimate candidate.
+
+    The Clay statements require ``C^\infty`` data.  A finite-``C^k`` surrogate
+    (a spline basis, for instance) is a permitted *tool* — for checker
+    development, HS-5 prototypes, or as an optimisation surrogate whose optimum
+    is then mollified — but it is never itself a candidate, and nothing
+    downstream of this guard may describe it as one.  A family opts out by
+    setting ``clay_admissible = False``; absence of the attribute is treated as
+    admissible so the existing ``C^\infty`` families need no change.
+    """
+    if not getattr(family, "clay_admissible", True):
+        raise ValueError(
+            f"family {getattr(family, 'name', '?')!r} is a finite-C^k surrogate "
+            "(clay_admissible=False); it may not be scored or certified as a "
+            "Clay candidate.  Mollify it into a C-infinity datum first and "
+            "prove the transfer bound |J(q_eps) - J(q)| explicitly."
+        )
 
 
 def normalise_amplitudes(values: npt.ArrayLike) -> FloatArray:
@@ -231,6 +252,7 @@ def evaluate_shape(
     ``probe_viscosity`` only sets the scale of the reported ``V``; the objective
     divides it out, so the score does not depend on it.
     """
+    require_clay_admissible(basis)
     values = normalise_amplitudes(amplitudes)
     pressure_solver = (
         AxisymmetricPressureSolver.build(grid) if solver is None else solver

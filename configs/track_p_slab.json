@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "experiment": "track_p_slab",
+  "preregistration": {
+    "recorded_before_any_run": true,
+    "families": ["P1", "P2", "P3"],
+    "viscosity": "1/10",
+    "galerkin_cutoff_sq": 4,
+    "steps": ["1/2048", "1/1024", "1/512", "1/256"],
+    "acceptance": {
+      "box_proved": true,
+      "control_slab_closed": true,
+      "checker_verified": true,
+      "distance_h4_sq_below_datum_h4_sq_ratio": 0.01
+    }
+  },
+  "lattice_cut": 20,
+  "precision_bits": 64
+}
