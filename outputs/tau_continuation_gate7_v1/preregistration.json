@@ -1,0 +1,47 @@
+{
+  "departure_gate": {
+    "front_points_axial": 10.0,
+    "front_points_radial": 10.0,
+    "integrator_agreement": 0.05,
+    "measurable_advection_over_source": 0.02,
+    "outer_band_fraction": 1e-06,
+    "relative_distance_to_first_picard": 0.1,
+    "relative_divergence": 0.05,
+    "resolution_stability": 0.2,
+    "time_step_agreement": 0.05
+  },
+  "families": [
+    "S",
+    "A",
+    "H"
+  ],
+  "promotion": {
+    "critical_concentration": {
+      "l3_growth": 1.05,
+      "shell_count_change": -0.05,
+      "width_contraction": 0.9
+    },
+    "multiscale": {
+      "outer_shell_fraction_growth": 2.0,
+      "shell_count_growth": 0.3
+    }
+  },
+  "recorded_before_any_run": true,
+  "reynolds_series": [
+    10.0,
+    25.0,
+    50.0,
+    100.0,
+    200.0,
+    400.0
+  ],
+  "tau_checkpoints": [
+    0.025,
+    0.05,
+    0.1,
+    0.2,
+    0.4,
+    0.7,
+    1.0
+  ]
+}

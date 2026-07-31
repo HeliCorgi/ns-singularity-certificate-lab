@@ -61,11 +61,17 @@ formal/
 └── NSSingularity/
     ├── ClayStatement.lean      # 段階 0(定義のみ、sorry なし)
     ├── VelocityRecovery.lean   # 段階 1 / F-3(E-14/E-15、証明あり、sorry なし)
-    └── FiniteTime.lean         # 段階 1 / F-2(有限物理時間、証明あり、sorry なし)
+    ├── FiniteTime.lean         # 段階 1 / F-2(有限物理時間、証明あり、sorry なし)
+    ├── GalerkinNoBlowup.lean   # 段階 1 / F-6(Galerkin エネルギー上界、証明あり、sorry なし)
+    ├── FiniteModeNoGo.lean     # 段階 1 / F-7a,F-7b,F-12,F-13(証明あり、sorry なし)
+    ├── GreenAndCascade.lean    # 段階 1 / F-14,F-15,F-16,F-7c 還元(証明あり、sorry なし)
+    ├── CertificateLayer.lean   # 段階 1 / F-17,F-18,F-19(証明あり、sorry なし)
+    └── TimeDependentGalerkin.lean # 段階 1 / F-7c 本体(証明あり、sorry なし)
 ```
 
-以降の段階(1: 有限次元恒等式 F-1〜F-4、2: 解析的な橋、3: 数値証明書、
-4: 最終定理)は `docs/formalization_map.md` を参照。
+以降の段階(1: 有限次元恒等式、2: 解析的な橋、3: 数値証明書、4: 最終定理)は
+`docs/formalization_map.md` を参照。Lean 識別子 `F-1`〜`F-11` の確定登録簿は
+`docs/final_target.md` §4 にある(外部ノート由来の採番衝突はそこで解消済み)。
 
 ## 段階 1 — F-3: 速度回復式と発散ゼロ(`NSSingularity/VelocityRecovery.lean`)
 
@@ -187,3 +193,153 @@ blowupTime  t₀ s₀ L     = t₀ + ∫ σ in Set.Ioi s₀, scaleRate L σ
    形式化(未着手)を要する。
 5. `hasDerivAt_physicalTime` は `Continuous L` を仮定する。主定理群は連続性を
    使わないので、この補題は定義の妥当性確認のためだけに存在する。
+
+## 段階 1 — F-6: Galerkin エネルギー上界(`NSSingularity/GalerkinNoBlowup.lean`)
+
+### Lean で証明したこと
+
+Track F(滑らかな外力による Clay (C)/(D) 反例)の有限モード ansatz 族を
+閉じる除外定理の中核。数学的な全体像は
+`docs/research_notes/track_f_finite_mode_nogo.md` にある。
+
+実 inner product 空間 `E`(有限次元性は**仮定していない**)上で、
+
+```text
+EnergyNeutral B  :=  ∀ x, ⟪x, B x x⟫ = 0        -- ∫ u·(u·∇)u = 0 に対応
+Dissipative  A   :=  ∀ x, ⟪x, A x⟫ ≤ 0          -- ⟪u, νΔu⟫ = -ν‖∇u‖² ≤ 0
+```
+
+と定義し、次を証明した。
+
+| 定理 | 主張 |
+|---|---|
+| `norm_le_of_energy_inequality` | `⟪u t, u' t⟫ ≤ ‖u t‖ · F t`(`Ioo 0 b` 上)ならば `‖u b‖ ≤ ‖u 0‖ + ∫₀ᵇ F`。解析的中核 |
+| `inner_galerkin_le` | `EnergyNeutral B`・`Dissipative A` のとき `⟪x, g + B x x + A x⟫ ≤ ‖x‖·‖g‖`。PDE 構造が入る唯一の箇所 |
+| `galerkin_norm_le` | `u' = g + B(u,u) + A u`、`‖g t‖ ≤ F t` の軌道は `‖u b‖ ≤ ‖u 0‖ + ∫₀ᵇ F` を満たす |
+| `galerkin_norm_le_of_mem` | 同じ軌道は `[0,T]` 全体で単一の定数 `‖u 0‖ + ∫₀ᵀ F` に抑えられる |
+| `galerkin_not_tendsto_atTop` | ゆえに `‖u t‖` は `t → T⁻` で `+∞` へ発散しない(**有限時間爆発の不可能性**) |
+
+証明は `t ↦ √(⟪u t, u t⟫ + ε) − ∫₀ᵗ F` の単調減少性から得る。正則化 `ε > 0`
+は装飾ではない: `‖·‖` は原点で微分不能で、軌道は零点を通ってよい。
+`F` の非負性は `‖g t‖ ≤ F t` から従うので仮定していない。
+
+`sorry`・`admit`・新規 `axiom` はない。本ファイルの全 5 定理について
+`#print axioms` は `[propext, Classical.choice, Quot.sound]`。
+
+主に使用した mathlib 補題: `HasDerivAt.inner`、`HasDerivAt.sqrt`、
+`antitoneOn_of_deriv_nonpos`、`intervalIntegral.integral_hasDerivAt_right`、
+`intervalIntegral.continuousOn_primitive_interval`、
+`intervalIntegral.integral_mono_interval`、`real_inner_le_norm`。
+
+### Lean で証明していないこと(重要な限界)
+
+1. **Navier–Stokes の非線形項が `EnergyNeutral` であることは形式化していない。**
+   それは `track_f_finite_mode_nogo.md` の Lemma 1 であり、紙上では 2 行、
+   個別のモード集合については `src/ns_certificate_lab/galerkin_obstruction.py`
+   が厳密整数演算(`ℤ[i]` 係数の全単項式検査、浮動小数点なし)で機械検証する。
+   Lean 側は仮定として受け取るだけである。
+2. ~~**常微分方程式の延長(Theorem 1(iii))は未形式化**である(`F-7`)。~~
+   **2026-07-29 第 7 便で解消。** F-7a・F-7b(`FiniteModeNoGo.lean`)に加え、
+   時間依存外力の場合 F-7c を `TimeDependentGalerkin.lean` で閉じた。
+   第 4 便の「mathlib の局所存在定理は自励系専用」という判定は、その*定理*に
+   ついては正しいが API 全体については誤りで、`IsPicardLindelof` は最初から
+   `f : ℝ → E → E` の時間依存場に対して述べられている。自励化 (`E × ℝ`) と
+   直接構成の 2 経路を比較し、仮定・行数ともに厳密に少ない直接経路を採った。
+   実質は `B x x` の局所 Lipschitz 評価
+   (`B x x - B y y = B x (x-y) + B (x-y) y`、定数 `2‖B‖(‖x₀‖+a)`)1 点である。
+   本ファイルはノルムの有界性までしか言わない。有界性から `T` を越える
+   滑らかな延長を出すには mathlib の Picard–Lindelöf が要る。
+3. 有限次元性を使う部分(全ノルムの同値、`‖u‖_{H^s}` と `‖u‖_{L^∞}` の評価)は
+   Lean にない。Python 側に定数を実装してあるだけである。
+4. `ClayStatement.lean` との接続はない。したがって本ファイルは
+   Clay 命題について何も主張しない。除外できるのは、明示的に限定された
+   ansatz クラスだけである。
+
+## 段階 1 — F-7a / F-7b / F-12 / F-13(`NSSingularity/FiniteModeNoGo.lean`)
+
+固定有限モード Track-F no-go の Lean 側を完成させるファイル。詳細は
+`docs/formalization_map.md` の該当節にある。要約:
+
+| 定理 | 主張 |
+|---|---|
+| `advectionForm_eq_zero`(F-12) | 共鳴 3 次形式 `Σ_{p+q+s=0}(a_q·k_s)(a_p·a_s)` は `k_i·a_i=0` の下で恒等的にゼロ |
+| `weighted_sq_sum_le`(F-13) | `Σ w_i c_i² ≤ W Σ c_i²` — `H^s` 対 `L²` の定数 |
+| `sq_sum_abs_le_card_mul_sum_sq`、`sum_abs_le_sqrt_card_mul_sqrt_sum_sq`(F-13) | `(Σ|c|)² ≤ |S| Σc²` — `L^∞` 対 `L²` の定数 |
+| `exists_tendsto_nhdsWithin_of_norm_deriv_le`(F-7a) | 有界導関数の曲線は `t→T⁻` で極限を持つ |
+| `exists_local_galerkin_solution`(F-7b) | 自励 Galerkin 場は任意の点を通る両側局所解を持つ |
+| `not_isBreakdownCandidate_of_galerkin` | F-6 → 速度上界 → F-7a を連結し、固定有限モード候補が破綻候補になれないことを結論 |
+
+`sorry`・`admit`・新規 `axiom` はない。全 10 定理の `#print axioms` は
+`[propext, Classical.choice, Quot.sound]`。
+
+### 証明していないこと
+
+1. **F-12 は Fourier 表現の代数的恒等式**であって、`∫_{𝕋³}u·(u·∇)u = 0` の
+   形式化ではない。両者を繋ぐトーラス関数空間と Fourier 同型は mathlib にない。
+2. **F-7c(時間依存外力での局所延長)は未着手**。mathlib の
+   `ContDiffAt.exists_forall_mem_closedBall_exists_eq_forall_mem_Ioo_hasDerivAt₀`
+   は自励系専用である。必要な継続補題は `docs/final_target.md` §4.1 に
+   2 経路として明記した。**公理化していない。**
+3. `ClayStatement.lean` との接続はない。Navier–Stokes の局所一意性理論も
+   mathlib にないため、Clay (D) の否定への完全な論理鎖はまだ組めない。
+4. F-13 は有限和の不等式であり、無限次元での意味を持たない。
+
+## 段階 1 — F-14 / F-15 / F-16 / F-7c 還元(`NSSingularity/GreenAndCascade.lean`)
+
+| 定理 | 主張 |
+|---|---|
+| `greenProfile_radial_laplace_eq_zero`(F-14) | `R^{-3}` は `f'' + 4f'/R` に消される(5 次元動径 Laplace) |
+| `hasDerivAt_greenProfile`, `hasDerivAt_greenProfileDeriv` | 上の 2 つの微分値 |
+| `flux_newtonSlope`(F-15) | `R⁴ψ'(R) = −m(R)`。Newton の flux 恒等式 |
+| `hasDerivAt_flux`(F-15) | flux の微分が `−R⁴ω` |
+| `ShellAdmissible`(F-16) | shell 指数の 4 条件を**構造体として明示**。黙って落とせない |
+| `ShellAdmissible.bandwidth_lt_one`(F-16) | その仮定の下で `γ < 1` |
+| `ShellAdmissible.sigma_mem`, `not_shellAdmissible_of_one_le` | 許容区間と `γ ≥ 1` の排除 |
+| `breakdown_time_set_empty` | 固定有限帯域候補の**破綻時刻の集合は空**(Clay への限定的接続) |
+| `galerkin_solution_of_autonomised` | **F-7c 還元**: 自励化した場の局所流があれば、時間依存系にも局所解がある |
+
+`sorry`・`admit`・新規 `axiom` はない。全 10 定理の `#print axioms` は
+`[propext, Classical.choice, Quot.sound]`。
+
+### 証明していないこと
+
+1. **F-14 / F-15 は動径プロファイルの 1 次元実解析の恒等式**であり、
+   `Δ₅G₅ = −δ₀` の分布論的形式化ではない。mathlib にその展開はなく、
+   本リポジトリのどの上界も Dirac 側を使わない。
+2. **F-16 は指数の算術**である。4 つの不等式を PDE から導く部分は紙上であり、
+   端点正則性定理を**引用**している。
+3. **F-7c 還元は F-7c を閉じない。** 残るのは自励化した場
+   `F(x,s) = (g s + B x x + A x, 1)` の局所流の構成であり、公理化していない。
+4. `breakdown_time_set_empty` は係数 ODE の言葉での主張であり、
+   `ClayStatement.lean` とは依然接続されていない。
+
+## 段階 1 — F-17 / F-18 / F-19(`NSSingularity/CertificateLayer.lean`)
+
+数値証明書が供給できるのは**有限個の非負実上界**だけである。この層は、それらが
+正しく合成されることだけを証明する。解析的 Green 積分を一度に形式化しようとは
+していない。
+
+| 定理 | 主張 |
+|---|---|
+| `velocity_radial_error_le`(F-17) | `|−r·δψ_z| ≤ R·ε₁` |
+| `velocity_axial_error_le`(F-17) | `|2δψ + r·δψ_r| ≤ 2ε₀ + R·ε₁` |
+| `product_difference`(F-18) | `ab − a'b' = (a−a')b + a'(b−b')` |
+| `product_error_le`(F-18) | `|ab − a'b'| ≤ ε_a|b| + |a'|ε_b` |
+| `advection_error_le`(F-18) | 移流項 `u^r f_r + u^z f_z` の誤差を 4 定数で抑える |
+| `gronwallBound_le_simple`(F-19) | mathlib の `gronwallBound` を `(δ+εt)e^{Kt}` で抑える |
+| `norm_le_simple_gronwall`(F-19) | `‖f'‖ ≤ K‖f‖+ε` から `‖f t‖ ≤ (δ+εt)e^{Kt}` |
+| `FixedBandwidthCandidate` | 固定有限帯域候補の**全仮定を構造体化** |
+| `FixedBandwidthCandidate.breakdown_times_empty` | その破綻時刻の集合は空 |
+| `FixedBandwidthCandidate.reaches_every_time` | 任意の正時刻で極限に到達する |
+
+`sorry`・`admit`・新規 `axiom` はない。全 10 定理の `#print axioms` は
+`[propext, Classical.choice, Quot.sound]`。
+
+### 証明していないこと
+
+1. **入力を計算していない。** すべて「与えられた実数」についての命題であり、
+   上界を供給するのは Python 側の区間証明書で、それは別の義務である。
+2. F-19 に渡す微分不等式を正当化する `L^∞` 最大値原理は**未形式化**であり、
+   F-19 は微分不等式を仮定として受け取る。
+3. `FixedBandwidthCandidate` は係数軌道についての構造体であり、
+   `ClayStatement.ClayPeriodicBreakdown` への橋は未着手のままである。

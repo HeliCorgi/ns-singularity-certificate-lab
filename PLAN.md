@@ -150,6 +150,126 @@ Exit gate: Gates 1–3 measured and recorded (pass or documented failure);
 Gate 4 implemented and passed.  Until then the Hou mechanism is not called
 an \(\mathbb R^3\) candidate.
 
+## Phase 2.85 — Gate 4, the linear whole-space elliptic gate (completed, 2026-07-29)
+
+Gate 4 of Phase 2.8 is implemented in `src/ns_certificate_lab/whole_space_gate.py`
+and passed all twenty preregistered acceptance checks in
+`outputs/whole_space_gate4_v1`.
+
+- Non-periodic `z` on a finite box, with the axial second difference
+  diagonalised by a dense **discrete sine transform built from `numpy.sin`** —
+  the non-Fourier independent axial path this repository has listed as open
+  since 2026-07-28.
+- An **exact closed-form free-space reference**: `L5` is the axisymmetric
+  five-dimensional Laplacian, so Newton's theorem solves a compactly supported
+  radial bump in closed form, and `z`-translation invariance makes superpositions
+  exact too.  No quadrature, no discretisation on the reference side.
+- Independent `R_max` and `Z_max` enlargement, with the truncation component
+  isolated by common-interior differencing because the direct comparison
+  saturates at the discretisation floor.
+- The periodic zero axial mode is shown to overstate the far field by exactly
+  `2R/L`, and the non-periodic Dirichlet operator has **no zero mode at all**.
+- An a posteriori bound on the continuum truncation error, dominating every
+  measured monopole row.
+- An independent Cartesian audit of the recovered velocity: `div u = 0` and
+  `curl u = omega1 (-y, x, 0)`, both second order.
+
+Exit gate: reached, with the scope stated precisely: **the gate certifies the
+free-space potential *value* only.**  The derivative tail needed for velocity
+recovery and the nonlinear coupling were not verified by this phase; they are
+Phase 2.86.
+
+## Phase 2.86 — Gate 5: derivative tails and the nonlinear entry point (completed, 2026-07-29)
+
+Gate 4 certified the free-space potential *value*.  Phase 2.86 promotes that to a
+differentiated entry point.
+
+- **Explicit derivative tail bounds** from analytic differentiation of the
+  five-dimensional Green kernel: `|D^k(psi - psi_multipole)| <= A_{k+1} I_1 /
+  d^{4+k}` for the monopole truncation and `<= (1/2) A_{k+2} I_2 / d^{5+k}` for
+  the dipole one, with `A_m` the exact homogeneity constants of `D^m G_5`.  No
+  maximum principle is used; the interior propagation uses the classical
+  interior elliptic estimate `(nk/rho)^k` instead, which the maximum principle
+  cannot supply for `k >= 1`.
+- **Two independent evaluation paths**: finite differences of the solver output
+  (the production path) and an analytic-Green quadrature that differentiates the
+  kernel and never touches the solver.  The second converges at order 4 and
+  agrees with the closed-form reference to `1.6e-8`.
+- **A free-space velocity recovery API** returning `psi1`, its first and second
+  derivatives, `u^r`, `u^z`, and both the boundary and interior derivative tail
+  bounds, all second order and with exact axis regularity.
+- **A small-amplitude nonlinear whole-space run** from smooth compactly
+  supported divergence-free pure-swirl data, refined independently in `dt`,
+  `dr`, `dz`, `R_max`, `Z_max`, integrator and outer boundary order.
+- **A finite dyadic cascade model** showing that low-mode-only smooth forcing
+  drives high-shell amplitude by 26 orders of magnitude with exactly zero direct
+  injection, so the earlier reading "forcing gives Track F no advantage" was
+  wrong and has been corrected everywhere.
+
+Exit gate: reached, with three sub-gates recorded as **uninformative rather than
+passed** — at this amplitude the time refinement, the domain enlargement and the
+boundary-order comparison all produce identical answers, because the temporal
+error is far below the spatial one and the field never reaches the boundary.
+They must be repeated at an amplitude that exercises them.
+
+## Phase 2.87 — Gate 6: mid-amplitude calibration and continuation (2026-07-29)
+
+- **Nonlinear tail propagation** (`tail_propagation.py`): explicit constants from
+  the potential error bounds through the velocity error to every right-hand-side
+  term, using only the product-difference identity, plus a short-time Gronwall
+  step.  The Lean side is the certificate layer F-17/F-18/F-19.
+- **An explicit initial-data family** (`initial_data.py`): smooth, compactly
+  supported, axis-regular, exactly divergence-free pure swirl with the radial
+  factor a function of `r^2`.  Fixed positive viscosity; no two-stage protocol.
+- **Multipole hierarchy** to quadrupole, and a `tail_bound_available` flag for
+  the boxes where no multipole bound exists at all.
+- **Domain expansion** with preregistered triggers and before/after invariants.
+- **An interval-arithmetic snapshot certificate** in exact rational arithmetic,
+  with an independent checker: PO-05/06/07/13 are no longer design-only.
+
+Two preregistered criteria **failed and were not retuned**:
+the core boundary-condition difference is `7.9e-3` times the Richardson
+discretisation error rather than the required `8`, and the amplitude
+continuation never left the quadratic-response regime (`max|omega1|` scales as
+`A^2` to better than `5e-5` across a factor of ten).  Both failures are
+quantified in `outputs/whole_space_gate6_v1` and neither is hidden.
+
+Status: the entry point is instrumented; **no candidate was promoted**, and the
+three best were rejected with named reasons.
+
+## Phase 2.9 — Track F fixed-finite-mode class closed (completed, 2026-07-29)
+
+`START_NEW_SESSION_NAVIER_STOKES.md` section 6 "candidate A" proposed a symbolic
+search over low-order divergence-free Fourier ansaetze for a residual force that
+stays smooth across a finite-time singularity (Clay statements (C)/(D)).  **That
+search space is provably empty and the search was therefore not run.**
+
+- `docs/research_notes/track_f_finite_mode_nogo.md` proves: if the velocity of a
+  Track-F ansatz stays inside a fixed finite-dimensional divergence-free space
+  and the residual force is in \(L^1_tL^2_x\), then the energy identity bounds
+  every norm of the ansatz and the projected ODE continues it smoothly past the
+  putative singular time.  Contrapositive: **a Clay (C)/(D) counterexample must
+  have unbounded Fourier bandwidth as \(t	o T^-\).**
+- The one algebraic input, \(\int u\cdot(u\cdot
+abla)u = 0\), is verified in
+  **exact integer arithmetic** for each scanned mode set by
+  `src/ns_certificate_lab/galerkin_obstruction.py` (every monomial coefficient of
+  the cubic form over \(\mathbb Z[i]\)); no floating point is involved.
+- The a priori bound itself is proved in Lean 4 as **F-6**
+  (`formal/NSSingularity/GalerkinNoBlowup.lean`, no `sorry`/`admit`/axiom).
+- Two necessary conditions for *any* Track-F counterexample follow without
+  finite-dimensionality: bounded energy and finite total dissipation up to `T`.
+  Clay condition (7) is therefore automatic, and a design that expects the
+  energy to diverge is wrong from the start.
+- The evidence run is `outputs/track_f_finite_mode_scan_v1` (10 families, all
+  rejected, all 11 preregistered acceptance checks passed).
+
+Open remainder: the ODE continuation step is proved on paper only (**F-7**), and
+nothing here constrains ansaetze whose bandwidth grows as \(t	o T^-\).
+
+Status: reached.  This is an exclusion theorem for a search class, not a step
+toward a singularity.
+
 ## Phase 3 — preregistered candidate discovery (future)
 
 - Implement dynamically rescaled Type-II-compatible coordinates with separate
@@ -162,6 +282,37 @@ an \(\mathbb R^3\) candidate.
 
 Exit gate: a candidate survives independent discretizations, precision levels,
 domain sizes, and withheld diagnostic tests.  This remains numerical evidence.
+
+## Phase 2.88 — Gate 7: leaving the Picard region (2026-07-29)
+
+The single parameter is `Re = A L^2 / nu`; amplitude, length and viscosity are
+not three search directions and `deduplicate_settings` now enforces that.
+
+Reclassifying the Gate 6 sweep in `(Re, aspect, c, tau)` showed why all
+thirty-two runs stayed inside the first Picard iterate: the nominal amplitude
+overstated the field's peak by about twenty-three, so the sweep reached
+`tau <= 0.0233`, forty-three times short of the `tau = 1` it needed.
+
+`PicardLadder` integrates levels 0, 1, 2 and the full solution together, with
+the same integrator and the same accepted steps, so the distance to the iterates
+is measured rather than inferred, and the solver's exact right-hand side is
+stored at every accepted step rather than reconstructed from snapshots.
+
+Eighteen runs (Re = 10..400 x families S, A, H) reached `tau = 1`.  The
+preregistered departure gate passed on all nine checks.  **No candidate was
+promoted:** the critical `L^3` norm decays in every run and the dyadic shell
+count grows in sixteen of eighteen, i.e. the fields spread rather than
+concentrate.  The one amendment — adding a 145x289 grid — changed no threshold
+and is recorded with its reason in the config.
+
+F-7c is closed in Lean by the direct route: mathlib's `IsPicardLindelof` was
+already time-dependent, so the autonomisation on `E x R` was never needed.
+
+The `H^s` derivation (`docs/research_notes/hs_error_propagation.md`) is
+deliberately incomplete, with HS-1..HS-6 named.  HS-5 — discrete residual to
+`||R||_{H^s}` — is the step that would make any certificate a statement about
+the PDE, and it is not done.  Until it is, the `L^infty` certificate is not
+presented as an unconditional PDE proof.
 
 ## Phase 4 — validated numerics (future)
 

@@ -3,3 +3,14 @@
 import NSSingularity.ClayStatement
 import NSSingularity.VelocityRecovery
 import NSSingularity.FiniteTime
+import NSSingularity.GalerkinNoBlowup
+import NSSingularity.FiniteModeNoGo
+import NSSingularity.GreenAndCascade
+import NSSingularity.CertificateLayer
+import NSSingularity.TimeDependentGalerkin
+import NSSingularity.L3Generation
+import NSSingularity.ControlODE
+import NSSingularity.TrackPFourier
+import NSSingularity.GaussianTransfer
+import NSSingularity.TrackPChain
+import NSSingularity.GalerkinPicard

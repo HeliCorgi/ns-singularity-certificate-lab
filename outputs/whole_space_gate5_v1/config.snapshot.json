@@ -1,0 +1,182 @@
+{
+  "cascade": {
+    "cases": [
+      {
+        "forced_shells": 0,
+        "forcing": 0.0,
+        "label": "unforced_viscous",
+        "viscosity": 0.002
+      },
+      {
+        "forced_shells": 2,
+        "forcing": 0.003,
+        "label": "low_mode_forced_viscous",
+        "viscosity": 0.002
+      },
+      {
+        "forced_shells": 2,
+        "forcing": 0.003,
+        "label": "low_mode_forced_high_viscosity",
+        "viscosity": 0.02
+      },
+      {
+        "forced_shells": 2,
+        "forcing": 0.003,
+        "label": "low_mode_forced_inviscid",
+        "viscosity": 0.0
+      },
+      {
+        "forced_shells": 0,
+        "forcing": 0.0,
+        "label": "unforced_inviscid",
+        "viscosity": 0.0
+      }
+    ],
+    "forced_shells": 2,
+    "high_shell_start": 4,
+    "seed_amplitude": 0.001,
+    "shells": 10,
+    "steps": 200000,
+    "time_step": 0.0002
+  },
+  "evolution": {
+    "axial_extents": [
+      3.0,
+      4.0,
+      6.0
+    ],
+    "axial_points": [
+      65,
+      129,
+      257
+    ],
+    "base": {
+      "nr": 65,
+      "nz": 129,
+      "r_max": 4.0,
+      "steps": 40,
+      "time_step": 0.0025,
+      "z_max": 4.0
+    },
+    "boundary_modes": [
+      "monopole",
+      "zero"
+    ],
+    "cartesian_half_width": 2.0,
+    "cartesian_points": 41,
+    "integrators": [
+      "heun",
+      "ssprk3",
+      "rk4"
+    ],
+    "radial_extents": [
+      3.0,
+      4.0,
+      6.0
+    ],
+    "radial_points": [
+      33,
+      65,
+      129
+    ],
+    "swirl": {
+      "amplitude": 0.05,
+      "center": 0.0,
+      "power": 6,
+      "radius": 1.5
+    },
+    "time_refinement": [
+      1,
+      2,
+      4
+    ],
+    "viscosity": 0.005
+  },
+  "experiment": "whole_space_gate5_derivative_and_nonlinear",
+  "green_path": {
+    "grids": [
+      {
+        "nr": 161,
+        "nz": 321
+      },
+      {
+        "nr": 321,
+        "nz": 641
+      }
+    ],
+    "quadrature_nodes": 48,
+    "r_max": 4.0,
+    "targets_r": [
+      2.2,
+      2.6,
+      3.0,
+      0.1,
+      0.5,
+      2.0
+    ],
+    "targets_z": [
+      0.3,
+      -1.0,
+      1.5,
+      2.4,
+      -2.6,
+      2.2
+    ],
+    "z_max": 4.0
+  },
+  "recovery": {
+    "cartesian_half_width": 3.0,
+    "cartesian_points": [
+      33,
+      65,
+      129
+    ],
+    "domain_fixed_extent": 20.0,
+    "domain_sizes": [
+      5.0,
+      7.5,
+      11.25
+    ],
+    "domain_spacing": 0.25,
+    "extent": 8.0,
+    "interior_radius": 3.0,
+    "radial_points": [
+      65,
+      129,
+      257
+    ]
+  },
+  "schema_version": 1,
+  "source": {
+    "bumps": [
+      {
+        "amplitude": 1.0,
+        "center": 0.5,
+        "power": 6,
+        "radius": 1.2
+      },
+      {
+        "amplitude": 0.6,
+        "center": -0.8,
+        "power": 6,
+        "radius": 0.9
+      }
+    ]
+  },
+  "tail_bounds": {
+    "evaluation_radii": [
+      2.5,
+      4.0,
+      6.0
+    ],
+    "finite_difference_step": 0.0002,
+    "moment_grid": {
+      "nr": 513,
+      "nz": 1025,
+      "r_max": 8.0,
+      "z_max": 8.0
+    },
+    "samples_per_sphere": 181,
+    "understated_moment_factor": 1000.0
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "payloads": {
+    "checkpoints.csv": {
+      "bytes": 78475,
+      "sha256": "13b2faa21ae67ae2c5f6897f23314215a0dd3bf7e77d1e5931bfc5a200f89acc"
+    },
+    "config.snapshot.json": {
+      "bytes": 2490,
+      "sha256": "038d4e115b6623d8bb29de3d7ab3e69bb11f256e72d5ad3c692de0560b171756"
+    },
+    "legacy_reclassified.csv": {
+      "bytes": 3156,
+      "sha256": "a948bf263127c7e2253a7d65b30b61f7f295c2fbb3e69ca117948a25dda85a3c"
+    },
+    "preregistration.json": {
+      "bytes": 917,
+      "sha256": "86c1ce2840cbf88021b5434d4839f4b7a23173f0d3732e5059e630de0ae0ba9c"
+    },
+    "slab_certificate.json": {
+      "bytes": 2873,
+      "sha256": "a7763253cba62484e114b90cb4465e952518830099df60fb9e0880bab947c21a"
+    },
+    "summary.json": {
+      "bytes": 285710,
+      "sha256": "594fe369bfa06790f75ef691faafdc762eafcc9e08b53d04b17c260ef6a83610"
+    }
+  },
+  "schema_version": 1
+}

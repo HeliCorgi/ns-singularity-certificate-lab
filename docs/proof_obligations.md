@@ -1,5 +1,29 @@
 # Proof obligations
 
+> **2026-07-29 追記**: 本書の PO-01〜PO-15 を Clay 命題 (A)〜(D)、Track U /
+> Track F の最終定理、Lean 識別子 `F-1`〜`F-11` と一つの依存グラフへまとめた
+> 全体図は [final_target.md](final_target.md) にある(第 5 便で PO-06/PO-14 を更新)。
+>
+> **2026-07-29 第 7 便追記**: PO-05(離散化誤差)と PO-13(区間演算検証)に
+> 関して、`src/ns_certificate_lab/slab_certificate.py` が `[t_n, t_{n+1}]` 上で
+> **cell 内部・全時刻**を包含する時空スラブ証明書を厳密有理数で生成するように
+> なった。ただしこれは **2 つの未証明仮説 H1(cell Lipschitz)・H2(Hermite
+> 剰余)の下での条件付き**であり、payload に `proved: false` として明記される。
+> 連続 PDE への接続に必要な補題は
+> [`research_notes/hs_error_propagation.md`](research_notes/hs_error_propagation.md)
+> に **HS-1〜HS-6** として列挙した。**最大の欠落は HS-5**(離散残差 →
+> `‖R‖_{H^s}`)であり、これが無い限り証明書は計算対象についての言明であって
+> PDE についての言明ではない。既存の `L^∞` Grönwall 鎖(Lean F-17/F-18/F-19)を
+> **無条件の PDE 安定性証明として提示してはならない**。
+>
+> **2026-07-30 第 9 便追記**: HS-5 の**周期版は Track P で構成的に閉じた**。
+> Fourier–Galerkin 軌道は厳密な三角多項式であり、その連続 PDE 残差は有限三角
+> 多項式として有理数演算で厳密に計算される(`fourier_torus.residual_tail`)。
+> 空間補間 H3 を経由しない。全空間レーン(有限差分節点)の HS-5 ギャップは
+> 従来どおり未解決であり、周期側の閉鎖を全空間の主張に流用してはならない。状態語彙
+> (M 数学的に閉じた / L Lean で閉じた / I 区間演算が必要 / N 数値観測のみ /
+> O 未着手)もそちらで定義している。本書は個々の義務の詳細台帳である。
+
 ## 1. 何を証明しなければならないか
 
 数値候補を「元の三次元非圧縮 Navier–Stokes 方程式が、滑らかな有限エネルギー初期値から有限時刻に特異性を生じる」という反例へ変換するには、近似 profile の小 residual だけでは足りない。本書は必要な義務を依存関係付きで管理する。
@@ -470,3 +494,19 @@ PO-05/PO-14 の**前段**として本セッションで追加したもの(いず
 free-space 楕円経路、\(R_{\max}\)/\(Z_{\max}\) 独立拡大、低波数 stress
 test。これが通るまで、現在の Hou 機構を Clay の \(\mathbb R^3\) 候補と
 呼ばず、中後期成長・blow-up fit・AI 候補探索へ進まない。
+
+## 9. EXT-P1/P2/P3 依存台帳への相互参照(2026-07-31 追記)
+
+Track P / Track P chain の証明書が条件として運ぶ外部定理 EXT-P1/P2/P3
+(周期 \(H^4\) 局所存在・一意性、エネルギー評価を走らせる正則性、\(H^4\)
+継続判定)の**完全量化文**、mathlib / 紙 / Lean 近期着手可能性の依存表、
+および EXT-P1 の Galerkin 法による**完全紙上証明(未監査)**は
+[research_notes/ext_dependencies.md](research_notes/ext_dependencies.md)
+にある。PO-03(局所解の存在・一意性)の周期版はこの台帳の EXT-P1 に対応し、
+PO-15 の「信頼する外部定理として境界を明記」の周期側の実体がこの台帳である。
+紙上証明が独立監査され、かつ有限次元部分が Lean で形式化されるまで、
+EXT-P1/P2/P3 は全 payload で `proved: false` のままであり(同 §3.6 監査箱・
+§4)、Lean への公理としての挿入は引き続き禁止である。証明書の結論の語彙は
+「conditional PDE certificate assuming EXT-P1/P2/P3」と「the
+finite-dimensional Galerkin enclosure and the scalar control ODE are
+verified unconditionally」の二文から変わらない。

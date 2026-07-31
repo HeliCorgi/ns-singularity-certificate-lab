@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "experiment": "whole_space_gate6_calibration_and_continuation",
+  "viscosity": 0.005,
+  "family": {
+    "radial_support": 1.2,
+    "axial_support": 1.5,
+    "axial_concentration": 0.5
+  },
+  "calibration": {
+    "amplitude": 10.0,
+    "boxes": [[2.5, 2.5], [1.6, 1.9], [1.35, 1.65]],
+    "radial_points": [49, 97, 193],
+    "steps": 60,
+    "time_step": 0.0004,
+    "core_fraction": 0.7,
+    "boundary_modes": ["zero", "monopole", "dipole", "quadrupole"],
+    "thresholds": {
+      "boundary_over_richardson": 8.0,
+      "outer_band_lower": 1e-8,
+      "outer_band_upper": 1e-3,
+      "tail_bound_over_core_change": 0.1,
+      "front_points": 7.0,
+      "time_over_space": 0.1,
+      "integrator_over_signal": 0.01
+    }
+  },
+  "verification": {
+    "amplitude": 10.0,
+    "r_max": 1.6,
+    "z_max": 1.9,
+    "nr": 97,
+    "nz": 193,
+    "steps": 60,
+    "time_step": 0.0004,
+    "radial_points": [49, 97, 193],
+    "axial_points": [97, 193, 385],
+    "time_factors": [1, 2, 4],
+    "integrators": ["ssprk3", "rk4"],
+    "radial_extents": [1.6, 2.4, 3.6],
+    "axial_extents": [1.9, 2.85, 4.275]
+  },
+  "continuation": {
+    "amplitudes": [2.0, 5.0, 10.0, 20.0],
+    "radial_supports": [0.8, 1.2],
+    "axial_supports": [1.0, 1.5],
+    "concentrations": [0.0, 2.0],
+    "pilot": {"nr": 49, "nz": 97, "r_max": 2.0, "z_max": 2.4, "steps": 80, "time_step": 0.0003},
+    "promotion_resolutions": [49, 97, 193],
+    "top_candidates": 3
+  },
+  "domain_expansion": {
+    "policy": {
+      "outer_band_fraction": 1e-4,
+      "tail_bound_ratio": 0.01,
+      "multipole_remainder_ratio": 0.01,
+      "boundary_difference_ratio": 0.001,
+      "radial_growth_cells": 16,
+      "axial_growth_cells": 16,
+      "maximum_expansions": 4
+    },
+    "trigger_probe": {"outer_band_fraction": 0.001, "tail_bound_ratio": 0.0001,
+                      "multipole_remainder_ratio": 0.0001, "boundary_difference_ratio": 0.0001}
+  },
+  "snapshot_certificate": {
+    "nr": 25,
+    "nz": 49,
+    "r_max": 2.0,
+    "z_max": 2.4,
+    "steps": 5,
+    "time_step": 0.0004,
+    "interior_radius": 1.4,
+    "precision_bits": 64
+  }
+}

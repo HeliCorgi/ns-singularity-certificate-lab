@@ -1,0 +1,653 @@
+{
+  "acceptance": {
+    "all_passed": true,
+    "axial_spectrum_matches_continuum_within_1e_3": true,
+    "axial_truncation_rate_monopole_trace_at_least_3_5": true,
+    "balanced_source_has_zero_net_mass": true,
+    "cartesian_curl_relative_below_1e_2": true,
+    "cartesian_curl_second_order": true,
+    "cartesian_divergence_second_order": true,
+    "discrete_residual_below_1e_9": true,
+    "fault_axis_coefficient_inflates_the_axis_error": true,
+    "fault_radial_drift_stops_convergence": true,
+    "fault_understated_source_norm_breaks_the_bound": true,
+    "grid_refinement_second_order_with_monopole_trace": true,
+    "no_zero_axial_mode_at_any_extent": true,
+    "period_image_component_falls_with_the_period": true,
+    "period_image_sum_is_converged": true,
+    "periodic_zero_mode_overstates_far_field_for_large_boxes": true,
+    "radial_truncation_rate_monopole_trace_at_least_3_5": true,
+    "radial_truncation_rate_zero_trace_at_least_2_7": true,
+    "tail_bound_dominates_every_monopole_row": true,
+    "zero_trace_saturates_as_expected": true
+  },
+  "axial_path": "dense discrete sine transform of type I built from numpy.sin; no FFT and no convention shared with the periodic solvers",
+  "axial_spectrum": [
+    {
+      "axial_points": 65,
+      "continuum_lowest_eigenvalue": 0.15421256876702122,
+      "largest_magnitude": 255.84581839426207,
+      "smallest_magnitude": 0.15418160573793374,
+      "z_max": 4.0,
+      "zero_mode_present": false
+    },
+    {
+      "axial_points": 129,
+      "continuum_lowest_eigenvalue": 0.038553142191755305,
+      "largest_magnitude": 255.96144879311413,
+      "smallest_magnitude": 0.03855120688585982,
+      "z_max": 8.0,
+      "zero_mode_present": false
+    },
+    {
+      "axial_points": 257,
+      "continuum_lowest_eigenvalue": 0.009638285547938826,
+      "largest_magnitude": 255.99036183541048,
+      "smallest_magnitude": 0.009638164589498762,
+      "z_max": 16.0,
+      "zero_mode_present": false
+    }
+  ],
+  "balanced_source_control": {
+    "boundary_data_error_max": 4.576867314489509e-06,
+    "boundary_mode": "monopole",
+    "dr": 0.03125,
+    "dz": 0.03125,
+    "interior_max_abs": 0.00019576420748586287,
+    "interior_relative_l2": 0.0016200356785654162,
+    "net_five_dimensional_mass": -1.734723475976807e-18,
+    "nr": 257,
+    "nz": 513,
+    "r_max": 8.0,
+    "residual_max": 1.0729195309977513e-12,
+    "tail_bound": 3.459975931243178e-05,
+    "z_max": 8.0
+  },
+  "cartesian_audit": [
+    {
+      "curl_axial_max": 0.000965106587494732,
+      "curl_order_from_previous": null,
+      "curl_theta_error_max": 0.02089385315697964,
+      "curl_theta_relative": 0.10509948211437523,
+      "divergence_max": 0.0063323834319020805,
+      "divergence_order_from_previous": null,
+      "divergence_relative": 0.017417246624587795,
+      "points": 33,
+      "velocity_max": 0.06816932199866234
+    },
+    {
+      "curl_axial_max": 0.0002670532711645029,
+      "curl_order_from_previous": 1.7228285673285209,
+      "curl_theta_error_max": 0.0063298797830678155,
+      "curl_theta_relative": 0.031411685583343445,
+      "divergence_max": 0.0017746833156190647,
+      "divergence_order_from_previous": 1.83518700964982,
+      "divergence_relative": 0.002416846581051629,
+      "points": 65,
+      "velocity_max": 0.06884034847048207
+    },
+    {
+      "curl_axial_max": 6.856169406562786e-05,
+      "curl_order_from_previous": 1.9802114654430159,
+      "curl_theta_error_max": 0.0016043252290994514,
+      "curl_theta_relative": 0.007802377201617552,
+      "divergence_max": 0.00045029228480449046,
+      "divergence_order_from_previous": 1.978627940813508,
+      "divergence_relative": 0.0003061769957997813,
+      "points": 129,
+      "velocity_max": 0.0689387221762843
+    }
+  ],
+  "coupling_contract": {
+    "axial_boundary": "non-periodic Dirichlet at z = +/- Z_max",
+    "established": [
+      "second-order convergence against an exact closed-form free-space reference at fixed domain",
+      "independent R_max and Z_max enlargement with the truncation component isolated by common-interior differencing",
+      "no zero axial mode exists, unlike the periodic operator",
+      "an a posteriori bound on the continuum truncation error",
+      "independent Cartesian divergence and curl audit of the recovery"
+    ],
+    "not_established": [
+      "any statement about the nonlinear evolution",
+      "an interval-arithmetic enclosure of any quantity",
+      "a discrete maximum principle (radial row i=1 is not an M-matrix)",
+      "resolution of a Hou-type front on a uniform whole-space grid"
+    ],
+    "outer_trace": "zero, or the five-dimensional monopole M/(3R^3) with M taken from the discrete source by quadrature",
+    "radial_boundary": "Dirichlet at r = R_max",
+    "reusable": "build() once, solve() every stage of every time step",
+    "solves": "-L5 psi1 = omega1",
+    "state_mutated_by_solve": false,
+    "velocity_recovery": "operators.recover_velocity (E-14)"
+  },
+  "domain_enlargement": [
+    {
+      "boundary_data_error_max": 3.0091167766636873e-05,
+      "boundary_mode": "zero",
+      "common_interior_max_diff": 2.499435808774919e-05,
+      "enlarged": "radial",
+      "enlarged_extent": 5.0,
+      "r_max": 5.0,
+      "tail_bound": 0.00016346950638324682,
+      "z_max": 20.0
+    },
+    {
+      "boundary_data_error_max": 8.966887709043359e-06,
+      "boundary_mode": "zero",
+      "common_interior_max_diff": 7.077566592782078e-06,
+      "enlarged": "radial",
+      "enlarged_extent": 7.5,
+      "r_max": 7.5,
+      "tail_bound": 1.7130914063816788e-05,
+      "z_max": 20.0
+    },
+    {
+      "boundary_data_error_max": 2.6639100948007456e-06,
+      "boundary_mode": "zero",
+      "common_interior_max_diff": 1.9900716486357002e-06,
+      "enlarged": "radial",
+      "enlarged_extent": 11.25,
+      "r_max": 11.25,
+      "tail_bound": 2.330660546054676e-06,
+      "z_max": 20.0
+    },
+    {
+      "boundary_data_error_max": 3.89433526076335e-05,
+      "boundary_mode": "zero",
+      "common_interior_max_diff": 1.320251465218705e-05,
+      "enlarged": "axial",
+      "enlarged_extent": 5.0,
+      "r_max": 20.0,
+      "tail_bound": 0.00016346950638324682,
+      "z_max": 5.0
+    },
+    {
+      "boundary_data_error_max": 1.0529580189154024e-05,
+      "boundary_mode": "zero",
+      "common_interior_max_diff": 2.381152440176533e-06,
+      "enlarged": "axial",
+      "enlarged_extent": 7.5,
+      "r_max": 20.0,
+      "tail_bound": 1.7130914063816788e-05,
+      "z_max": 7.5
+    },
+    {
+      "boundary_data_error_max": 2.9492348057362864e-06,
+      "boundary_mode": "zero",
+      "common_interior_max_diff": 4.0589977166804125e-07,
+      "enlarged": "axial",
+      "enlarged_extent": 11.25,
+      "r_max": 20.0,
+      "tail_bound": 2.330660546054676e-06,
+      "z_max": 11.25
+    },
+    {
+      "boundary_data_error_max": 1.8120921509090303e-06,
+      "boundary_mode": "monopole",
+      "common_interior_max_diff": 1.6137608731531651e-06,
+      "enlarged": "radial",
+      "enlarged_extent": 5.0,
+      "r_max": 5.0,
+      "tail_bound": 0.00016346950638324682,
+      "z_max": 20.0
+    },
+    {
+      "boundary_data_error_max": 3.533293327413501e-07,
+      "boundary_mode": "monopole",
+      "common_interior_max_diff": 3.3899071791177056e-07,
+      "enlarged": "radial",
+      "enlarged_extent": 7.5,
+      "r_max": 7.5,
+      "tail_bound": 1.7130914063816788e-05,
+      "z_max": 20.0
+    },
+    {
+      "boundary_data_error_max": 6.949222726635226e-08,
+      "boundary_mode": "monopole",
+      "common_interior_max_diff": 7.454326437193737e-08,
+      "enlarged": "radial",
+      "enlarged_extent": 11.25,
+      "r_max": 11.25,
+      "tail_bound": 2.330660546054676e-06,
+      "z_max": 20.0
+    },
+    {
+      "boundary_data_error_max": 8.52863201169956e-06,
+      "boundary_mode": "monopole",
+      "common_interior_max_diff": 1.6252245846825285e-06,
+      "enlarged": "axial",
+      "enlarged_extent": 5.0,
+      "r_max": 20.0,
+      "tail_bound": 0.00016346950638324682,
+      "z_max": 5.0
+    },
+    {
+      "boundary_data_error_max": 1.5178111236921173e-06,
+      "boundary_mode": "monopole",
+      "common_interior_max_diff": 1.7811144943234887e-07,
+      "enlarged": "axial",
+      "enlarged_extent": 7.5,
+      "r_max": 20.0,
+      "tail_bound": 1.7130914063816788e-05,
+      "z_max": 7.5
+    },
+    {
+      "boundary_data_error_max": 2.7908100856238767e-07,
+      "boundary_mode": "monopole",
+      "common_interior_max_diff": 2.3899955199212664e-08,
+      "enlarged": "axial",
+      "enlarged_extent": 11.25,
+      "r_max": 20.0,
+      "tail_bound": 2.330660546054676e-06,
+      "z_max": 11.25
+    }
+  ],
+  "domain_enlargement_rates": {
+    "monopole_axial": [
+      5.452976772087618,
+      4.953651621745345
+    ],
+    "monopole_radial": [
+      3.8482964934313424,
+      3.7354460575642023
+    ],
+    "zero_axial": [
+      4.224340620442283,
+      4.363466970003714
+    ],
+    "zero_radial": [
+      3.1117843450306557,
+      3.129145959153602
+    ]
+  },
+  "experiment": "whole_space_gate4_linear",
+  "fault_injection": [
+    {
+      "axis_error_by_resolution": [
+        0.0007390942172463555,
+        0.00018542169465313868,
+        4.638281736637356e-05
+      ],
+      "label": "healthy",
+      "observed_orders": [
+        1.9949482344000877,
+        1.999147692250606
+      ]
+    },
+    {
+      "axis_error_by_resolution": [
+        0.001915344864827244,
+        0.00047970943133444216,
+        0.00011985098642515457
+      ],
+      "label": "axis_coefficient",
+      "observed_orders": [
+        1.9973714689832767,
+        2.0009190209091785
+      ]
+    },
+    {
+      "axis_error_by_resolution": [
+        0.06901511156544411,
+        0.06999497274200381,
+        0.07030999305359854
+      ],
+      "label": "radial_drift_coefficient",
+      "observed_orders": [
+        -0.02033901757236359,
+        -0.006478445042088603
+      ]
+    }
+  ],
+  "grid_refinement": [
+    {
+      "boundary_data_error_max": 8.582489944227599e-06,
+      "boundary_mode": "zero",
+      "dr": 0.125,
+      "dz": 0.125,
+      "interior_max_abs": 0.0007330239579532646,
+      "interior_relative_l2": 0.024049194392258368,
+      "nr": 65,
+      "nz": 129,
+      "observed_order_from_previous": null,
+      "r_max": 8.0,
+      "residual_max": 3.2307490016592055e-14,
+      "tail_bound": 1.2308406260834322e-05,
+      "z_max": 8.0
+    },
+    {
+      "boundary_data_error_max": 8.582489944227599e-06,
+      "boundary_mode": "zero",
+      "dr": 0.0625,
+      "dz": 0.0625,
+      "interior_max_abs": 0.00017935265600223238,
+      "interior_relative_l2": 0.01229537149392935,
+      "nr": 129,
+      "nz": 257,
+      "observed_order_from_previous": 0.9678732415713853,
+      "r_max": 8.0,
+      "residual_max": 7.460698725481052e-14,
+      "tail_bound": 1.2306502977641137e-05,
+      "z_max": 8.0
+    },
+    {
+      "boundary_data_error_max": 8.582489944227599e-06,
+      "boundary_mode": "zero",
+      "dr": 0.03125,
+      "dz": 0.03125,
+      "interior_max_abs": 4.031390619941427e-05,
+      "interior_relative_l2": 0.009852248379904591,
+      "nr": 257,
+      "nz": 513,
+      "observed_order_from_previous": 0.31959042092373674,
+      "r_max": 8.0,
+      "residual_max": 5.186961971048731e-13,
+      "tail_bound": 1.2306387417363783e-05,
+      "z_max": 8.0
+    },
+    {
+      "boundary_data_error_max": 1.1570210487359152e-06,
+      "boundary_mode": "monopole",
+      "dr": 0.125,
+      "dz": 0.125,
+      "interior_max_abs": 0.0007390942172463555,
+      "interior_relative_l2": 0.01712281357703599,
+      "nr": 65,
+      "nz": 129,
+      "observed_order_from_previous": null,
+      "r_max": 8.0,
+      "residual_max": 1.8096635301390052e-14,
+      "tail_bound": 1.2308406260834322e-05,
+      "z_max": 8.0
+    },
+    {
+      "boundary_data_error_max": 1.1581692697038297e-06,
+      "boundary_mode": "monopole",
+      "dr": 0.0625,
+      "dz": 0.0625,
+      "interior_max_abs": 0.00018542169465313868,
+      "interior_relative_l2": 0.004212598953393643,
+      "nr": 129,
+      "nz": 257,
+      "observed_order_from_previous": 2.023137300664306,
+      "r_max": 8.0,
+      "residual_max": 9.414691248821327e-14,
+      "tail_bound": 1.2306502977641137e-05,
+      "z_max": 8.0
+    },
+    {
+      "boundary_data_error_max": 1.1582389854108733e-06,
+      "boundary_mode": "monopole",
+      "dr": 0.03125,
+      "dz": 0.03125,
+      "interior_max_abs": 4.638281736637356e-05,
+      "interior_relative_l2": 0.0010487804163292834,
+      "nr": 257,
+      "nz": 513,
+      "observed_order_from_previous": 2.0059979236460106,
+      "r_max": 8.0,
+      "residual_max": 5.697664562376303e-13,
+      "tail_bound": 1.2306387417363783e-05,
+      "z_max": 8.0
+    }
+  ],
+  "limitations": [
+    "binary64 throughout, no outward rounding and no interval enclosure",
+    "the a posteriori bound covers the continuum truncation error only; the discretisation error is measured, not bounded, because the radial row i=1 is not an M-matrix",
+    "the manufactured source is C^{power-1}, not C^infinity: a C^infinity bump has no elementary free-space potential and the reference would stop being independent",
+    "the measured period-image and radial-wall errors are discretisation dominated at every affordable spacing, which is why the separation is reported from the exact reference instead",
+    "a wrong axis coefficient does not break the observed order, only its amplitude; an order-only gate would miss that fault",
+    "this is a linear gate and licenses no claim about the nonlinear whole-space evolution"
+  ],
+  "operator": "-(d_rr + 3/r d_r + d_zz) psi1 = omega1",
+  "period_wall_separation": [
+    {
+      "axial_half_period": 6.0,
+      "image_to_truncation_ratio": 0.1254712301376446,
+      "interior_radius": 2.5,
+      "measured_finite_cylinder": 0.0024063407650616944,
+      "measured_free_radial_periodic_z": 0.004391117380468615,
+      "measured_nonperiodic_monopole": 0.002913152179310541,
+      "measured_nonperiodic_zero": 0.002906041239201858,
+      "nonperiodic_truncation_bound": 5.6704651858802665e-05,
+      "period_image_exact": 7.114802423250846e-06,
+      "period_image_removed": true,
+      "period_image_tail_bound": 1.3772439037624939e-11,
+      "radial_extent": 8.0,
+      "radial_wall_bound": 1.072793820387323e-05,
+      "spacing": 0.25
+    },
+    {
+      "axial_half_period": 12.0,
+      "image_to_truncation_ratio": 0.057844541824594774,
+      "interior_radius": 2.5,
+      "measured_finite_cylinder": 0.0024052889755422774,
+      "measured_free_radial_periodic_z": 0.0043864391208777165,
+      "measured_nonperiodic_monopole": 0.0029131106533496556,
+      "measured_nonperiodic_zero": 0.0029071868328429396,
+      "nonperiodic_truncation_bound": 1.2306379764383752e-05,
+      "period_image_exact": 7.118568989902428e-07,
+      "period_image_removed": true,
+      "period_image_tail_bound": 1.720048217661596e-12,
+      "radial_extent": 8.0,
+      "radial_wall_bound": 7.969498429487693e-06,
+      "spacing": 0.25
+    }
+  ],
+  "reference": "exact: five-dimensional Newton formula for a superposition of compactly supported radial bumps, closed form, no quadrature",
+  "reproducibility": {
+    "runtime_provenance": {
+      "architecture": "64bit",
+      "byteorder": "little",
+      "git_dirty": true,
+      "git_head": "5a23e5f9f2bc7b8c885981e09af7dc8207c75216",
+      "machine": "AMD64",
+      "numpy_build_config": {
+        "configuration": {
+          "Build Dependencies": {
+            "blas": {
+              "detection method": "pkgconfig",
+              "found": true,
+              "include directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-6ukx7exl/cp311-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+              "lib directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-6ukx7exl/cp311-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+              "name": "scipy-openblas",
+              "openblas configuration": "OpenBLAS 0.3.31.188.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+              "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+              "version": "0.3.31.188.0"
+            },
+            "lapack": {
+              "detection method": "pkgconfig",
+              "found": true,
+              "include directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-6ukx7exl/cp311-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/include",
+              "lib directory": "C:/Users/runneradmin/AppData/Local/Temp/cibw-run-6ukx7exl/cp311-win_amd64/build/venv/Lib/site-packages/scipy_openblas64/lib",
+              "name": "scipy-openblas",
+              "openblas configuration": "OpenBLAS 0.3.31.188.0  USE64BITINT DYNAMIC_ARCH NO_AFFINITY SkylakeX MAX_THREADS=24",
+              "pc file directory": "D:/a/numpy-release/numpy-release/.openblas",
+              "version": "0.3.31.188.0"
+            }
+          },
+          "Compilers": {
+            "c": {
+              "commands": "cl",
+              "linker": "link",
+              "name": "msvc",
+              "version": "19.44.35226"
+            },
+            "c++": {
+              "commands": "cl",
+              "linker": "link",
+              "name": "msvc",
+              "version": "19.44.35226"
+            },
+            "cython": {
+              "commands": "cython",
+              "linker": "cython",
+              "name": "cython",
+              "version": "3.2.4"
+            }
+          },
+          "Machine Information": {
+            "build": {
+              "cpu": "x86_64",
+              "endian": "little",
+              "family": "x86_64",
+              "system": "windows"
+            },
+            "host": {
+              "cpu": "x86_64",
+              "endian": "little",
+              "family": "x86_64",
+              "system": "windows"
+            }
+          },
+          "Python Information": {
+            "path": "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\build-env-jxn7bo0g\\Scripts\\python.exe",
+            "version": "3.11"
+          },
+          "SIMD Extensions": {
+            "baseline": [
+              "X86_V2"
+            ],
+            "found": [
+              "X86_V3"
+            ]
+          }
+        },
+        "source": "numpy.__config__.CONFIG"
+      },
+      "numpy_build_config_sha256": "590aa5b174e7f5606bf918092dca9ad7de2fd7714006b456b5e12c5a71101a0a",
+      "numpy_version": "2.4.6",
+      "platform": "Windows-10-10.0.26200-SP0",
+      "python_implementation": "CPython",
+      "python_version": "3.11.9",
+      "schema": "ns-certificate-lab/runtime-provenance/v2",
+      "source_fingerprint_algorithm": "sha256-path-and-content-v1",
+      "source_fingerprint_file_count": 83,
+      "source_fingerprint_scope": [
+        "pyproject.toml",
+        "Dockerfile",
+        ".dockerignore",
+        "requirements",
+        "src",
+        "experiments",
+        "configs",
+        "scripts"
+      ],
+      "source_fingerprint_sha256": "a394bf7a0675f2abbb54afd2f06b341345083ce0512ae09aec6c15132afb1c9f",
+      "thread_environment": {
+        "BLIS_NUM_THREADS": null,
+        "MKL_DYNAMIC": null,
+        "MKL_NUM_THREADS": null,
+        "NUMEXPR_NUM_THREADS": null,
+        "OMP_DYNAMIC": null,
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "VECLIB_MAXIMUM_THREADS": null
+      }
+    }
+  },
+  "schema_version": 1,
+  "source_l1_norm_5d": 0.3001318374224892,
+  "source_mass": 0.011403642381148611,
+  "source_support_radius": 1.7000000000000002,
+  "statement": "linear whole-space elliptic gate with non-periodic z, measured against an exact closed-form free-space reference; a discretisation and domain-truncation gate, not a statement about any evolution",
+  "tail_error": [
+    {
+      "bound_dominates_boundary_error": true,
+      "bound_dominates_interior_difference": true,
+      "boundary_data_error_max": 1.8120921509090303e-06,
+      "common_interior_max_diff": 1.6137608731531651e-06,
+      "enlarged": "radial",
+      "r_max": 5.0,
+      "sharpness": 0.01108519987000305,
+      "tail_bound": 0.00016346950638324682,
+      "z_max": 20.0
+    },
+    {
+      "bound_dominates_boundary_error": true,
+      "bound_dominates_interior_difference": true,
+      "boundary_data_error_max": 3.533293327413501e-07,
+      "common_interior_max_diff": 3.3899071791177056e-07,
+      "enlarged": "radial",
+      "r_max": 7.5,
+      "sharpness": 0.02062524693224851,
+      "tail_bound": 1.7130914063816788e-05,
+      "z_max": 20.0
+    },
+    {
+      "bound_dominates_boundary_error": true,
+      "bound_dominates_interior_difference": true,
+      "boundary_data_error_max": 6.949222726635226e-08,
+      "common_interior_max_diff": 7.454326437193737e-08,
+      "enlarged": "radial",
+      "r_max": 11.25,
+      "sharpness": 0.02981653736919697,
+      "tail_bound": 2.330660546054676e-06,
+      "z_max": 20.0
+    },
+    {
+      "bound_dominates_boundary_error": true,
+      "bound_dominates_interior_difference": true,
+      "boundary_data_error_max": 8.52863201169956e-06,
+      "common_interior_max_diff": 1.6252245846825285e-06,
+      "enlarged": "axial",
+      "r_max": 20.0,
+      "sharpness": 0.05217261739143306,
+      "tail_bound": 0.00016346950638324682,
+      "z_max": 5.0
+    },
+    {
+      "bound_dominates_boundary_error": true,
+      "bound_dominates_interior_difference": true,
+      "boundary_data_error_max": 1.5178111236921173e-06,
+      "common_interior_max_diff": 1.7811144943234887e-07,
+      "enlarged": "axial",
+      "r_max": 20.0,
+      "sharpness": 0.08860070852249359,
+      "tail_bound": 1.7130914063816788e-05,
+      "z_max": 7.5
+    },
+    {
+      "bound_dominates_boundary_error": true,
+      "bound_dominates_interior_difference": true,
+      "boundary_data_error_max": 2.7908100856238767e-07,
+      "common_interior_max_diff": 2.3899955199212664e-08,
+      "enlarged": "axial",
+      "r_max": 20.0,
+      "sharpness": 0.11974331012502606,
+      "tail_bound": 2.330660546054676e-06,
+      "z_max": 11.25
+    }
+  ],
+  "understated_source_bound": 1.6346950638324684e-07,
+  "zero_frequency": [
+    {
+      "axial_period": 12.0,
+      "free_space_far_field": 5.9393970735149015e-05,
+      "periodic_zero_mode_far_field": 3.9595980490099345e-05,
+      "radial_extent": 4.0,
+      "ratio": 0.6666666666666667
+    },
+    {
+      "axial_period": 12.0,
+      "free_space_far_field": 7.424246341893627e-06,
+      "periodic_zero_mode_far_field": 9.898995122524836e-06,
+      "radial_extent": 8.0,
+      "ratio": 1.3333333333333335
+    },
+    {
+      "axial_period": 12.0,
+      "free_space_far_field": 9.280307927367034e-07,
+      "periodic_zero_mode_far_field": 2.474748780631209e-06,
+      "radial_extent": 16.0,
+      "ratio": 2.666666666666667
+    },
+    {
+      "axial_period": 12.0,
+      "free_space_far_field": 1.1600384909208792e-07,
+      "periodic_zero_mode_far_field": 6.186871951578023e-07,
+      "radial_extent": 32.0,
+      "ratio": 5.333333333333334
+    }
+  ]
+}

@@ -189,6 +189,106 @@ python -m experiments.run_hou_time_refinement --config configs/hou_time_refineme
 同一空間格子・同一終了時刻で固定 \(\Delta t,\Delta t/2,\Delta t/4\) を
 比較し、時間誤差と空間誤差を分離します。
 
+### 10. Track F 有限モード除外証明書(数秒)
+
+```console
+python -m experiments.run_track_f_finite_mode_scan --config configs/track_f_finite_mode_scan.json --output-dir outputs/track_f_finite_mode_scan_replay
+```
+
+滑らかな外力を使う Clay (C)/(D) 反例の「有限モード ansatz」族について、
+三線型形式の相殺 \(\langle u,(u\cdot
+abla)u
+angle=0\) を**厳密整数演算**で
+検証し(浮動小数点を一切使わない)、除外判定を出力します。これは探索の
+陰性結果ではなく**除外定理**です
+([docs/research_notes/track_f_finite_mode_nogo.md](docs/research_notes/track_f_finite_mode_nogo.md))。
+
+### 11. 全空間 Gate 4(線形楕円ゲート、約 1 分)
+
+```console
+python -m experiments.run_whole_space_gate4 --config configs/whole_space_gate4.json --output-dir outputs/whole_space_gate4_replay
+```
+
+非周期 \(z\) の有限 box 上で \(-\mathcal L_5\psi_1=\omega_1\) を解き、
+**閉形式の厳密な自由空間参照解**に対して格子細分・領域拡大・尾部上界・
+周期像分離・独立 Cartesian 検査を測定します。軸方向は FFT を使わない
+密な離散サイン変換で、既存ソルバと規約を共有しません。これは**線形**
+ゲートであり、非線形発展について何も主張しません
+([docs/whole_space_transition.md](docs/whole_space_transition.md))。
+
+### 12. 全空間 Gate 5(微分 tail・速度回復・小振幅非線形、数分)
+
+```console
+python -m experiments.run_whole_space_gate5 --config configs/whole_space_gate5.json --output-dir outputs/whole_space_gate5_replay
+```
+
+Green 核の解析微分から導いた**微分 tail 上界**を閉形式参照解に対して検査し、
+自由空間速度回復 API の空間・領域収束、軸正則性、独立 Cartesian 検査、
+故障注入を測定し、滑らか・コンパクト台・発散ゼロの**小振幅純粋旋回**初期値から
+非周期 \(z\) の全空間非線形短時間発展を回します。最後に、低周波のみの
+滑らかな外力が非線形 triad 経由で高シェルを駆動しうるかを有限 cascade 模型で
+判定します
+([docs/research_notes/green_derivative_tail_bounds.md](docs/research_notes/green_derivative_tail_bounds.md)、
+[docs/research_notes/cascade_toy_model.md](docs/research_notes/cascade_toy_model.md))。
+
+### 13. 全空間 Gate 6(中振幅校正・振幅継続・区間証明書、十数分)
+
+```console
+python -m experiments.run_whole_space_gate6 --config configs/whole_space_gate6.json --output-dir outputs/whole_space_gate6_replay
+```
+
+境界条件 4 種(zero / monopole / dipole / quadrupole)の core 差を Richardson
+離散化誤差と比較して校正し、`dr`/`dz`/joint/`dt`/積分器/`Rmax`/`Zmax` を一因子ずつ
+分離し、明示的な初期値族について振幅・形状継続を実行して複合ゲートで順位付けし、
+動的領域拡大と**厳密有理数区間演算による snapshot 証明書**を生成・独立検査します。
+**2 つの前登録基準は不合格として記録されます**
+([docs/whole_space_transition.md](docs/whole_space_transition.md))。
+
+### 13.5 Track P 周期スラブ証明書(数分)
+
+```console
+python -m experiments.run_track_p_slab --config configs/track_p_slab.json --output-dir outputs/track-p-replay
+```
+
+周期 T³ 上の有理 Fourier 初期値 3 族(P1/P2/P3)について、厳密有理数演算で
+Galerkin 軌道の Picard 包含・厳密な連続 NS 残差(= Galerkin tail)・H⁴ control
+不等式・control ODE 管を組み立て、「真の周期強解がスラブ全体に存在し
+‖u−u_a‖_Ḣ⁴ ≤ R(t)」の条件付き証明書(古典外部定理 EXT-P1/P2/P3 は忠実記録、
+Lean 公理化なし)を 12 スラブ分生成・独立検査します
+([docs/research_notes/track_p_periodic.md](docs/research_notes/track_p_periodic.md))。
+**これは特異点証明ではなく、軌道近傍の正則性の証明です。**
+
+### 13.6 Track P スラブ連結(certified horizon、約 1 時間)
+
+```console
+python experiments/run_track_p_chain.py
+```
+
+第 9 便の単発スラブをスカラー H⁴ 誤差半径で連結します: 各スラブは**厳密有理
+再中心化点**から開始し(区間 box はスラブ境界を越えて伝播しない = wrapping の
+入る場所が構造的にない)、Taylor 終端包絡+dyadic 丸め+厳密 Leray 射影で捨てた
+幅は δ_{n+1} = R_n(h) + transfer としてスカラー半径に課金されます。P1/P2/P3 ×
+ν ∈ {1/4, 1/10, 1/40, 1/100} の 12 連結 + 長尺 1 本(h = 1/8192、48 スラブ予算)
+を前登録 config([configs/track_p_chain.json](configs/track_p_chain.json))で実行し、
+独立 checker が全リンクを再計算します。停止は前登録分類法で必ず分類され、
+**証明区間の終了は特異点の主張ではありません**
+([docs/research_notes/track_p_chain.md](docs/research_notes/track_p_chain.md))。
+
+### 14. 全空間 Gate 7(Picard 領域からの離脱・τ/Re 継続・時空スラブ証明書、数分)
+
+```console
+python -m experiments.run_tau_continuation --config configs/tau_continuation_gate7.json --output-dir outputs/tau_continuation_gate7_replay
+```
+
+第 6 便の 32 点スイープを無次元座標 `(Re, aspect, c, τ)` へ再分類し(到達 `τ` は
+最大 0.0233 だったことが判明)、Picard 梯子(level 0/1/2 + 完全解を同時積分)で
+第一 Picard 反復からの乖離を**実測**し、前登録 τ = {0.025 … 1.0} と
+Re = {10 … 400} × 族 S/A/H の 18 run を実行し、乖離ゲート 9 項目と昇格 2 基準で
+判定し、`[t_n, t_{n+1}]` の**時空スラブ証明書**(cell 内部・全時刻を包含、
+厳密有理数、独立 checker + 改竄拒否)を生成します。
+**乖離ゲートは全項目合格、昇格候補はゼロ**
+([docs/research_notes/tau_continuation_gate7.md](docs/research_notes/tau_continuation_gate7.md))。
+
 より厳密な再現プロトコルは [docs/reproducibility.md](docs/reproducibility.md)
 を参照してください。
 

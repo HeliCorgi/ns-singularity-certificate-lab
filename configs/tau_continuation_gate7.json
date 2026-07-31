@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "experiment": "tau_continuation_gate7",
+  "preregistration": {
+    "recorded_before_any_run": true,
+    "tau_checkpoints": [0.025, 0.05, 0.1, 0.2, 0.4, 0.7, 1.0],
+    "reynolds_series": [10.0, 25.0, 50.0, 100.0, 200.0, 400.0],
+    "families": ["S", "A", "H"],
+    "departure_gate": {
+      "relative_distance_to_first_picard": 0.10,
+      "resolution_stability": 0.20,
+      "measurable_advection_over_source": 0.02,
+      "front_points_radial": 10.0,
+      "front_points_axial": 10.0,
+      "outer_band_fraction": 1.0e-6,
+      "relative_divergence": 0.05,
+      "integrator_agreement": 0.05,
+      "time_step_agreement": 0.05
+    },
+    "promotion": {
+      "critical_concentration": {
+        "l3_growth": 1.05,
+        "shell_count_change": -0.05,
+        "width_contraction": 0.90
+      },
+      "multiscale": {
+        "shell_count_growth": 0.30,
+        "outer_shell_fraction_growth": 2.0
+      }
+    }
+  },
+  "amendments": [
+    {
+      "field": "grids.ultra",
+      "change": "added a 145x289 grid and evaluated the departure gate on it",
+      "reason": "The first pass failed exactly two preregistered checks, both of them front-resolution checks: the flagship gave 6.5 radial and 7.0 axial points across the 10-90 front on the 97x193 grid against a preregistered bar of 10. No threshold is altered; the bar stays at 10 points in each direction. What changes is the amount of computation spent trying to meet it, which the preregistration does not fix. The resolution-stability check now compares 145x289 against 97x193 rather than 97x193 against 65x129, so it remains a genuine two-resolution comparison.",
+      "recorded_before_seeing_the_amended_result": true
+    }
+  ],
+  "reference_reynolds": 100.0,
+  "grids": {
+    "coarse": {"nr": 49, "nz": 97},
+    "medium": {"nr": 65, "nz": 129},
+    "fine": {"nr": 97, "nz": 193},
+    "ultra": {"nr": 145, "nz": 289}
+  },
+  "domain": {"r_max": 3.0, "z_max": 3.6},
+  "nominal_amplitude": 10.0,
+  "boundary_mode": "dipole",
+  "integrator": "rk4",
+  "verification_integrator": "ssprk3",
+  "legacy_sweep": {
+    "path": "outputs/whole_space_gate6_v1/continuation.csv",
+    "viscosity": 0.005,
+    "physical_time": 0.024
+  }
+}

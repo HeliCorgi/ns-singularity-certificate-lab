@@ -49,3 +49,39 @@ jobs:
           python -m experiments.run_time_convergence
           --config configs/baseline_time_convergence.json
           --output-dir outputs/ci-time-convergence
+
+      - name: Replay Track-F finite-mode exclusion certificates
+        run: >-
+          python -m experiments.run_track_f_finite_mode_scan
+          --config configs/track_f_finite_mode_scan.json
+          --output-dir outputs/ci-track-f-finite-mode-scan
+
+      - name: Replay the linear whole-space Gate 4
+        run: >-
+          python -m experiments.run_whole_space_gate4
+          --config configs/whole_space_gate4.json
+          --output-dir outputs/ci-whole-space-gate4
+
+      - name: Replay whole-space Gate 5
+        run: >-
+          python -m experiments.run_whole_space_gate5
+          --config configs/whole_space_gate5.json
+          --output-dir outputs/ci-whole-space-gate5
+
+      - name: Replay whole-space Gate 6
+        run: >-
+          python -m experiments.run_whole_space_gate6
+          --config configs/whole_space_gate6.json
+          --output-dir outputs/ci-whole-space-gate6
+
+      - name: Replay whole-space Gate 7
+        run: >-
+          python -m experiments.run_tau_continuation
+          --config configs/tau_continuation_gate7.json
+          --output-dir outputs/ci-whole-space-gate7
+
+      - name: Replay Track P slab certificates
+        run: >-
+          python -m experiments.run_track_p_slab
+          --config configs/track_p_slab.json
+          --output-dir outputs/ci-track-p-slab

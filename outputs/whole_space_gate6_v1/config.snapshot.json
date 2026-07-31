@@ -1,0 +1,149 @@
+{
+  "calibration": {
+    "amplitude": 10.0,
+    "boundary_modes": [
+      "zero",
+      "monopole",
+      "dipole",
+      "quadrupole"
+    ],
+    "boxes": [
+      [
+        2.5,
+        2.5
+      ],
+      [
+        1.6,
+        1.9
+      ],
+      [
+        1.35,
+        1.65
+      ]
+    ],
+    "core_fraction": 0.7,
+    "radial_points": [
+      49,
+      97,
+      193
+    ],
+    "steps": 60,
+    "thresholds": {
+      "boundary_over_richardson": 8.0,
+      "front_points": 7.0,
+      "integrator_over_signal": 0.01,
+      "outer_band_lower": 1e-08,
+      "outer_band_upper": 0.001,
+      "tail_bound_over_core_change": 0.1,
+      "time_over_space": 0.1
+    },
+    "time_step": 0.0004
+  },
+  "continuation": {
+    "amplitudes": [
+      2.0,
+      5.0,
+      10.0,
+      20.0
+    ],
+    "axial_supports": [
+      1.0,
+      1.5
+    ],
+    "concentrations": [
+      0.0,
+      2.0
+    ],
+    "pilot": {
+      "nr": 49,
+      "nz": 97,
+      "r_max": 2.0,
+      "steps": 80,
+      "time_step": 0.0003,
+      "z_max": 2.4
+    },
+    "promotion_resolutions": [
+      49,
+      97,
+      193
+    ],
+    "radial_supports": [
+      0.8,
+      1.2
+    ],
+    "top_candidates": 3
+  },
+  "domain_expansion": {
+    "policy": {
+      "axial_growth_cells": 16,
+      "boundary_difference_ratio": 0.001,
+      "maximum_expansions": 4,
+      "multipole_remainder_ratio": 0.01,
+      "outer_band_fraction": 0.0001,
+      "radial_growth_cells": 16,
+      "tail_bound_ratio": 0.01
+    },
+    "trigger_probe": {
+      "boundary_difference_ratio": 0.0001,
+      "multipole_remainder_ratio": 0.0001,
+      "outer_band_fraction": 0.001,
+      "tail_bound_ratio": 0.0001
+    }
+  },
+  "experiment": "whole_space_gate6_calibration_and_continuation",
+  "family": {
+    "axial_concentration": 0.5,
+    "axial_support": 1.5,
+    "radial_support": 1.2
+  },
+  "schema_version": 1,
+  "snapshot_certificate": {
+    "interior_radius": 1.4,
+    "nr": 25,
+    "nz": 49,
+    "precision_bits": 64,
+    "r_max": 2.0,
+    "steps": 5,
+    "time_step": 0.0004,
+    "z_max": 2.4
+  },
+  "verification": {
+    "amplitude": 10.0,
+    "axial_extents": [
+      1.9,
+      2.85,
+      4.275
+    ],
+    "axial_points": [
+      97,
+      193,
+      385
+    ],
+    "integrators": [
+      "ssprk3",
+      "rk4"
+    ],
+    "nr": 97,
+    "nz": 193,
+    "r_max": 1.6,
+    "radial_extents": [
+      1.6,
+      2.4,
+      3.6
+    ],
+    "radial_points": [
+      49,
+      97,
+      193
+    ],
+    "steps": 60,
+    "time_factors": [
+      1,
+      2,
+      4
+    ],
+    "time_step": 0.0004,
+    "z_max": 1.9
+  },
+  "viscosity": 0.005
+}

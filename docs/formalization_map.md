@@ -10,7 +10,10 @@
 validated numerical object / connected physical solution /
 finite-time breakdown theorem / Clay-complete result)を用いる。
 
-最終更新: 2026-07-28(branch `fable5-mainline`)
+最終更新: 2026-07-29(branch `fable5-mainline`、第 6 便)
+
+**Lean 識別子 `F-1`〜`F-11` の確定登録簿は `docs/final_target.md` §4 にある。**
+外部ノート由来の採番衝突はそこで解消済みで、本書の節見出しはその登録簿に従う。
 
 ---
 
@@ -247,6 +250,201 @@ M0 (Clay命題固定)
 - **区間証明書へ:** \(Y,Z,K\) の数値を二進有理数上界として出力する
   発見コード側の変換器(独立実装、未着手)。
 
+### F-6 Galerkin エネルギー上界 — **形式化済み**(2026-07-29)
+
+- **状態:** Lean 4 で証明完了。`formal/NSSingularity/GalerkinNoBlowup.lean`
+  (`lake build` 成功、`sorry`・`admit`・新規 `axiom` なし)。
+- **役割:** Track F(滑らかな外力による Clay (C)/(D) 反例)の**有限モード
+  ansatz 族を閉じる除外定理**の中核。数学的全体像は
+  `docs/research_notes/track_f_finite_mode_nogo.md`。
+- **命題:** 実 inner product 空間 `E` 上の可微分曲線 `u` が
+  `⟪u t, u' t⟫ ≤ ‖u t‖ F t` を満たせば `‖u b‖ ≤ ‖u 0‖ + ∫₀ᵇ F`。
+  とくに `u' = g + B(u,u) + A u` で `⟪x,B x x⟫ = 0`(エネルギー中立)、
+  `⟪x,A x⟫ ≤ 0`(散逸)、`‖g t‖ ≤ F t` なら、`‖u‖` は `[0,T]` 上
+  `‖u 0‖ + ∫₀ᵀ F` で一様に抑えられ、`t → T⁻` で `+∞` へ発散しない。
+- **Lean 定理名:**
+  - `NSSingularity.norm_le_of_energy_inequality` — 解析的中核(Grönwall)
+  - `NSSingularity.inner_galerkin_le` — PDE 構造(`EnergyNeutral`+`Dissipative`)
+    が入る唯一の箇所
+  - `NSSingularity.galerkin_norm_le` — **F-6 本体**
+  - `NSSingularity.galerkin_norm_le_of_mem` — `[0,T]` 上の一様上界
+  - `NSSingularity.galerkin_not_tendsto_atTop` — 有限時間爆発の不可能性
+- **定義:** `EnergyNeutral B := ∀ x, ⟪x, B x x⟫ = 0`、
+  `Dissipative A := ∀ x, ⟪x, A x⟫ ≤ 0`。
+- **仮定:** 有限次元性は**不要**(状態空間は任意の実 inner product 空間)。
+  `F` の非負性も仮定しない(`‖g t‖ ≤ F t` から従う)。
+- **依存公理:** 本ファイルの全 5 定理について `#print axioms` は
+  `[propext, Classical.choice, Quot.sound]`。
+- **mathlib 基盤(実際に使用):** `HasDerivAt.inner`、`HasDerivAt.sqrt`、
+  `antitoneOn_of_deriv_nonpos`、
+  `intervalIntegral.integral_hasDerivAt_right`、
+  `intervalIntegral.continuousOn_primitive_interval`、
+  `intervalIntegral.integral_mono_interval`、`real_inner_le_norm`、
+  `ContinuousOn.stronglyMeasurableAtFilter`。
+- **形式化していないこと:** (a) Navier–Stokes の移流項が実際に
+  `EnergyNeutral` であること(= Lemma 1。紙上 2 行、個別モード集合について
+  `galerkin_obstruction.py` が厳密整数演算で機械検証)、(b) 有界性から
+  `T` を越える滑らかな延長を導く常微分方程式の議論(= `F-7`)、
+  (c) 有限次元空間上のノルム同値、(d) `ClayStatement.lean` との接続。
+- **区間証明書へ:** 不要(この命題自体は解析的で、数値入力を持たない)。
+
+### F-7 Galerkin ODE の延長(未着手)
+
+- **命題:** `c' = g(t) + B(c,c) + A c`(`g` 連続、`B` 双線型、`A` 線型)の解が
+  `[0,T)` 上有界なら、最大解は `T` を越えて延長される。`g ∈ C^∞` なら
+  延長も `C^∞`。
+- **役割:** `F-6` の有界性を「特異でない」へ変える最後の一歩。
+  `track_f_finite_mode_nogo.md` Theorem 1(iii)。
+- **mathlib 基盤:** `Mathlib.Analysis.ODE.PicardLindelof`、
+  `ODE_solution_unique` 系。多項式右辺は局所 Lipschitz なので追加理論は不要。
+- **数値のみの部分:** なし(純粋な常微分方程式論)。
+
+### F-7a / F-7b Galerkin ODE の延長 — **部分的に形式化済み**(2026-07-29 第 4 便)
+
+- **状態:** `formal/NSSingularity/FiniteModeNoGo.lean`。`lake build` 成功、
+  `sorry`・`admit`・新規 `axiom` なし。
+- **F-7a(端点到達、形式化済み)**: `[0,T)` 上で微分可能・導関数が連続かつ
+  有界な曲線は `t → T⁻` で極限を持つ。
+  `NSSingularity.exists_tendsto_nhdsWithin_of_norm_deriv_le`。
+  補助: `intervalIntegrable_of_continuousOn_bounded`。
+  使用した mathlib: `intervalIntegral.integral_eq_sub_of_hasDerivAt`、
+  `intervalIntegral.continuousOn_primitive_interval`、
+  `Integrable.of_bound`、`intervalIntegrable_iff_integrableOn_Ioo_of_le`。
+- **F-7b(自励系の局所延長、形式化済み)**:
+  `NSSingularity.exists_local_galerkin_solution`、
+  `NSSingularity.contDiff_galerkinField`。使用した mathlib:
+  `ContDiffAt.exists_forall_mem_closedBall_exists_eq_forall_mem_Ioo_hasDerivAt₀`、
+  `ContDiff.clm_apply`、`ContinuousLinearMap.contDiff`。
+- **F-7c(時間依存外力、形式化済み)**: 上記 API は確かに `f : E → E` の自励系
+  専用だが、それは*その定理*の性質であって mathlib の ODE API 全体の性質では
+  なかった。`IsPicardLindelof` 自体は `f : ℝ → E → E` の時間依存場に対して
+  述べられている。下の「F-7c」節を参照。**公理化していない。**
+- **論理接続**: `NSSingularity.not_isBreakdownCandidate_of_galerkin` が
+  F-6 の状態上界 → 速度上界 → F-7a を連結し、
+  「固定有限モード候補は破綻候補になれない」を結論する。
+  `IsBreakdownCandidate u T := 0 < T ∧ ¬∃L, Tendsto u (𝓝[<]T) (𝓝 L)`。
+- **接続していないこと**: `ClayStatement.lean` との接続。それには
+  `V_S` と係数空間の Fourier 同型、`⟨u,(u·∇)u⟩` と `advectionForm` の同一視
+  (解析側は mathlib にトーラス関数空間がなく未着手)、および
+  Navier–Stokes の局所一意性理論(mathlib になし)が要る。
+
+### F-12 三線型相殺の Fourier 表現 — **形式化済み**(2026-07-29 第 4 便)
+
+- **命題:** `k_i · a_i = 0` を満たす振幅族に対し、共鳴 3 次形式
+  `Σ_{p+q+s=0} (a_q·k_s)(a_p·a_s)` は恒等的にゼロ。
+- **Lean 定理名:** `NSSingularity.advectionForm_eq_zero`。
+  定義 `dotAmp`(双線型内積)、`resonantTriples`、`advectionForm`。
+- **証明:** `p ↔ s` の入れ替えが共鳴集合の対合であることを
+  `Finset.sum_nbij'` で使い、`2·form = Σ (a_p·a_s)(a_q·(k_p+k_s))` を
+  `k_p+k_s = −k_q` と発散ゼロ条件で消す。
+- **形式化していないこと:** これは **Fourier 表現での代数的恒等式**であり、
+  `∫_{𝕋³} u·(u·∇)u = 0` という多様体上の積分の形式化ではない。
+  両者を繋ぐには mathlib にないトーラス関数空間と Fourier 同型が要る。
+- 対応する厳密整数演算の機械検証は
+  `src/ns_certificate_lab/galerkin_obstruction.py` の
+  `verify_trilinear_cancellation`。
+
+### F-13 有限 Fourier 空間のノルム同値 — **形式化済み**(2026-07-29 第 4 便)
+
+- **命題:** (a) 重み付き和 `Σ w_i c_i² ≤ W Σ c_i²`(`w_i ≤ W`)、
+  (b) Cauchy–Schwarz `(Σ|c_i|)² ≤ |S| Σ c_i²` とその平方根形。
+- **Lean 定理名:** `NSSingularity.weighted_sq_sum_le`、
+  `NSSingularity.sq_sum_abs_le_card_mul_sum_sq`、
+  `NSSingularity.sum_abs_le_sqrt_card_mul_sqrt_sum_sq`。
+- これらは note の `‖u‖_{H^s} ≤ (1+4π²R_S²)^{s/2}‖u‖` と
+  `‖∂^α u‖_∞ ≤ (2πR_S)^{|α|}√|S|‖u‖` が使う定数そのものである。
+  「有限次元空間ではノルムが同値」という抽象命題ではなく、
+  実際に使う明示定数の形で形式化した。
+- 使用した mathlib: `Finset.sq_sum_le_card_mul_sum_sq`(Chebyshev)、
+  `Real.le_sqrt_of_sq_le`、`Real.sqrt_mul`。
+
+### F-14 / F-15 5 次元 Green 核の動径恒等式 — **形式化済み**(2026-07-29 第 5 便)
+
+- **状態:** `formal/NSSingularity/GreenAndCascade.lean`。`lake build` 成功、
+  `sorry`・`admit`・新規 `axiom` なし。
+- **F-14:** `greenProfile R = R^(-3:ℤ)` が `f'' + 4f'/R = 0` を満たす
+  (`greenProfile_radial_laplace_eq_zero`、微分値は
+  `hasDerivAt_greenProfile` / `hasDerivAt_greenProfileDeriv`)。
+  使用した mathlib: `hasDerivAt_zpow`、`zpow_neg`、`zpow_natCast`。
+- **F-15:** `flux_newtonSlope`(`R⁴ψ'(R) = −m(R)`)と `hasDerivAt_flux`。
+- **形式化していないこと:** `Δ₅G₅ = −δ₀` の分布論的形式化。mathlib に展開がなく、
+  本リポジトリのどの上界も Dirac 側を使わない。これらは**動径プロファイルの
+  1 次元恒等式**である。
+- **数値側との対応:** `src/ns_certificate_lab/free_space_recovery.py` の
+  微分 tail 上界と、`whole_space_gate.py` の閉形式参照解の出発点。
+
+### F-16 shell 指数領域(仮定明示)— **形式化済み**(2026-07-29 第 5 便)
+
+- **状態:** 同ファイル。`ShellAdmissible γ σ β` を**構造体**として定義し、
+  4 条件(帯域幅発散・スペクトル可和・エネルギー有界・散逸可積分・臨界ノルム発散)を
+  フィールドとして明示。どれも黙って落とせない。
+- **定理:** `ShellAdmissible.bandwidth_lt_one`(`γ < 1`)、
+  `ShellAdmissible.sigma_mem`(`σ ∈ Ico (max 0 (2γ−1)) γ`)、
+  `not_shellAdmissible_of_one_le`(`γ ≥ 1` なら admissible な点はない)。
+- **形式化していないこと:** 4 つの不等式を PDE から導く部分。それは紙上であり
+  端点正則性定理を**引用**する(`F-11`)。本定理は指数の算術である。
+
+### F-7c 時間依存外力での局所延長 — **形式化済み**(2026-07-29 第 7 便)
+
+- **ファイル:** `formal/NSSingularity/TimeDependentGalerkin.lean`。
+- **定理:**
+  - `galerkin_isPicardLindelof` — 射影 Galerkin 場
+    `f t x = g t + B x x + A x` に対する mathlib の `IsPicardLindelof` の
+    4 条件。実質的な内容は `B x x` の**局所** Lipschitz 評価であり、
+    `B x x - B y y = B x (x-y) + B (x-y) y` から定数 `2‖B‖(‖x₀‖+a)` を得る。
+    球半径 `a` が必ず入り、大域定数にはできない。
+  - `galerkin_local_solution` — 両側局所解の存在。
+  - `galerkin_local_solution_of_continuous` — 外力の上界を連続性から取り出す版。
+- **使用した mathlib:** `IsPicardLindelof`(**時間依存**構造体)、
+  `IsPicardLindelof.exists_eq_forall_mem_Icc_hasDerivWithinAt₀`、
+  `ContinuousLinearMap.le_opNorm₂`、`LipschitzOnWith.of_dist_le_mul`。
+- **2 経路の比較**(セッション指示による):
+
+  | | 自励化経路 | 直接経路(採用) |
+  |---|---|---|
+  | 構成空間 | `E × ℝ` | `E` |
+  | 追加 instance 義務 | `CompleteSpace (E × ℝ)`、Prod ノルム評価 | なし |
+  | 追加定理 | `galerkin_solution_of_autonomised`(70 行) | なし |
+  | 第 2 成分の恒等性 | 必要 | 不要 |
+
+  直接経路が仮定・行数ともに厳密に少ない。
+
+### F-7c 還元(放棄した自励化経路の記録) — 第 5 便
+
+- **定理:** `galerkin_solution_of_autonomised`。自励化した場
+  `F(x,s) = (g s + B x x + A x, 1)` の局所流 `α` が `(L,T)` を通るなら、
+  時間依存 Galerkin 系は `L` を通る局所解を持つ。
+  証明は第 2 成分が `s' = 1`、`s(T) = T` から `s(t) = t` であることによる
+  (`Convex.norm_image_sub_le_of_norm_hasDerivWithin_le` で導関数ゼロ ⇒ 定数)。
+- **状態:** 定理として正しく、公理を含まないので残置するが、F-7c は上の直接
+  経路で閉じており、これに依存するものは無い。
+
+### Clay への限定的接続 — **形式化済み**(2026-07-29 第 5 便)
+
+- **定理:** `breakdown_time_set_empty`。固定有限帯域 Galerkin 軌道について
+  `{T | IsBreakdownCandidate u T} = ∅`。1 点の否定から**時刻集合の空性**へ
+  強めた形。
+- **接続していないこと:** `ClayStatement.lean`。必要なのは Fourier 同型、
+  `⟨u,(u·∇)u⟩` と `advectionForm` の同一視の解析側、および
+  Navier–Stokes の局所一意性理論(いずれも mathlib になし)。
+
+### F-17 / F-18 / F-19 証明書合成層 — **形式化済み**(2026-07-29 第 6 便)
+
+- **状態:** `formal/NSSingularity/CertificateLayer.lean`。`lake build` 成功、
+  `sorry`・`admit`・新規 `axiom` なし。
+- **F-17:** ポテンシャル誤差 → 速度誤差。`velocity_radial_error_le`、
+  `velocity_axial_error_le`。回復が線型なので積の規則は不要。
+- **F-18:** 積差恒等式 `ab − a'b' = (a−a')b + a'(b−b')`(`product_difference`)と
+  そこから `product_error_le`、`advection_error_le`。
+- **F-19:** 短時間 Grönwall。mathlib の
+  `norm_le_gronwallBound_of_norm_deriv_right_le` と `gronwallBound_of_K_ne_0` を
+  使い、証明書が検査しやすい `(δ+εt)e^{Kt}` 形へ落とす
+  (`K` で割らないので微小 Lipschitz 定数でも検査可能)。
+- **Clay 制限の梱包:** `FixedBandwidthCandidate` 構造体と
+  `breakdown_times_empty` / `reaches_every_time`。
+- **形式化していないこと:** 上界の**計算**、`L^∞` 最大値原理、
+  `ClayStatement.lean` への橋。
+
 ### F-5 最終 Clay 反例命題までの依存関係
 
 段階 0 として `formal/NSSingularity/ClayStatement.lean` に (A)–(D) と
@@ -283,12 +481,36 @@ F-5 (Clay命題定義)
 'NSSingularity.tendsto_physicalTime_atTop' depends on axioms: [propext, Classical.choice, Quot.sound]
 ```
 
-同日、`grep -RInE '\bsorry\b|\badmit\b|axiom ' formal` は文書コメント中の
-言及のみを返し、コード中の `sorry`/`admit`/新規 `axiom` はゼロ。
-`lake build` は 8659 jobs で成功 — これは**コンパイルジョブ数**であり、
-「8659 個の定理を証明した」ことを意味しない。証明済みの命題は本書に
-列挙されたもののみである。`lean-toolchain` は leanprover/lean4:v4.32.1、
-mathlib は v4.32.1 タグに固定。
+2026-07-29 第 7 便で F-7c の 3 定理をさらに追記し、
+`lake env lean AxiomAudit.lean` は**全 46 行**について同じ古典公理
+`[propext, Classical.choice, Quot.sound]` のみを報告した(第 6 便は 43 行)。
+新規 3 行:
+
+```text
+'NSSingularity.galerkin_isPicardLindelof' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NSSingularity.galerkin_local_solution' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NSSingularity.galerkin_local_solution_of_continuous' depends on axioms: [propext, Classical.choice, Quot.sound]
+```
+
+第 3 便で追記した
+F-6 の 5 定理は次のとおり:
+
+```text
+'NSSingularity.norm_le_of_energy_inequality' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NSSingularity.inner_galerkin_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NSSingularity.galerkin_norm_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NSSingularity.galerkin_norm_le_of_mem' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NSSingularity.galerkin_not_tendsto_atTop' depends on axioms: [propext, Classical.choice, Quot.sound]
+```
+
+同日、`git ls-files formal | xargs grep -InE '\bsorry\b|\badmit\b|^[[:space:]]*axiom '`
+は文書コメント中の言及のみを返し、コード中の `sorry`/`admit`/新規 `axiom` は
+ゼロ。`lake build` は 2026-07-28 に 8659 jobs、F-6 追加後は 8660 jobs、
+F-7a/F-7b/F-12/F-13 追加後は 8661 jobs、F-14/F-15/F-16 追加後は 8662 jobs、F-17/F-18/F-19 追加後は 8663 jobs、
+F-7c 追加後は 8664 jobs で成功 —
+これは**コンパイルジョブ数**であり、「8664 個の定理を証明した」ことを
+意味しない。証明済みの命題は本書に列挙されたもののみである。
+`lean-toolchain` は leanprover/lean4:v4.32.1、mathlib は v4.32.1 タグに固定。
 
 ## 未解決の形式化上の論点
 
@@ -300,3 +522,55 @@ mathlib は v4.32.1 タグに固定。
 3. 浮動小数点→厳密データ変換(二進有理数化)の器は `CertificateFormat.lean`
    設計時に固定する。発見コード側の出力仕様(NPZ v2 schema)からの変換器は
    独立実装とする。
+
+
+### Track P / Gaussian transfer 層 — **形式化済み**(2026-07-30 第 9 便)
+
+- **ファイル:** `formal/NSSingularity/TrackPFourier.lean`(14 定理)、
+  `formal/NSSingularity/GaussianTransfer.lean`(7 定理)。
+- **TrackPFourier:** Leray 乗数の有限代数(直交性・冪等性・自己共役性・縮小性、
+  `k = 0` でも Lean の `0/0 = 0` 規約で恒等写像となり全主張が成立)、
+  単一モードの slot-divergence 定理(`k·a = 0` ⇒ 発散ゼロ)、有限三角多項式の
+  `ContDiff ℝ ⊤`、**固定帯域軌道と有限帯域初期値の区別**
+  (`FixedBandTrajectory → FiniteBandDatum` は自明、逆は反例
+  `u t = (1, t)` で棄却: `exists_finiteBandDatum_not_fixedBandTrajectory`)、
+  重み付き和の Ḣ 梯子単調性、`trackP_slab_error_le`(control ODE 層との合成)。
+- **GaussianTransfer:** 多項式×Gaussian の微分閉包(witness 多項式
+  `p' − 2αXp` を明示)、J 連続性の有限不等式
+  (`|a³−b³| ≤ 3max²|a−b|`、`|‖u‖³−‖v‖³| ≤ 3(‖u‖+‖v‖)²‖u−v‖`、
+  `‖‖u‖•u−‖v‖•v‖ ≤ (‖u‖+‖v‖)‖u−v‖`)、`torus_control_bound`
+  (Riccati 比較の Track-P 形への特殊化)。
+- **形式化していないこと(モジュール docstring に記録):** H⁴ エネルギー評価
+  そのもの(mathlib にトーラス Sobolev/Fourier 等距がない; F6 では仮定として
+  消費)、Galerkin tail の作用素恒等式、Ȧ 格子和(Python 層の有限有理計算)、
+  EXT-P1/2/3(古典外部定理; **Lean 公理としては決して挿入しない** — 全 Lean
+  定理は記述どおり無条件に真)。
+- `lake build` 8668 jobs 成功、`#print axioms` 全 96 定理が
+  `[propext, Classical.choice, Quot.sound]` のみ。
+
+### Track P chain / Galerkin Picard 層 — **形式化済み**(2026-07-31 第 10 便)
+
+- **ファイル:** `formal/NSSingularity/TrackPChain.lean`(9 定理)、
+  `formal/NSSingularity/GalerkinPicard.lean`(5 定理)。
+- **TrackPChain:** スラブ連結の有限不等式骨格 — `two_slab_composition`
+  (2 スラブ合成、piecewise 中心・半径は文字通り `if t ≤ t₁ then … else …`)、
+  `transfer_triangle`(再中心化予算の 3 項三角不等式: tube 終端 + Taylor 剰余 +
+  丸め・Leray 射影)、`ChainLink`/`LinkCertified`/`LinkComposable` +
+  `chain_composition`(リスト帰納法による n スラブ合成; `LinkComposable` は
+  Python の `delta_out = delta_end + transfer` の Lean 転写)、
+  `chain_composition_union`(スラブ和集合上の被覆形)、`discrete_gronwall`
+  (`x_{n+1} ≤ A x_n + B ⇒ x_n ≤ Aⁿx₀ + B Σ Aⁱ`)、
+  `piecewise_radius_le_max`/`le_foldr_max`/`chain_radius_le_foldr_max`
+  (連結半径 ≤ スラブ半径の最大)、`taylor_endpoint_remainder_bound`
+  (mathlib の Lagrange 剰余定理の特殊化: `|f(t₀+h) − Taylor_m| ≤ M h^{m+1}/(m+1)!`)。
+- **GalerkinPicard:** 二次 ODE `u' = A u + B u u` の有限次元局所存在・一意性 —
+  `quadratic_field_lipschitzOnWith`(閉球上の明示 Lipschitz 定数
+  `‖A‖ + 2‖B‖(‖x₀‖+r)`)、`quadratic_ode_local_solution`(存在区間半幅
+  `ε = 1/(L+1)` を明示、mathlib Picard–Lindelöf 経由)、
+  `quadratic_ode_unique`。**これは EXT-P1 の Galerkin 半分の有限次元核**であり、
+  Python の Picard box テストはその具体的インスタンス。EXT-P1 自体(PDE 命題)は
+  未証明のままで、主張しない(docstring に明記)。
+- 真の解の per-slab tube(`LinkCertified`)は仮定として入る: それを
+  Navier–Stokes に供給するのは解析層 + EXT-P1/2/3(忠実記録、公理化なし)。
+- `lake build` 8670 jobs 成功、`#print axioms` 全 110 定理が
+  `[propext, Classical.choice, Quot.sound]` のみ。
