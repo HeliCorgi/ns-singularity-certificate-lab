@@ -1,0 +1,70 @@
+{
+  "preregistered": true,
+  "registered_at": "2026-07-31",
+  "note": "turn-11 n=3 Kato-constant chains; thresholds fixed before any run; the horizon improvement ratio is COMPUTED from results, never presumed",
+  "kato": {
+    "lattice_cut": 40,
+    "bits": 64
+  },
+  "sweep": {
+    "mode": "h3_kato",
+    "families": ["P1", "P2", "P3"],
+    "viscosities": ["1/4", "1/10", "1/40", "1/100"],
+    "cutoff_sq": 4,
+    "initial_step": "1/256",
+    "min_step": "1/8192",
+    "max_slabs": 40,
+    "relative_radius_cap": "1/2",
+    "taylor_order": 6,
+    "max_taylor_order": 10,
+    "rounding_bits": 64,
+    "bits": 64,
+    "lattice_cut": 20,
+    "allow_step_doubling": true
+  },
+  "strict_same_step": {
+    "comment": "direct old-vs-new comparison at the v1 step; expected to hit the slab budget far beyond the old ceiling",
+    "mode": "h3_kato",
+    "family": "P1",
+    "viscosity": "1/10",
+    "cutoff_sq": 4,
+    "initial_step": "1/2048",
+    "min_step": "1/32768",
+    "max_slabs": 40,
+    "relative_radius_cap": "1/2",
+    "taylor_order": 6,
+    "max_taylor_order": 10,
+    "rounding_bits": 64,
+    "bits": 64,
+    "lattice_cut": 20,
+    "allow_step_doubling": false
+  },
+  "cutoff_probe": {
+    "comment": "does raising the Galerkin band extend the horizon at n=3?",
+    "mode": "h3_kato",
+    "family": "P1",
+    "viscosity": "1/10",
+    "cutoff_sq": 6,
+    "initial_step": "1/256",
+    "min_step": "1/8192",
+    "max_slabs": 40,
+    "relative_radius_cap": "1/2",
+    "taylor_order": 6,
+    "max_taylor_order": 10,
+    "rounding_bits": 64,
+    "bits": 64,
+    "lattice_cut": 20,
+    "allow_step_doubling": true
+  },
+  "evaluation": {
+    "baseline": "outputs/track_p_chain_v1/summary.json",
+    "record": [
+      "certified horizon and improvement ratio per family and viscosity",
+      "which control term binds at the stop (preregistered taxonomy)",
+      "viscosity dependence of the horizon",
+      "cutoff effect on the horizon",
+      "per-slab CPU seconds"
+    ],
+    "checker_must_verify_every_emitted_chain": true
+  }
+}

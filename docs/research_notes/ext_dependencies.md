@@ -254,10 +254,42 @@ rational-arithmetic engine proves the same statement *with explicit boxes* for
 specific data (`prove_galerkin_box`, the `PICARD_SELF_MAPPING` theorem of
 `control_ode.py` applied coefficient-wise).
 
+**Lemma 3.a.0 (constraint invariance along the Galerkin flow) [turn-11 audit
+erratum — repairs the audited gap that `div u_N(t) = 0` and reality of
+`u_N(t)` were used for `t > 0` but proved only at `t = 0`; see
+`ext_p1_p2_p3_audit.md` §3, item G1].**  For every `N` and every `t` in the
+Galerkin solution's interval of existence, `k·û_{N,k}(t) = 0` and
+`û_{N,−k}(t) = conj(û_{N,k}(t))` for all `k ∈ G_N`; in particular `u_N(t)`
+stays real, mean-zero and divergence-free, and `P u_N(t) = u_N(t)`, for as
+long as it exists.
+
+*Proof.*  *Divergence.*  `k·P_k v = 0` for every `v ∈ ℂ³` (`P_k` projects
+onto `k^⊥`), so `s_k := k·û_{N,k}` satisfies, by (3.a.2), the **linear**
+scalar ODE `s_k' = −ν|k|² s_k` with datum
+`s_k(0) = k·(P_N u₀)^̂_k = k·û₀ₖ = 0`; by uniqueness for locally Lipschitz
+ODEs (the row-1 shape: `ODE_solution_unique_of_mem_Icc`, instantiated in
+`GalerkinPicard.lean` as `quadratic_ode_unique`), `s_k ≡ 0`.  *Reality.*  The
+conjugation symmetry `Θ : (v_k)_{k∈G_N} ↦ (conj(v_{−k}))_{k∈G_N}` maps
+solutions of (3.a.2) to solutions: conjugating the `−k` equation and
+substituting `m ↦ −m`, `n ↦ −n` in the convolution gives
+
+```
+conj(B_{−k}(v,v)) = Σ_{m+n=k} (conj(v_{−m})·(−n)) conj(v_{−n}) = −B_k(Θv, Θv) ,
+```
+
+and `P_{−k} = P_k` is a real matrix, so
+`d/dt (Θv)_k = conj(−ν|k|² v_{−k} − i P_{−k} B_{−k}(v,v))
+= −ν|k|² (Θv)_k − i P_k B_k(Θv, Θv)` — the `k` equation again.  The datum
+`P_N u₀` is the coefficient vector of a real field, hence `Θ`-fixed, so
+Picard uniqueness gives `Θ ∘ û_N = û_N` on the whole interval, i.e.
+`û_{N,−k} = conj(û_{N,k})`.  ∎
+
 *Global extension at fixed `N`.*  Pairing (3.a.1) with `u_N` in `⟨·,·⟩₀`:
 `P_N` and `P` drop (self-adjoint, `P_N u_N = u_N`, `P u_N = u_N`), and the
 exact trilinear identity `⟨u_N·∇u_N, u_N⟩₀ = ½∫u_N·∇|u_N|² = −½∫(div u_N)|u_N|² = 0`
-holds — an identity of finite trigonometric polynomials.  Hence
+holds — an identity of finite trigonometric polynomials, whose hypotheses
+`div u_N(t) = 0` and reality of `u_N(t)` are supplied for every `t` by
+Lemma 3.a.0 [turn-11 audit erratum].  Hence
 
 ```
 d/dt ‖u_N‖₀² = −2ν‖u_N‖₁² ≤ 0 ,      ‖u_N(t)‖₀ ≤ ‖P_N u₀‖₀ ≤ ‖u₀‖₀ .
@@ -288,7 +320,8 @@ The nonlinear pairing is the **cubic term** of
 here.  For the record, the instantiated chain of inequalities: expand
 `⟨u_N·∇u_N, u_N⟩₄ = Σ_{|α|=4} c_α ⟨∂^α(u_N·∇u_N), ∂^α u_N⟩` with
 `c_α = 4!/α!` (§5.2); Leibniz over `β ≤ α`; the `β = 0` term pairs to zero
-because `div u_N = 0`; each surviving `|β| = j` term is bounded, using only
+because `div u_N = 0` (Lemma 3.a.0 [turn-11 audit erratum]); each surviving
+`|β| = j` term is bounded, using only
 the `A` embedding of §5.1, by
 
 ```
@@ -384,7 +417,10 @@ functions `c_k : [0,T*] → ℂ³` with
 
 Each `c_k` is `L_k`-Lipschitz and inherits the exact constraints pointwise:
 `c_{−k} = conj(c_k)` (reality), `k·c_k = 0` (divergence-free),
-`c_k(0) = û₀ₖ` (since `û_{N,k}(0) = û₀ₖ` for `N ≥ |k|`).
+`c_k(0) = û₀ₖ` (since `û_{N,k}(0) = û₀ₖ` for `N ≥ |k|`).  (The first two
+hold for every `û_{N_j,k}(t)` by Lemma 3.a.0 and are closed linear
+conditions on the coefficients, hence pass to the pointwise limit
+[turn-11 audit erratum].)
 
 *Uniform `H⁴` control of the limit.*  For every `K` and `t`,
 `Σ_{|k|≤K} |k|⁸|c_k(t)|² = lim_j Σ_{|k|≤K} |k|⁸|û_{N_j,k}(t)|² ≤ 4Y₀` by
@@ -454,10 +490,14 @@ The integrand is continuous in `s` (bilinear bound plus `C H³` continuity of
 c_k'(t) = −ν|k|² c_k(t) − i P_k B_k(u,u)(t) ,    k·c_k(t) = 0 .        (3.d.2)
 ```
 
-Equation (3.d.2) is exactly the `k`-th Fourier coefficient of
-`∂_t u = νΔu − P(u·∇u)`; equivalently, testing the time-integrated equation
-against an arbitrary divergence-free trigonometric polynomial recovers the
-weak form, and the modes span.  The product `u·∇u` is classical:
+Equation (3.d.2) is, coefficientwise, the projected Navier–Stokes system;
+the paragraph "`u ∈ C¹([0,T*]; H²)`" below constructs `∂_t u` as an
+`H²`-valued object and upgrades (3.d.2) to the identity
+`∂_t u = νΔu − P(u·∇u)` in `H²` — no property of that object is used before
+it is constructed [turn-11 audit erratum: forward pointer replacing an
+apparent forward reference; no mathematics changed].  Equivalently, testing
+the time-integrated equation against an arbitrary divergence-free
+trigonometric polynomial recovers the weak form, and the modes span.  The product `u·∇u` is classical:
 `H⁴ ⊂ C²` by the `A` embedding (`Σ|k|²|û_k| ≤ A‖u‖₄`), so `u(t)·∇u(t)` is a
 continuous function whose Fourier coefficients are `iB_k(u,u)`.
 

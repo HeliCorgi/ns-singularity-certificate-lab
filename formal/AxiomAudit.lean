@@ -12,6 +12,8 @@ import NSSingularity.TrackPFourier
 import NSSingularity.GaussianTransfer
 import NSSingularity.TrackPChain
 import NSSingularity.GalerkinPicard
+import NSSingularity.KatoConstant
+import NSSingularity.ChainAnalysis
 
 /-!
 # Axiom audit (P0 Lean gate)
@@ -235,3 +237,27 @@ open NSSingularity
 
 -- GP3: uniqueness of the quadratic Galerkin ODE solution in a ball.
 #print axioms NSSingularity.quadratic_ode_unique
+
+-- Kato constant, K1-K5: the finite algebra of kato_h3_constants.md section 9.
+#print axioms NSSingularity.cube_diff_bound
+#print axioms NSSingularity.am_gm_split
+#print axioms NSSingularity.shifted_ratio_bound
+#print axioms NSSingularity.inv_pow_four_succ_le_telescope
+#print axioms NSSingularity.inv_pow_tail_bound
+#print axioms NSSingularity.g3_assembly_mono
+#print axioms NSSingularity.g3_of_a4
+
+-- Chain analysis, A1: the integral-inequality comparison (EXT-P2, scalar
+-- half) and its Riccati instance.
+#print axioms NSSingularity.integral_comparison
+#print axioms NSSingularity.integral_riccati_comparison
+
+-- Chain analysis, A2: gluing, the uniform-modulus Cauchy bridge, and the
+-- endpoint extension (EXT-P3, finite halves).
+#print axioms NSSingularity.glued_continuous
+#print axioms NSSingularity.cauchy_map_of_uniform_modulus
+#print axioms NSSingularity.exists_continuousOn_Icc_extension
+#print axioms NSSingularity.exists_continuousOn_Icc_extension_of_modulus
+
+-- Chain analysis, A3: the certificate-dependency discharge shape.
+#print axioms NSSingularity.cond_to_uncond

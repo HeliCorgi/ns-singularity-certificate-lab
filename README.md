@@ -9,6 +9,168 @@
 > 非特異な減衰対照だけです。大きな数値、発散らしい回帰、小さい残差は
 > 数学的証明ではありません。
 
+<!-- MCR:BEGIN (machine-checkable results; guarded by tests/test_readme_claims.py) -->
+## Machine-checkable results / 第三者が機械検証できる成果
+
+第三者が短時間で「何を無条件に検証できるか・何が外部定理に依存するか・
+どのコマンドを実行すればよいか・どの程度の信頼基盤が必要か」を判断する
+ための節です。詳細は成果ごとに安定 ID を振った
+**[Verified Results Registry](docs/verified_results.md)** にあります。
+
+**用語規則(本 README と登録簿で厳守):**
+
+- **Lean-verified** — Lean kernel が定理を検査し、project 固有の未証明
+  axiom がない場合のみ。
+- **certificate-verified** — 独立 Python checker が証明書を**完全再計算**
+  する場合。Lean 証明ではない。
+- **conditional PDE certificate** — EXT 等の外部仮定が残る場合。
+- **numerically observed** — 浮動小数点計算のみ。証明ではない。
+- **candidate** — Clay 公式命題への橋が未検証の場合。
+
+「formally verified / fully verified / machine-checked PDE theorem」は
+依存鎖が実際に閉じた場合以外では使いません。
+
+### A. Lean 4 で無条件に検証できる結果(Lean-verified)
+
+現在の HEAD で `sorry` / `admit` / project 固有 axiom なしに証明済み。
+公理監査は全定理が `[propext, Classical.choice, Quot.sound]`(= Lean/mathlib
+の通常基盤; **無公理証明の主張ではない**)のみを報告します
+(`cond_to_uncond` のみ公理非依存)。全 124 定理の一覧は
+[formal/AxiomAudit.lean](formal/AxiomAudit.lean) と
+[登録簿](docs/verified_results.md)。主要例:
+
+| Result | Lean theorem | File | Verified claim | Not claimed |
+|---|---|---|---|---|
+| Galerkin energy/norm bound | `galerkin_norm_le`, `norm_le_of_energy_inequality` | [GalerkinNoBlowup.lean](formal/NSSingularity/GalerkinNoBlowup.lean) | エネルギー不等式下の有限次元ノルム有界 | PDE のエネルギー不等式の成立 |
+| 固定有限帯域軌道の no-go | `FixedBandwidthCandidate.breakdown_times_empty`, `.reaches_every_time`, `.fixedBand_scope` | [FiniteModeNoGo.lean](formal/NSSingularity/FiniteModeNoGo.lean), [TrackPFourier.lean](formal/NSSingularity/TrackPFourier.lean) | 固定帯域に**留まる軌道**は破綻時刻を持たない | 有限帯域**初期値**についての主張(反例 `exists_finiteBandDatum_not_fixedBandTrajectory` が区別を証明) |
+| Fourier 三線形相殺の代数 | `advectionForm_eq_zero`, `inner_leray_eq_zero` ほか Leray 代数 5 定理 | [FiniteModeNoGo.lean](formal/NSSingularity/FiniteModeNoGo.lean), [TrackPFourier.lean](formal/NSSingularity/TrackPFourier.lean) | 発散ゼロ場での advection 形式の消滅・Leray 乗数の直交性 | 無限次元 Kato–Ponce 可換子評価(監査済み紙上証明; C 節) |
+| 有限次元 Picard–Lindelöf | `galerkin_local_solution`, `quadratic_ode_local_solution`, `quadratic_ode_unique` | [GalerkinNoBlowup.lean](formal/NSSingularity/GalerkinNoBlowup.lean), [GalerkinPicard.lean](formal/NSSingularity/GalerkinPicard.lean) | 二次 ODE `u' = Au + B(u,u)` の局所存在・一意性(明示 Lipschitz 定数・存在区間半幅) | EXT-P1(PDE 命題)そのもの |
+| control ODE comparison | `riccati_comparison`, `gronwall_variable_coefficient(_integral)`, `roughEnclosure_*` 3 定理 | [ControlODE.lean](formal/NSSingularity/ControlODE.lean) | スカラー Riccati 比較と rough enclosure の PL 存在・一意性 | — |
+| 積分形比較(EXT-P2-INT のスカラー半分) | `integral_comparison`, `integral_riccati_comparison` | [ChainAnalysis.lean](formal/NSSingularity/ChainAnalysis.lean) | 2 パラメータ積分不等式を満たす連続 φ は ODE 解に支配される(Dini 微分不要) | PDE 差分場がその積分不等式を満たすこと(監査済み紙上証明) |
+| two-slab composition | `two_slab_composition` | [TrackPChain.lean](formal/NSSingularity/TrackPChain.lean) | 抽象 tube の 2 スラブ合成(piecewise 中心・半径) | tube の PDE 的供給 |
+| finite chain composition | `chain_composition`, `chain_composition_union` | [TrackPChain.lean](formal/NSSingularity/TrackPChain.lean) | `δ_out = δ_end + transfer` に忠実な n スラブ帰納法 | 〃 |
+| transfer triangle inequality | `transfer_triangle` | [TrackPChain.lean](formal/NSSingularity/TrackPChain.lean) | 再中心化予算の 3 項三角不等式 | — |
+| Taylor endpoint remainder | `taylor_endpoint_remainder_bound` | [TrackPChain.lean](formal/NSSingularity/TrackPChain.lean) | Lagrange 剰余 `≤ M h^{m+1}/(m+1)!` | 係数上界 `M` の数値(certificate 層) |
+| Kato 証明書の有限代数 | `cube_diff_bound`, `am_gm_split`, `shifted_ratio_bound`, `inv_pow_tail_bound`, `g3_of_a4` | [KatoConstant.lean](formal/NSSingularity/KatoConstant.lean) | `G₃ ≤ 12√A₄` 組立の全代数ステップと格子 tail | 可換子評価本体(C 節) |
+| EXT-P3 貼り合わせ論理 | `glued_continuous`, `exists_continuousOn_Icc_extension` | [ChainAnalysis.lean](formal/NSSingularity/ChainAnalysis.lean) | 連続貼り合わせ・完備空間での端点延長 | 延長関数が方程式を満たすこと(監査済み紙上証明) |
+| Green/scaling/certificate 層 | `greenProfile_radial_laplace_eq_zero`, `physicalTime_lt_blowupTime`, `velocity_radial_error_le` ほか | [GreenAndCascade.lean](formal/NSSingularity/GreenAndCascade.lean), [FiniteTime.lean](formal/NSSingularity/FiniteTime.lean), [CertificateLayer.lean](formal/NSSingularity/CertificateLayer.lean) | 各層の有限不等式(登録簿参照) | — |
+| 純粋旋回の等号ケース | `pure_swirl_equality_case`, `swirl_cartesianDiv_eq_zero` | [L3Generation.lean](formal/NSSingularity/L3Generation.lean) | L³ 生成恒等式の代数部分 | 積分論の無限次元部分 |
+
+### B. 独立 checker で検証できる証明書(certificate-verified)
+
+checker は payload を**完全再計算**します(builder と状態を共有しない)。
+信頼基盤: Python 処理系と checker 実装(checker 論理の一部は上記 Lean 層に
+鏡写し)。全証明書に改竄拒否テストがあります。
+
+| 証明書 | 保存場所 | 実行コマンド | checker が再計算するもの | 未証明外部仮定 |
+|---|---|---|---|---|
+| Track P 単発スラブ | [outputs/track_p_slab_v1/](outputs/track_p_slab_v1/) | `python -m experiments.run_track_p_slab --config configs/track_p_slab.json --output-dir <dir>` | datum 検査・Picard box・全定数・control 管 | EXT-P1/P2/P3(v1 条件付き文言) |
+| Track P chain(H⁴, v1) | [outputs/track_p_chain_v1/](outputs/track_p_chain_v1/) | `python experiments/run_track_p_chain.py` | 全リンク: box・定数組立・管・Taylor 終端・再中心化点の厳密一致・δ 漸化式・文言契約 | 〃 |
+| Track P chain(n=3 Kato) | [outputs/track_p_chain_h3_v1/](outputs/track_p_chain_h3_v1/) | `python experiments/run_track_p_chain_h3.py` | 〃 + G₃ 証明書再検証 + `C_kato`/`C_shift` 再計算 | 監査済み紙上証明(C 節) |
+| 監査済み再発行(v2) | [outputs/track_p_chain_reissued_v2/](outputs/track_p_chain_reissued_v2/) | `python experiments/reissue_chains.py` | 〃 + 閉鎖メタデータ整合・新旧文言の混在拒否 | G-DINI(未消費・open) |
+| Kato 定数証明書 | [outputs/track_p_chain_h3_v1/kato_certificate.json](outputs/track_p_chain_h3_v1/kato_certificate.json) | `python -m pytest tests/test_kato_constant.py` | A₄/A₆ を自前格子ループで再計算・√ と 12 倍率・単調性 | 可換子評価本体(C 節) |
+| R³ スペクトル圧力証明書 | builder/checker: `gaussian_spectral_pressure.py` | `python -m pytest tests/test_gaussian_spectral_pressure.py` | 厳密閉形式 ∇p(Δp+σ≡0 の厳密有理自己検証)と J 下界包含 | **なし(hypotheses 空)** — ただし結果は負の下界(candidate ではない) |
+| snapshot / 時空スラブ(Gate 6/7) | outputs/(README 13–14 節) | 各 replay コマンド(下記) | cell 内包含・改竄拒否 | 各 payload の hypotheses 欄に明記 |
+
+### C. 条件付き成果(conditional PDE certificate)
+
+- **v1 証明書(第 9–10 便)**: 有限次元軌道、残差、control ODE、スラブ
+  連結は機械検査済み。**真の周期 Navier–Stokes 解の存在と tube 包含は
+  EXT-P1/P2/P3 に条件付き。**
+- **第 11 便の監査後(再発行 v2)**: EXT-P1★/EXT-P2-INT+Lemma C/EXT-P3★/
+  系 P3-3 は 3 名の敵対的監査+修理+再監査 2 名(拒否権つき)を経た
+  **監査済み紙上証明**として閉鎖([監査文書](docs/research_notes/ext_p1_p2_p3_audit.md))。
+  payload の `proved: true` は**この意味であり Lean 形式化ではない**
+  (`lean_formalised: false` 固定、公理化は禁止のまま)。旧 Dini 節は
+  G-DINI として open(どこからも未消費、checker 強制)。
+- **Kato 不等式 `G₃ ≤ 12√A₄`**: 格子和は certificate-verified、代数
+  ステップは Lean-verified、無限次元可換子評価は監査済み紙上証明
+  ([導出ノート](docs/research_notes/kato_h3_constants.md))。
+- HS-5 全空間版・NT-N1・H3 は open(条件付きのまま)。
+
+<!-- PROMOTION:BEGIN (guard: requires all EXTERNAL_THEOREMS_AUDITED proved:true) -->
+**昇格成果(第 11 便、監査閉鎖後)** — For the explicitly listed
+finite-Fourier initial data, viscosity, and time interval, the repository
+provides a machine-checkable certificate — modulo the audited classical
+theorems named above — that a unique periodic strong Navier–Stokes solution
+exists and remains within the stated Sobolev-radius tube around the
+certified Galerkin approximation. / 明示された有限 Fourier 初期値・粘性・
+時間区間について、**監査済み古典定理を法として**、一意な周期強解が存在し
+証明書化された Galerkin 近似の Sobolev 半径 tube 内に留まることを機械検証
+できる。
+
+代表例(全 27 本は登録簿 VR-COND 系列): 初期値 = P1(helical triad、
+厳密有理 Fourier 係数)、粘性 ν = 1/10、certified interval
+[0, 5/256]、Sobolev 次数 Ḣ³(H³ は √8 倍)、誤差半径 ≤ 0.0309
+([reissued_h3chain_strict_same_step_P1_nu_1over10.json](outputs/track_p_chain_reissued_v2/reissued_h3chain_strict_same_step_P1_nu_1over10.json))。
+使用定理: EXT-P1★/EXT-P2-INT+Lemma C/系 P3-3(監査済み紙上証明)+
+`chain_composition`/`integral_riccati_comparison` ほか(Lean-verified)。
+役割分担: Lean = 合成・比較の骨格、checker = 全リンクの厳密有理再計算、
+監査文書 = 古典解析。
+
+**必ず併記する範囲**: 特定初期値・特定短時間区間の結果であり、大域正則性
+ではなく、特異点構成ではなく、Clay 問題の解決ではない。certified horizon
+は**証明手法の到達範囲**(粗い定数の Riccati 天井)であって解の性質では
+ない。
+<!-- PROMOTION:END -->
+
+### D. このリポジトリが証明していないこと
+
+| 範囲外 | 状態 |
+|---|---|
+| すべての滑らかな NS 初期値の大域正則性 | 主張していない |
+| 有限時間特異点(存在・構成) | 主張していない |
+| Clay 公式命題 (A)–(D) のいずれか | 主張していない |
+| 数値軌道の長時間正確性一般 | tube 証明の範囲外は numerically observed のみ |
+| 条件付き EXT 群を仮定なしで使えること | 監査済み紙上証明を法とする(trust model 参照) |
+| certificate chain の終了時刻が PDE 特異時刻であること | 終了は前登録分類法で方法の限界として分類される |
+
+## Reproduce the verified results / 再現手順
+
+**Quick verification(〜30 分 + mathlib 初回ビルド):**
+
+```bash
+git clone https://github.com/HeliCorgi/ns-singularity-certificate-lab.git
+cd ns-singularity-certificate-lab
+git checkout fable5-mainline
+
+# Lean: build + axiom audit
+cd formal
+lake build                      # 期待: "Build completed successfully"
+lake env lean AxiomAudit.lean   # 期待: 各定理につき 1 行、標準 3 公理のみ
+cd ..
+
+# Python: 依存導入 + 全テスト
+python -m pip install -e ".[dev]"
+python -m pytest                # 期待: 全件 pass(scipy 不在時 1 skip)
+```
+
+テスト件数・Lean job 数は開発とともに変動します(固定値は書かない方針;
+CI が毎 push で再検証)。
+
+**Full verification(証明書リプレイ、計数時間):** README 13–14 節の各
+コマンド(Track P スラブ数分、chain 各 1–2 時間、Gate 4–7 各数分〜20 分)。
+それぞれ出力ディレクトリに payload + `summary.json` + sha256 `manifest.json`
+を生成し、独立 checker の verdict を表示します。
+
+## Trust model
+
+| Layer | Trusted components |
+|---|---|
+| Lean theorem checking | Lean kernel、pinned mathlib([formal/lean-toolchain](formal/lean-toolchain), [formal/lake-manifest.json](formal/lake-manifest.json))、`#print axioms` が報告する標準 3 公理(propext / Classical.choice / Quot.sound — Lean/mathlib の通常基盤であり、無公理証明の主張ではない) |
+| Rational certificate checking | Python 処理系と checker 実装(checker 論理のうち Lean に鏡写しされた部分は上記に還元) |
+| Floating-point exploration | ハードウェア/ランタイム; **証明ではない** |
+| Audited classical theorems | EXT-P1★/EXT-P2-INT/EXT-P3★/P3-3 と Kato 可換子評価: [監査文書](docs/research_notes/ext_p1_p2_p3_audit.md)の敵対的監査プロセスを信頼(Lean 形式化されるまでこの区分に留まる; 公理化は禁止) |
+
+Lean 監査の内訳: `lake env lean AxiomAudit.lean`(全定理の `#print axioms`)、
+`sorry`/`admit`/`axiom` の grep(CI)、pinned `lean-toolchain` と
+`lake-manifest.json`。
+
+陳腐化防止: [tests/test_readme_claims.py](tests/test_readme_claims.py) が
+本節の定理名実在・成果物パス実在・コマンド対象実在・条件付き/無条件の
+区分整合・EXT 状態と昇格文の整合を毎 CI で検査します。
+<!-- MCR:END -->
+
 ## 現在できること
 
 - 元の3次元方程式から軸対称・旋回ありの
@@ -273,6 +435,24 @@ python experiments/run_track_p_chain.py
 独立 checker が全リンクを再計算します。停止は前登録分類法で必ず分類され、
 **証明区間の終了は特異点の主張ではありません**
 ([docs/research_notes/track_p_chain.md](docs/research_notes/track_p_chain.md))。
+
+### 13.7 Track P チェーン n=3(Kato 定数、約 2 時間)+ 監査済み再発行
+
+```console
+python experiments/run_track_p_chain_h3.py
+python experiments/reissue_chains.py
+```
+
+第 11 便: 正規化完全一致で自前導出した `G₃ ≤ 12√A₄`
+([docs/research_notes/kato_h3_constants.md](docs/research_notes/kato_h3_constants.md)、
+独立 checker 付き証明書)と厳密帯域和 `C_kato`/`C_shift` による n=3 control
+不等式でチェーンを再実行し、certified horizon を旧 `9(K₁+K₂)` 比で実測
+約 11〜13 倍に延長。EXT-P1/P2/P3 は 3 名の敵対的監査+組立修理+再監査 2 名
+(拒否権つき)を経て**監査済み紙上証明として閉鎖**
+([docs/research_notes/ext_p1_p2_p3_audit.md](docs/research_notes/ext_p1_p2_p3_audit.md))、
+全チェーンを閉鎖メタデータつきで再発行(`proved:true` = 監査済み紙上証明の
+意味であり Lean 形式化ではない; Lean 公理化は不変で禁止; checker が新旧の
+混在を拒否)。**特異点主張ではない。**
 
 ### 14. 全空間 Gate 7(Picard 領域からの離脱・τ/Re 継続・時空スラブ証明書、数分)
 

@@ -141,6 +141,81 @@ EXTERNAL_THEOREMS = {
 }
 
 
+#: Turn-11 audited records.  The audit (three adversarial auditors, an
+#: assembler with erratum repairs, two re-auditors with veto — see
+#: ``docs/research_notes/ext_p1_p2_p3_audit.md``) closed the three external
+#: statements *as consumed by the certificates* at the level of audited paper
+#: proofs.  ``proved: True`` below means exactly that — classical analysis
+#: with a complete written proof that survived the adversarial audit — and
+#: never "formalised in Lean"; the Lean flag stays ``False`` and inserting
+#: any of this as a Lean axiom remains forbidden.  The legacy pointwise-Dini
+#: clause of EXT-P2 remains OPEN (named gap G-DINI) and is consumed by
+#: nothing: the chains consume the integral form EXT-P2-INT plus the
+#: comparison Lemma C.
+_AUDIT_CLOSURE = {
+    "method": "audited_paper_proof",
+    "audit_document": "docs/research_notes/ext_p1_p2_p3_audit.md",
+    "audit_process": (
+        "3 adversarial auditors (compactness / inequalities / statement-vs-"
+        "use) + assembler repairs + 2 re-auditors with veto, turn 11 "
+        "(2026-07-31); zero unproved steps remained"
+    ),
+    "lean_formalised": False,
+    "axiomatised_in_lean": False,
+}
+
+EXTERNAL_THEOREMS_AUDITED = {
+    "EXT-P1": {
+        "statement": EXTERNAL_THEOREMS["EXT-P1"],
+        "audited_statement": (
+            "EXT-P1* with six clauses (time regularity, space regularity, "
+            "Leray/pressure/coefficient equivalences with both converses, "
+            "strong attainment of the datum, uniqueness class C(H4_sigma) "
+            "cap C1(H2), maximal time with T* = 1/(270 A ||u0||_4); if "
+            "u0 = 0 read T* = +infinity and u = 0): audit document "
+            "section 1.1-1.2"
+        ),
+        "proved": True,
+        "closure": dict(_AUDIT_CLOSURE),
+    },
+    "EXT-P2": {
+        "statement": EXTERNAL_THEOREMS["EXT-P2"],
+        "audited_statement": (
+            "EXT-P2-INT (minimal integral form, n in {3,4}): continuity of "
+            "t -> ||w(t)||_ndot, absolute continuity of its square, and the "
+            "integral energy inequality with the slab constants; delivered "
+            "by the EXT-P1* construction, with the scalar comparison "
+            "supplied by Lemma C.  No Dini derivative anywhere: audit "
+            "document section 1.3"
+        ),
+        "proved": True,
+        "closure": dict(_AUDIT_CLOSURE),
+        "dini_clause": {
+            "closed": False,
+            "gap": "G-DINI",
+            "consumed_by_chain": False,
+            "note": (
+                "the legacy pointwise right-Dini clause of the v1 statement "
+                "stays open and is consumed by nothing; every d+/dt display "
+                "in the notes is shorthand for the delivered integral form"
+            ),
+        },
+    },
+    "EXT-P3": {
+        "statement": EXTERNAL_THEOREMS["EXT-P3"],
+        "audited_statement": (
+            "EXT-P3* (H4 continuation via uniform local time, restart on an "
+            "overlap, uniqueness gluing) plus Corollary P3-3 (H3 "
+            "continuation via the 32A commutator smoothing estimate) — the "
+            "n = 3 chains consume P3-3, named per payload: audit document "
+            "sections 1.4-1.5"
+        ),
+        "proved": True,
+        "closure": dict(_AUDIT_CLOSURE),
+    },
+}
+
+
 def interval_field(field: TrigVector, *, bits: int = DEFAULT_PRECISION_BITS,
                    ops: _IntervalOps | None = None) -> TrigVector:
     """The same field with degenerate interval coefficients."""
