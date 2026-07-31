@@ -1,4 +1,8 @@
 /-
+Copyright (c) 2026 ns-singularity-certificate-lab contributors.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
+/-
 Stage 1, item **F-3** of `docs/formalization_map.md`:
 the velocity-recovery formulas **E-14** and the divergence cancellation
 **E-15** of `docs/equation_audit.md`.

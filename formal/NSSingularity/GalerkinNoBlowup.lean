@@ -1,4 +1,8 @@
 /-
+Copyright (c) 2026 ns-singularity-certificate-lab contributors.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
+/-
 Stage 1, item **F-6** of `docs/formalization_map.md`: the **Galerkin energy
 bound**, i.e. the finite-dimensional core of the Track-F no-go theorem
 (`docs/research_notes/track_f_finite_mode_nogo.md`, Theorem 1(i)).

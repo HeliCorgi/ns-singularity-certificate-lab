@@ -1,4 +1,8 @@
 /-
+Copyright (c) 2026 ns-singularity-certificate-lab contributors.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
+/-
 Stage 1, items **F-12**, **F-13** and **F-7a/F-7b** of `docs/final_target.md` §4:
 completing the Lean side of the **fixed-finite-mode** Track-F no-go theorem
 begun in `GalerkinNoBlowup.lean` (F-6).

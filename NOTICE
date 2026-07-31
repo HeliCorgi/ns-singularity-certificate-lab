@@ -1,0 +1,56 @@
+ns-singularity-certificate-lab
+Copyright (c) 2026 ns-singularity-certificate-lab contributors
+
+This product includes software and formalised mathematics developed for the
+ns-singularity-certificate-lab project.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use these files except in compliance with the License.  You may obtain a copy
+of the License in the file LICENSE distributed with this work or at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+--------------------------------------------------------------------------
+Scope notice (please carry this forward)
+--------------------------------------------------------------------------
+
+This repository does NOT solve, and does not claim to advance, the Clay
+Millennium Problem on the Navier-Stokes equations.  It contains no proof of a
+finite-time singularity and no proof of global regularity.
+
+Anyone redistributing this work, in whole or in part, is asked to carry this
+notice with it, because the results here are easy to overstate if separated
+from their stated scope:
+
+  * "Lean-verified" applies only to theorems checked by the Lean kernel with
+    no project-specific axioms.  The standard axiom report
+    [propext, Classical.choice, Quot.sound] is the ordinary Lean/mathlib
+    foundation and is not a claim of axiom-freedom.
+  * "Certificate-verified" applies only to payloads recomputed by the
+    independent Python checkers in this repository.  Such results are NOT
+    Lean-verified.
+  * Several PDE-level conclusions rest on named external classical theorems
+    (EXT-P1/P2/P3) that are closed here by AUDITED PAPER PROOFS, not by
+    formalisation.  Where a payload records "proved: true" for such a
+    theorem, it means exactly that, and every such record also carries
+    "lean_formalised: false".
+  * Certified time horizons are limits of the proof method.  A certificate
+    chain that stops proves nothing about singularities, and its stop time is
+    never a singular time of any solution.
+
+The precise, per-result breakdown is in docs/verified_results.md and in the
+"Machine-checkable results" section of README.md.
+
+--------------------------------------------------------------------------
+Third-party components
+--------------------------------------------------------------------------
+
+The Lean 4 formalisation depends on mathlib4 (https://github.com/leanprover-
+community/mathlib4), Copyright (c) the mathlib4 authors, licensed under the
+Apache License, Version 2.0.  mathlib4 and the Lean toolchain are fetched by
+Lake into formal/.lake/ and are not part of this distribution; they remain
+subject to their own licences and copyright notices.
+
+The Python package depends on NumPy (https://numpy.org), licensed under the
+BSD 3-Clause License, and optionally on pytest and SciPy, which remain
+subject to their own licences.

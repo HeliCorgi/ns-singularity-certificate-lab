@@ -554,3 +554,24 @@ RMS/maxが \(9.369950\times10^{-3}/2.975832\times10^{-2}\) でした。
 
 プロジェクトの現在地と未解決事項は [STATUS.md](STATUS.md) にのみ集約し、
 数値的確認と数学的証明を混同しません。
+
+## License / ライセンス
+
+[Apache License 2.0](LICENSE)([NOTICE](NOTICE) を含む)。
+
+この選択は任意ではなく、既存の宣言と整合させたものです: 本リポジトリの
+Lean ファイルは以前から `Released under the Apache 2.0 licence.` と宣言し
+「the file LICENSE」を参照していました(本便でその LICENSE を実際に設置)。
+また Lean 4 と mathlib4 自体が Apache 2.0 であり、エコシステムの標準です。
+特許許諾条項と NOTICE 機構を持つ点も、第三者による検証・引用・再利用を
+前提とする本リポジトリに適合します。
+
+対象範囲: ソースコード(Python / Lean)、証明書生成物、研究ノートを含む
+本リポジトリの全成果物。依存する mathlib4(Apache 2.0)と NumPy(BSD
+3-Clause)は再配布物に含まれず、それぞれのライセンスに従います。
+
+再配布・引用の際は、[NOTICE](NOTICE) の scope notice を必ず引き継いで
+ください。**本リポジトリは Clay ミレニアム問題を解決しておらず、その主張も
+していません。** 成果ごとの正確な区分(Lean-verified / certificate-verified /
+条件付き / 数値的観測のみ)は
+[docs/verified_results.md](docs/verified_results.md) にあります。

@@ -1,4 +1,8 @@
 /-
+Copyright (c) 2026 ns-singularity-certificate-lab contributors.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
+/-
 Stage 1, items **F-14**, **F-15**, **F-16** and the **F-7c reduction** of
 `docs/final_target.md` §4.
 
