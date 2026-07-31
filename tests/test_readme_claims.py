@@ -184,15 +184,35 @@ def test_representative_result_matches_its_artifact(flat):
     assert payload["termination"]["reason"] in README
 
 
+def _git(*args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True)
+
+
+def _full_history_available() -> bool:
+    """True only in a clone that actually carries history and remote refs.
+
+    A shallow or single-branch checkout (what ``actions/checkout`` produces by
+    default, and what ``git clone --depth 1`` gives a reviewer) simply does not
+    have the objects these guards inspect.  Asserting there would report a
+    defect in the README for what is really a property of the clone, so the
+    guards skip instead — and CI sets ``fetch-depth: 0`` so that in CI they
+    genuinely run.
+    """
+    inside = _git("rev-parse", "--is-inside-work-tree")
+    if inside.returncode != 0 or inside.stdout.strip() != "true":
+        return False
+    shallow = _git("rev-parse", "--is-shallow-repository")
+    return shallow.returncode == 0 and shallow.stdout.strip() == "false"
+
+
 def test_pinned_commit_exists_and_contains_the_artifact(flat):
     """The commit the README pins for exact reproduction must be real."""
     match = re.search(r"git checkout ([0-9a-f]{7,40})", README)
     assert match, "README must pin a commit for exact reproduction"
     commit = match.group(1)
-    listing = subprocess.run(
-        ["git", "cat-file", "-e", f"{commit}^{{commit}}"],
-        cwd=ROOT, capture_output=True, text=True,
-    )
+    if not _full_history_available():
+        pytest.skip("shallow or non-git checkout: pinned commit not inspectable")
+    listing = _git("cat-file", "-e", f"{commit}^{{commit}}")
     assert listing.returncode == 0, f"pinned commit {commit} does not exist"
     tree = subprocess.run(
         ["git", "ls-tree", "-r", "--name-only", commit, REPRESENTATIVE_ARTIFACT],
@@ -311,17 +331,20 @@ def test_deleted_stale_claims_do_not_reappear(flat):
 
 def test_branch_story_is_consistent():
     """Branches the README names must exist, with main as the stable one."""
-    result = subprocess.run(
-        ["git", "branch", "-a", "--format=%(refname:short)"],
-        cwd=ROOT, capture_output=True, text=True,
-    )
-    refs = set(result.stdout.split())
     for branch in ("main", "fable5-mainline"):
         assert branch in README, f"README must describe the {branch} branch"
+    assert "最新の安定版" in README and "開発版" in README
+
+    if not _full_history_available():
+        pytest.skip("shallow or non-git checkout: branch refs not inspectable")
+    result = _git("branch", "-a", "--format=%(refname:short)")
+    refs = set(result.stdout.split())
+    if len(refs) < 2:
+        pytest.skip("single-branch checkout: cannot enumerate the branch story")
+    for branch in ("main", "fable5-mainline"):
         assert any(branch == r or r.endswith(f"/{branch}") for r in refs), (
             f"README names branch {branch}, which does not exist"
         )
-    assert "最新の安定版" in README and "開発版" in README
 
 
 # --------------------------------------------------------------------------- #
