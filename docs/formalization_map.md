@@ -574,3 +574,27 @@ F-7c 追加後は 8664 jobs で成功 —
   Navier–Stokes に供給するのは解析層 + EXT-P1/2/3(忠実記録、公理化なし)。
 - `lake build` 8670 jobs 成功、`#print axioms` 全 110 定理が
   `[propext, Classical.choice, Quot.sound]` のみ。
+
+### Kato 定数 / Chain 解析層 — **形式化済み**(2026-07-31 第 11 便)
+
+- **ファイル:** `formal/NSSingularity/KatoConstant.lean`(7 定理)、
+  `formal/NSSingularity/ChainAnalysis.lean`(7 定理)。
+- **KatoConstant:** `G₃ ≤ 12√A₄` 証明書の有限代数 — `cube_diff_bound`
+  (`|x³−y³| ≤ 3|x−y|max(x,y)²`)、`am_gm_split`(`p²j² ≤ (pj³+p³j)/2`)、
+  `shifted_ratio_bound`(`‖m‖≥1 ⇒ ‖m+j‖³ ≤ (1+‖j‖)³‖m‖³`)、
+  格子 tail の telescoping(`Σ_{m>N} m⁻⁴ ≤ 1/(3N³)`、`Finset.Icc` 上の
+  有限和として)、checker の組立単調性 `g3_assembly_mono`/`g3_of_a4`。
+- **ChainAnalysis:** **積分形比較定理**(`integral_comparison`: 連続 φ が
+  2 パラメータ積分不等式を満たせば ODE 解 R が上界 — Dini 微分なし、
+  mathlib の liminf-slope 境界補題経由で strict-supersolution fencing)、
+  その Riccati 具体化 `integral_riccati_comparison`(`f r = ar+br²+e`、
+  Lipschitz 定数 `|a|+b(C_φ+C_R)` を明示)— **EXT-P2-INT + Lemma C の
+  スカラー半分の Lean 化**。EXT-P3 用の貼り合わせ論理
+  (`glued_continuous`、一様連続度による Cauchy 性、`extendFrom` による
+  端点延長)、`cond_to_uncond`(条件付き証明書の仮定放電の命題論理;
+  公理ゼロ)。
+- **形式化していないこと:** 無限次元 Kato–Ponce 可換子評価そのもの
+  (紙上・監査済み、`kato_h3_constants.md` §4; 公理化はしない)、
+  延長関数が方程式を満たすことの同定(EXT-P3 の解析半分)。
+- `lake build` 8672 jobs 成功、監査 124 定理 = 123 が古典 3 公理のみ +
+  `cond_to_uncond` は公理非依存。

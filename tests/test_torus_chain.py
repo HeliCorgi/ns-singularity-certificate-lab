@@ -226,3 +226,151 @@ def test_physical_snapshot_ranges_contain_centre(chain_payload):
             centre = Fraction(block["centre"])
             low, high = (Fraction(v) for v in block["certified_range"])
             assert low <= centre <= high
+
+
+# --------------------------------------------------------------------------- #
+# the n = 3 Kato mode                                                          #
+# --------------------------------------------------------------------------- #
+
+
+@pytest.fixture(scope="module")
+def kato_payload() -> dict:
+    from ns_certificate_lab.kato_constant import build_kato_certificate
+
+    payload = build_kato_certificate(lattice_cut=20)
+    return payload.as_dict() if hasattr(payload, "as_dict") else payload
+
+
+@pytest.fixture(scope="module")
+def h3_chain_payload(kato_payload) -> dict:
+    return build_chain_certificate(
+        "P1",
+        viscosity=VISCOSITY,
+        cutoff_sq=CUTOFF,
+        initial_step=Fraction(1, 256),
+        max_slabs=2,
+        allow_step_doubling=False,
+        mode="h3_kato",
+        kato_payload=kato_payload,
+    )
+
+
+def test_h3_chain_closes_and_verifies(h3_chain_payload):
+    assert h3_chain_payload["slab_count"] == 2
+    assert h3_chain_payload["mode"] == "h3_kato"
+    assert h3_chain_payload["norm_order"] == 3
+    verdict = verify_chain_certificate(h3_chain_payload)
+    assert verdict["failures"] == []
+    assert verdict["verified"] and verdict["proves_existence"]
+
+
+def test_h3_linear_coefficient_beats_h4(chain_payload, h3_chain_payload):
+    old = Fraction(chain_payload["slabs"][0]["constants"]["linear_coefficient"])
+    new = Fraction(h3_chain_payload["slabs"][0]["constants"]["linear_coefficient"])
+    assert new < old / 4  # the crude 9(K1+K2) must lose by a wide margin
+
+
+def test_h3_constants_block_names_the_inequality(h3_chain_payload):
+    constants = h3_chain_payload["slabs"][0]["constants"]
+    linear = (
+        -VISCOSITY + Fraction(constants["C_kato"]) + Fraction(constants["C_shift"])
+    )
+    assert Fraction(constants["linear_coefficient"]) == linear
+    assert Fraction(constants["quadratic_coefficient"]) == Fraction(
+        constants["G3_upper"]
+    )
+
+
+def test_h3_checker_rejects_forged_g3(h3_chain_payload):
+    forged = copy.deepcopy(h3_chain_payload)
+    forged["kato_certificate"]["g3"]["upper"] = str(
+        Fraction(forged["kato_certificate"]["g3"]["upper"]) / 2
+    )
+    assert not verify_chain_certificate(forged)["verified"]
+
+
+def test_h3_mode_requires_kato_certificate():
+    with pytest.raises(ValueError):
+        build_chain_certificate(
+            "P1", viscosity=VISCOSITY, cutoff_sq=CUTOFF, max_slabs=1,
+            mode="h3_kato", kato_payload=None,
+        )
+
+
+def test_h3_physical_snapshot_has_no_h4_range(h3_chain_payload):
+    ranges = h3_chain_payload["slabs"][0]["physical"][
+        "certified_ranges_for_true_solution"
+    ]
+    assert "h4_dot_norm" not in ranges
+    assert "h3_dot_norm" in ranges
+
+
+# --------------------------------------------------------------------------- #
+# the turn-11 reissue                                                          #
+# --------------------------------------------------------------------------- #
+
+
+def test_reissue_verifies_and_flips_wording(chain_payload):
+    from ns_certificate_lab.torus_chain import AUDITED_KIND, reissue_chain_certificate
+
+    reissued = reissue_chain_certificate(chain_payload)
+    verdict = verify_chain_certificate(reissued)
+    assert verdict["failures"] == []
+    assert verdict["verified"]
+    assert reissued["conclusion"]["kind"] == AUDITED_KIND
+    assert AUDITED_KIND in reissued["claims"]
+    assert ALLOWED_WORDING[0] not in reissued["claims"]
+    for name, block in reissued["external_theorems"].items():
+        assert block["proved"] is True
+        assert block["closure"]["lean_formalised"] is False
+        assert block["closure"]["axiomatised_in_lean"] is False
+
+
+def test_reissue_keeps_quantitative_content(chain_payload):
+    from ns_certificate_lab.torus_chain import reissue_chain_certificate
+
+    reissued = reissue_chain_certificate(chain_payload)
+    assert reissued["delta_recurrence"] == chain_payload["delta_recurrence"]
+    assert reissued["slab_count"] == chain_payload["slab_count"]
+    assert (
+        reissued["certified_final_time"] == chain_payload["certified_final_time"]
+    )
+
+
+def test_reissued_h3_names_p3_3(h3_chain_payload):
+    from ns_certificate_lab.torus_chain import reissue_chain_certificate
+
+    reissued = reissue_chain_certificate(h3_chain_payload)
+    assert "P3-3" in reissued["conclusion"]["continuation_form_consumed"]
+    verdict = verify_chain_certificate(reissued)
+    assert verdict["failures"] == []
+
+
+def test_checker_rejects_reissue_mixtures(chain_payload):
+    from ns_certificate_lab.torus_chain import reissue_chain_certificate
+
+    reissued = reissue_chain_certificate(chain_payload)
+
+    forged = copy.deepcopy(reissued)
+    forged["external_theorems"]["EXT-P1"]["proved"] = False
+    assert not verify_chain_certificate(forged)["verified"]
+
+    forged = copy.deepcopy(reissued)
+    del forged["external_theorems"]["EXT-P2"]["closure"]
+    assert not verify_chain_certificate(forged)["verified"]
+
+    forged = copy.deepcopy(reissued)
+    forged["external_theorems"]["EXT-P3"]["closure"]["lean_formalised"] = True
+    assert not verify_chain_certificate(forged)["verified"]
+
+    forged = copy.deepcopy(reissued)
+    forged["external_theorems"]["EXT-P2"]["dini_clause"]["closed"] = True
+    assert not verify_chain_certificate(forged)["verified"]
+
+    forged = copy.deepcopy(reissued)
+    forged["claims"] = list(forged["claims"]) + [ALLOWED_WORDING[0]]
+    assert not verify_chain_certificate(forged)["verified"]
+
+    forged = copy.deepcopy(reissued)
+    forged["conclusion"]["kind"] = ALLOWED_WORDING[0]
+    assert not verify_chain_certificate(forged)["verified"]

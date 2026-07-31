@@ -100,6 +100,18 @@ ALLOWED_WORDING = (
     "are verified unconditionally",
 )
 
+#: The turn-11 reissue wording, permitted ONLY on payloads that embed the
+#: audited closure records (checker-enforced).  "Unconditional modulo audited
+#: classical theorems" means: the external analysis is closed by complete
+#: paper proofs that survived a two-stage adversarial audit; it does NOT mean
+#: Lean-verified, and the payload says so.
+AUDITED_KIND = (
+    "unconditional PDE certificate modulo audited classical theorems: "
+    "EXT-P1/P2-INT/P3 closed by audited paper proofs "
+    "(docs/research_notes/ext_p1_p2_p3_audit.md); Lean formalisation of the "
+    "infinite-dimensional analysis remains open and is never axiomatised"
+)
+
 #: Substrings whose presence anywhere in a payload makes the checker reject it.
 FORBIDDEN_WORDING = (
     "unconditional existence of the true PDE solution",
@@ -140,8 +152,10 @@ def _upper(value) -> Fraction:
     return value.upper if isinstance(value, Interval) else Fraction(value)
 
 
-def h4dot_upper(field: TrigVector, *, bits: int = DEFAULT_PRECISION_BITS) -> Fraction:
-    """A rational upper bound on the homogeneous ``\\dot H^4`` norm.
+def hdot_upper(
+    field: TrigVector, order: int = 4, *, bits: int = DEFAULT_PRECISION_BITS
+) -> Fraction:
+    """A rational upper bound on the homogeneous ``\\dot H^n`` norm.
 
     For interval fields the accumulated outward rounding of ``sobolev_sq``
     puts a floor of roughly ``sqrt(modes * weights) * 2^{-bits/2}`` under the
@@ -150,10 +164,15 @@ def h4dot_upper(field: TrigVector, *, bits: int = DEFAULT_PRECISION_BITS) -> Fra
     the Taylor remainder diagnostics) are dominated by rounding, not by the
     enclosed field, and the payload records them as such.
     """
-    sob = _upper(field.sobolev_sq(4))
+    sob = _upper(field.sobolev_sq(order))
     if sob < 0:
         sob = Fraction(0)
     return sqrt_interval(Interval(Fraction(0), sob), bits=bits).upper
+
+
+def h4dot_upper(field: TrigVector, *, bits: int = DEFAULT_PRECISION_BITS) -> Fraction:
+    """Legacy alias: :func:`hdot_upper` at order 4."""
+    return hdot_upper(field, 4, bits=bits)
 
 
 def l2_inner(u: TrigVector, v: TrigVector) -> Fraction:
@@ -267,6 +286,7 @@ def recentre(
     cutoff_sq: int,
     rounding_bits: int = 64,
     bits: int = DEFAULT_PRECISION_BITS,
+    norm_order: int = 4,
 ) -> Recentred:
     r"""Collapse the endpoint enclosure to an exact divergence-free point.
 
@@ -306,7 +326,7 @@ def recentre(
     projected = leray(mid_field).cleaned()
 
     difference = endpoint.field + (-interval_field(mid_field, bits=bits))
-    transfer = h4dot_upper(difference, bits=bits)
+    transfer = hdot_upper(difference, norm_order, bits=bits)
     return Recentred(datum=projected, transfer=transfer, rounding_bits=rounding_bits)
 
 
@@ -323,7 +343,7 @@ def _slab_constants(
     lattice_cut: int,
     bits: int,
 ) -> dict:
-    """The slab-valid constants of the control inequality (turn-9 assembly)."""
+    """The slab-valid constants of the turn-9 ``H^4`` control inequality."""
     adot_sq = adot_squared_upper(lattice_cut)
     adot = sqrt_interval(Interval(adot_sq, adot_sq), bits=bits).upper
     bounds = [sup_derivative_bound(box_field, order, bits=bits) for order in range(1, 6)]
@@ -342,6 +362,50 @@ def _slab_constants(
         "derivative_bounds": bounds,
         "K1": k1,
         "K2": k2,
+        "linear": linear,
+        "quadratic": quadratic,
+        "forcing": forcing,
+        "tail_sq_upper": tail_sq,
+    }
+
+
+def _slab_constants_h3(
+    box_field: TrigVector,
+    *,
+    viscosity: Fraction,
+    cutoff_sq: int,
+    lattice_cut: int,
+    g3_upper: Fraction,
+    bits: int,
+) -> dict:
+    r"""The slab-valid constants of the turn-11 ``\dot H^3`` control inequality.
+
+    ``d+R/dt <= (-nu + C_kato(u_a) + C_shift(u_a)) R + G3 R^2 + eps_3`` with
+    the two linear constants exact band sums over the slab box (sections 5a
+    and 5b of ``docs/research_notes/kato_h3_constants.md``), the universal
+    ``G3`` supplied by an audited Kato-constant certificate, and the forcing
+    the exact Galerkin tail measured in ``\dot H^3``.  ``adot`` is retained
+    because the physical Lipschitz transfers still use the embedding
+    ``||f||_inf <= Adot ||f||_{H2dot} <= Adot R``.
+    """
+    from .kato_constant import c_kato_upper, c_shift_upper
+
+    adot_sq = adot_squared_upper(lattice_cut)
+    adot = sqrt_interval(Interval(adot_sq, adot_sq), bits=bits).upper
+    c_kato = c_kato_upper(box_field, bits=bits)
+    c_shift = c_shift_upper(box_field, bits=bits)
+    linear = -viscosity + c_kato + c_shift
+    quadratic = Fraction(g3_upper)
+    tail = residual_tail(box_field, cutoff_sq=cutoff_sq)
+    tail_sq = _upper(tail.sobolev_sq(3))
+    forcing = sqrt_interval(Interval(Fraction(0), tail_sq), bits=bits).upper
+    return {
+        "adot": adot,
+        "adot_sq": adot_sq,
+        "lattice_cut": lattice_cut,
+        "C_kato": c_kato,
+        "C_shift": c_shift,
+        "G3": quadratic,
         "linear": linear,
         "quadratic": quadratic,
         "forcing": forcing,
@@ -371,6 +435,7 @@ def _physical_snapshot(
     adot: Fraction,
     cutoff_sq: int,
     bits: int,
+    norm_order: int = 4,
 ) -> dict:
     """Exact invariants of the restart point, with Lipschitz transfer radii.
 
@@ -448,9 +513,15 @@ def _physical_snapshot(
             "top_shell_energy_share": str(top_share),
         },
         "certified_ranges_for_true_solution": {
-            "h4_dot_norm": certified(
-                sqrt_interval(Interval(Fraction(0), sob4), bits=bits).upper,
-                Fraction(1),
+            **(
+                {
+                    "h4_dot_norm": certified(
+                        sqrt_interval(Interval(Fraction(0), sob4), bits=bits).upper,
+                        Fraction(1),
+                    )
+                }
+                if norm_order >= 4
+                else {}
             ),
             "h3_dot_norm": certified(
                 sqrt_interval(Interval(Fraction(0), sob3), bits=bits).upper,
@@ -506,9 +577,23 @@ def prove_chain_slab(
     bits: int = 64,
     taylor_order: int = 6,
     rounding_bits: int = 64,
+    mode: str = "h4_crude",
+    g3_upper: Fraction | None = None,
     label: str = "chain_slab",
 ) -> ChainSlab:
-    """One link: box, constants, control ODE from ``delta_in``, restart point."""
+    """One link: box, constants, control ODE from ``delta_in``, restart point.
+
+    ``mode`` selects the control inequality: ``"h4_crude"`` is the turn-9
+    ``9(K1+K2)`` assembly with the tube in ``H4dot``; ``"h3_kato"`` is the
+    turn-11 inequality with exact band sums for the linear coefficient, the
+    certified ``G3`` for the quadratic, and the tube in ``H3dot``
+    (``g3_upper`` required, from a verified Kato-constant certificate).
+    """
+    if mode not in ("h4_crude", "h3_kato"):
+        raise ValueError(f"unknown chain mode {mode!r}")
+    if mode == "h3_kato" and g3_upper is None:
+        raise ValueError("h3_kato mode requires the certified G3 upper bound")
+    norm_order = 3 if mode == "h3_kato" else 4
     _check_datum(datum, cutoff_sq=cutoff_sq)
 
     box = prove_galerkin_box(
@@ -520,6 +605,8 @@ def prove_chain_slab(
         bits=bits,
     )
     base_payload: dict = {
+        "mode": mode,
+        "norm_order": norm_order,
         "step": str(step),
         "delta_in": str(delta_in),
         "datum_modes": {
@@ -539,10 +626,16 @@ def prove_chain_slab(
             new_datum=None, constants=None, payload=base_payload,
         )
 
-    constants = _slab_constants(
-        box.box, viscosity=viscosity, cutoff_sq=cutoff_sq,
-        lattice_cut=lattice_cut, bits=bits,
-    )
+    if mode == "h3_kato":
+        constants = _slab_constants_h3(
+            box.box, viscosity=viscosity, cutoff_sq=cutoff_sq,
+            lattice_cut=lattice_cut, g3_upper=g3_upper, bits=bits,
+        )
+    else:
+        constants = _slab_constants(
+            box.box, viscosity=viscosity, cutoff_sq=cutoff_sq,
+            lattice_cut=lattice_cut, bits=bits,
+        )
     coefficients = ControlCoefficients(
         linear=Interval(constants["linear"], constants["linear"]),
         quadratic=Interval(constants["quadratic"], constants["quadratic"]),
@@ -552,20 +645,43 @@ def prove_chain_slab(
     rough = prove_rough_enclosure(
         coefficients, initial, step, max_halvings=0, precision_bits=bits
     )
-    base_payload["constants"] = {
+    constants_block = {
         "adot_upper": str(constants["adot"]),
         "adot_squared_upper": str(constants["adot_sq"]),
         "lattice_cut": constants["lattice_cut"],
-        "sup_derivative_bounds_M1_to_M5": [
-            str(m) for m in constants["derivative_bounds"]
-        ],
-        "K1": str(constants["K1"]),
-        "K2": str(constants["K2"]),
         "linear_coefficient": str(constants["linear"]),
         "quadratic_coefficient": str(constants["quadratic"]),
-        "residual_h4_upper": str(constants["forcing"]),
-        "residual_h4_sq_upper": str(constants["tail_sq_upper"]),
+        f"residual_h{norm_order}_upper": str(constants["forcing"]),
+        f"residual_h{norm_order}_sq_upper": str(constants["tail_sq_upper"]),
     }
+    if mode == "h3_kato":
+        constants_block.update(
+            {
+                "C_kato": str(constants["C_kato"]),
+                "C_shift": str(constants["C_shift"]),
+                "G3_upper": str(constants["G3"]),
+                "derivation": (
+                    "d+R/dt <= (-nu + C_kato + C_shift) R + G3 R^2 + eps_3, "
+                    "R = ||u - u_a||_{H3dot}; "
+                    "docs/research_notes/kato_h3_constants.md sections 5-6.  "
+                    "The d+ display is shorthand: the delivered analytic form "
+                    "is the integral inequality EXT-P2-INT plus Lemma C "
+                    "(ext_p1_p2_p3_audit.md section 1.3); no Dini derivative "
+                    "is consumed"
+                ),
+            }
+        )
+    else:
+        constants_block.update(
+            {
+                "sup_derivative_bounds_M1_to_M5": [
+                    str(m) for m in constants["derivative_bounds"]
+                ],
+                "K1": str(constants["K1"]),
+                "K2": str(constants["K2"]),
+            }
+        )
+    base_payload["constants"] = constants_block
     if not rough.proved:
         return ChainSlab(
             proved=False, failure="control_rough", step=step, delta_in=delta_in,
@@ -598,7 +714,8 @@ def prove_chain_slab(
         step=step, order=taylor_order, bits=bits,
     )
     restart = recentre(
-        endpoint, cutoff_sq=cutoff_sq, rounding_bits=rounding_bits, bits=bits
+        endpoint, cutoff_sq=cutoff_sq, rounding_bits=rounding_bits, bits=bits,
+        norm_order=norm_order,
     )
     delta_out = delta_end + restart.transfer
 
@@ -615,7 +732,7 @@ def prove_chain_slab(
             },
             "recentre": {
                 "rounding_bits": restart.rounding_bits,
-                "transfer_h4": str(restart.transfer),
+                f"transfer_h{norm_order}": str(restart.transfer),
             },
             "delta_out": str(delta_out),
             "next_datum_modes": {
@@ -627,7 +744,7 @@ def prove_chain_slab(
             },
             "physical": _physical_snapshot(
                 datum, radius=radius_slab, adot=constants["adot"],
-                cutoff_sq=cutoff_sq, bits=bits,
+                cutoff_sq=cutoff_sq, bits=bits, norm_order=norm_order,
             ),
         }
     )
@@ -674,8 +791,9 @@ def _classify_stop(slab: ChainSlab, *, delta: Fraction) -> dict:
         "explanation": (
             "the derivative shares of the control ODE at the stopped slab; "
             "the largest term names the binding limitation.  The linear "
-            "coefficient is the crude self-contained 9(K1+K2) bound, not a "
-            "property of the solution"
+            "coefficient is a bound of the method (9(K1+K2) in h4_crude "
+            "mode, the exact band sums C_kato + C_shift in h3_kato mode), "
+            "not a property of the solution"
         ),
         "note": STOP_IS_NOT_A_SINGULARITY,
     }
@@ -697,6 +815,8 @@ def build_chain_certificate(
     rounding_bits: int = 64,
     relative_radius_cap: Fraction = Fraction(1, 2),
     allow_step_doubling: bool = True,
+    mode: str = "h4_crude",
+    kato_payload: dict | None = None,
 ) -> dict:
     """Chain slabs adaptively from a preregistered family until a stop fires.
 
@@ -713,6 +833,23 @@ def build_chain_certificate(
         raise ValueError(f"unknown torus family {family!r}")
     if viscosity <= 0:
         raise ValueError("a Clay-admissible chain requires positive viscosity")
+    if mode not in ("h4_crude", "h3_kato"):
+        raise ValueError(f"unknown chain mode {mode!r}")
+    g3_upper: Fraction | None = None
+    kato_verdict: dict | None = None
+    if mode == "h3_kato":
+        from .kato_constant import verify_kato_certificate
+
+        if kato_payload is None:
+            raise ValueError("h3_kato mode requires a Kato-constant certificate")
+        kato_verdict = verify_kato_certificate(kato_payload)
+        if not kato_verdict.get("verified"):
+            raise ValueError(
+                "the supplied Kato-constant certificate does not verify: "
+                f"{kato_verdict.get('failures')}"
+            )
+        g3_upper = Fraction(kato_payload["g3"]["upper"])
+    norm_order = 3 if mode == "h3_kato" else 4
 
     datum = TORUS_FAMILIES[family]()
     delta = Fraction(0)
@@ -723,9 +860,6 @@ def build_chain_certificate(
     recurrence: list[dict] = []
     termination: dict | None = None
     comfortable = 0
-    initial_h4 = sqrt_interval(
-        Interval(Fraction(0), Fraction(datum.sobolev_sq(4))), bits=bits
-    ).upper
     max_radius = Fraction(0)
     last_slab: ChainSlab | None = None
 
@@ -738,6 +872,7 @@ def build_chain_certificate(
             datum, delta_in=delta, viscosity=viscosity, cutoff_sq=cutoff_sq,
             step=step, lattice_cut=lattice_cut, bits=bits,
             taylor_order=order_now, rounding_bits=rounding_bits,
+            mode=mode, g3_upper=g3_upper,
             label=f"track_p_chain_{family}_slab{len(slabs)}",
         )
         last_slab = slab
@@ -758,10 +893,10 @@ def build_chain_certificate(
             order_now += 2
             continue
 
-        datum_h4 = sqrt_interval(
-            Interval(Fraction(0), Fraction(datum.sobolev_sq(4))), bits=bits
+        datum_norm = sqrt_interval(
+            Interval(Fraction(0), Fraction(datum.sobolev_sq(norm_order))), bits=bits
         ).upper
-        if datum_h4 > 0 and slab.radius_slab > relative_radius_cap * datum_h4:
+        if datum_norm > 0 and slab.radius_slab > relative_radius_cap * datum_norm:
             if step / 2 >= min_step:
                 step = step / 2
                 comfortable = 0
@@ -811,7 +946,9 @@ def build_chain_certificate(
     remainders = [
         Fraction(entry["taylor_endpoint"]["remainder_h4"]) for entry in slabs
     ]
-    transfers = [Fraction(entry["recentre"]["transfer_h4"]) for entry in slabs]
+    transfers = [
+        Fraction(entry["recentre"][f"transfer_h{norm_order}"]) for entry in slabs
+    ]
     widths = [
         Fraction(entry["taylor_endpoint"]["max_coefficient_width"]) for entry in slabs
     ]
@@ -852,12 +989,15 @@ def build_chain_certificate(
 
     final_delta = delta
     payload: dict = {
-        "schema_version": 1,
+        "schema_version": 2 if mode == "h3_kato" else 1,
         "certificate": "torus_chain_aposteriori",
+        "mode": mode,
+        "norm_order": norm_order,
         "family": family,
         "viscosity": str(viscosity),
         "galerkin_cutoff_sq": cutoff_sq,
         "preregistered": {
+            "mode": mode,
             "initial_step": str(initial_step),
             "min_step": str(min_step),
             "max_slabs": max_slabs,
@@ -880,8 +1020,8 @@ def build_chain_certificate(
         "horizon_over_single_slab": (
             float(clock / initial_step) if initial_step else None
         ),
-        "max_radius_h4_dot": str(max_radius),
-        "final_delta_h4_dot": str(final_delta),
+        f"max_radius_h{norm_order}_dot": str(max_radius),
+        f"final_delta_h{norm_order}_dot": str(final_delta),
         "final_distance_h3": str(SQRT8_UPPER * max_radius),
         "delta_recurrence": recurrence,
         "slabs": slabs,
@@ -901,15 +1041,87 @@ def build_chain_certificate(
             ),
             "statement": (
                 f"assuming EXT-P1/P2/P3, a strong periodic solution exists on "
-                f"[0, {clock}] and its H4-dot distance to the piecewise "
-                f"Galerkin centre stays below {max_radius} throughout; the "
-                f"identity of the solution across slab boundaries is the "
-                f"uniqueness clause of EXT-P1"
+                f"[0, {clock}] and its H{norm_order}-dot distance to the "
+                f"piecewise Galerkin centre stays below {max_radius} "
+                f"throughout; the identity of the solution across slab "
+                f"boundaries is the uniqueness clause of EXT-P1"
             ),
             "not_a_singularity_statement": STOP_IS_NOT_A_SINGULARITY,
         },
     }
+    if mode == "h3_kato":
+        payload["kato_certificate"] = kato_payload
+        payload["kato_verified"] = kato_verdict
     return payload
+
+
+# --------------------------------------------------------------------------- #
+# the turn-11 reissue                                                          #
+# --------------------------------------------------------------------------- #
+
+
+def reissue_chain_certificate(payload: dict) -> dict:
+    """Reissue a conditional chain payload with the audited EXT records.
+
+    The turn-11 audit closed the consumed external statements as audited
+    paper proofs (``docs/research_notes/ext_p1_p2_p3_audit.md``).  This swaps
+    the external block for the closure-annotated records, rewrites the
+    conclusion kind to :data:`AUDITED_KIND`, names the continuation form the
+    ``n = 3`` lane consumes (Corollary P3-3), and stamps a ``reissue`` block.
+    Everything quantitative — every slab, constant, tube and recurrence —
+    is untouched; callers must re-run :func:`verify_chain_certificate` on the
+    result, which recomputes all of it and enforces the v2 wording contract.
+    """
+    import copy as _copy
+
+    from .torus_aposteriori import EXTERNAL_THEOREMS_AUDITED
+
+    reissued = _copy.deepcopy(payload)
+    reissued["external_theorems"] = _copy.deepcopy(EXTERNAL_THEOREMS_AUDITED)
+    conclusion = reissued.setdefault("conclusion", {})
+    conclusion["kind"] = AUDITED_KIND
+    statement = conclusion.get("statement", "")
+    prefix = "assuming EXT-P1/P2/P3, "
+    if statement.startswith(prefix):
+        conclusion["statement"] = (
+            "under the audited paper proofs of EXT-P1/P2-INT/P3 (closure "
+            "recorded in this payload), " + statement[len(prefix):]
+        )
+    if reissued.get("mode", "h4_crude") == "h3_kato":
+        conclusion["continuation_form_consumed"] = (
+            "Corollary P3-3 (H3 continuation), "
+            "docs/research_notes/ext_p1_p2_p3_audit.md section 1.4"
+        )
+        for entry in reissued.get("slabs", []):
+            constants = entry.get("constants", {})
+            if "derivation" in constants:
+                constants["derivation"] = (
+                    "d+R/dt <= (-nu + C_kato + C_shift) R + G3 R^2 + eps_3, "
+                    "R = ||u - u_a||_{H3dot}; "
+                    "docs/research_notes/kato_h3_constants.md sections 5-6.  "
+                    "The d+ display is shorthand: the delivered analytic "
+                    "form is the integral inequality EXT-P2-INT plus Lemma C "
+                    "(ext_p1_p2_p3_audit.md section 1.3); no Dini derivative "
+                    "is consumed"
+                )
+    claims = [
+        AUDITED_KIND if claim == ALLOWED_WORDING[0] else claim
+        for claim in reissued.get("claims", [])
+    ]
+    if AUDITED_KIND not in claims:
+        claims.insert(0, AUDITED_KIND)
+    reissued["claims"] = claims
+    reissued["reissue"] = {
+        "reissued_from": ALLOWED_WORDING[0],
+        "date": "2026-07-31",
+        "audit_document": "docs/research_notes/ext_p1_p2_p3_audit.md",
+        "meaning": (
+            "proved: true on an external record means an audited paper "
+            "proof of classical analysis, never a Lean formalisation; no "
+            "axiom was or will be added for it"
+        ),
+    }
+    return reissued
 
 
 # --------------------------------------------------------------------------- #
@@ -963,23 +1175,74 @@ def verify_chain_certificate(payload: dict) -> dict:
         )
         phrase = _contains_forbidden(payload)
         check(phrase is None, f"forbidden wording present: {phrase!r}")
-        for sentence in ALLOWED_WORDING:
-            check(sentence in payload.get("claims", []), f"claim missing: {sentence}")
+        audited = isinstance(payload.get("reissue"), dict)
+        claims = payload.get("claims", [])
+        if audited:
+            check(AUDITED_KIND in claims, "reissued payload carries the audited kind")
+            check(
+                ALLOWED_WORDING[0] not in claims,
+                "reissued payload must not still claim to be conditional",
+            )
+        else:
+            check(
+                ALLOWED_WORDING[0] in claims,
+                f"claim missing: {ALLOWED_WORDING[0]}",
+            )
         check(
-            STOP_IS_NOT_A_SINGULARITY in payload.get("claims", []),
+            ALLOWED_WORDING[1] in claims,
+            f"claim missing: {ALLOWED_WORDING[1]}",
+        )
+        check(
+            STOP_IS_NOT_A_SINGULARITY in claims,
             "stop-is-not-a-singularity disclaimer",
         )
         externals = payload.get("external_theorems", {})
         for name in EXTERNAL_THEOREMS:
             block = externals.get(name, {})
-            check(block.get("proved") is False, f"{name} must record proved: false")
-            check(
-                block.get("axiomatised_in_lean") is False,
-                f"{name} must record axiomatised_in_lean: false",
-            )
             check(
                 block.get("statement") == EXTERNAL_THEOREMS[name],
                 f"{name} statement must be recorded verbatim",
+            )
+            if audited:
+                closure = block.get("closure", {})
+                check(
+                    block.get("proved") is True,
+                    f"{name}: a reissued payload records the audited closure",
+                )
+                check(
+                    closure.get("method") == "audited_paper_proof"
+                    and closure.get("audit_document")
+                    == "docs/research_notes/ext_p1_p2_p3_audit.md"
+                    and closure.get("lean_formalised") is False
+                    and closure.get("axiomatised_in_lean") is False,
+                    f"{name}: proved true requires complete closure metadata "
+                    "with the Lean flags still false",
+                )
+                check(
+                    bool(block.get("audited_statement")),
+                    f"{name}: the audited statement must be referenced",
+                )
+            else:
+                check(
+                    block.get("proved") is False,
+                    f"{name} must record proved: false",
+                )
+                check(
+                    block.get("axiomatised_in_lean") is False,
+                    f"{name} must record axiomatised_in_lean: false",
+                )
+        if audited:
+            dini = externals.get("EXT-P2", {}).get("dini_clause", {})
+            check(
+                dini.get("closed") is False
+                and dini.get("consumed_by_chain") is False,
+                "the open Dini clause G-DINI must stay recorded open and "
+                "unconsumed",
+            )
+            check(
+                payload["reissue"].get("audit_document")
+                == "docs/research_notes/ext_p1_p2_p3_audit.md",
+                "reissue block names the audit document",
             )
         termination = payload.get("termination", {})
         check(
@@ -992,6 +1255,29 @@ def verify_chain_certificate(payload: dict) -> dict:
         prereg = payload.get("preregistered", {})
         bits = int(prereg.get("bits", 64))
         lattice_cut = int(prereg.get("lattice_cut", 20))
+        mode = payload.get("mode", "h4_crude")
+        check(mode in ("h4_crude", "h3_kato"), f"known chain mode ({mode!r})")
+        norm_order = 3 if mode == "h3_kato" else 4
+        check(
+            int(payload.get("norm_order", 4)) == norm_order,
+            "norm order matches the mode",
+        )
+        g3_upper: Fraction | None = None
+        if mode == "h3_kato":
+            from .kato_constant import verify_kato_certificate
+
+            kato_payload = payload.get("kato_certificate")
+            check(
+                isinstance(kato_payload, dict),
+                "h3_kato chain embeds its Kato-constant certificate",
+            )
+            if isinstance(kato_payload, dict):
+                kato_verdict = verify_kato_certificate(kato_payload)
+                check(
+                    bool(kato_verdict.get("verified")),
+                    "embedded Kato-constant certificate re-verifies",
+                )
+                g3_upper = Fraction(kato_payload["g3"]["upper"])
         slabs = payload.get("slabs", [])
         recurrence = payload.get("delta_recurrence", [])
         check(len(slabs) == len(recurrence), "one recurrence row per slab")
@@ -1032,19 +1318,37 @@ def verify_chain_certificate(payload: dict) -> dict:
                 f"slab {index}: box radius and step reproduce",
             )
 
-            constants = _slab_constants(
-                box.box, viscosity=viscosity, cutoff_sq=cutoff_sq,
-                lattice_cut=lattice_cut, bits=bits,
-            )
+            if mode == "h3_kato":
+                constants = _slab_constants_h3(
+                    box.box, viscosity=viscosity, cutoff_sq=cutoff_sq,
+                    lattice_cut=lattice_cut, g3_upper=g3_upper, bits=bits,
+                )
+            else:
+                constants = _slab_constants(
+                    box.box, viscosity=viscosity, cutoff_sq=cutoff_sq,
+                    lattice_cut=lattice_cut, bits=bits,
+                )
             stored = entry["constants"]
-            check(
+            agree = (
                 Fraction(stored["linear_coefficient"]) == constants["linear"]
                 and Fraction(stored["quadratic_coefficient"]) == constants["quadratic"]
-                and Fraction(stored["residual_h4_upper"]) == constants["forcing"]
-                and Fraction(stored["K1"]) == constants["K1"]
-                and Fraction(stored["K2"]) == constants["K2"],
-                f"slab {index}: control constants reproduce from the box",
+                and Fraction(stored[f"residual_h{norm_order}_upper"])
+                == constants["forcing"]
             )
+            if mode == "h3_kato":
+                agree = (
+                    agree
+                    and Fraction(stored["C_kato"]) == constants["C_kato"]
+                    and Fraction(stored["C_shift"]) == constants["C_shift"]
+                    and Fraction(stored["G3_upper"]) == g3_upper
+                )
+            else:
+                agree = (
+                    agree
+                    and Fraction(stored["K1"]) == constants["K1"]
+                    and Fraction(stored["K2"]) == constants["K2"]
+                )
+            check(agree, f"slab {index}: control constants reproduce from the box")
 
             control_payload = entry["control_certificate"]
             verdict = verify_control_certificate(control_payload)
@@ -1104,9 +1408,11 @@ def verify_chain_certificate(payload: dict) -> dict:
             restart = recentre(
                 endpoint, cutoff_sq=cutoff_sq,
                 rounding_bits=int(entry["recentre"]["rounding_bits"]), bits=bits,
+                norm_order=norm_order,
             )
             check(
-                Fraction(entry["recentre"]["transfer_h4"]) == restart.transfer,
+                Fraction(entry["recentre"][f"transfer_h{norm_order}"])
+                == restart.transfer,
                 f"slab {index}: recentring transfer reproduces",
             )
             stored_next = entry["next_datum_modes"]
@@ -1146,11 +1452,11 @@ def verify_chain_certificate(payload: dict) -> dict:
             "certified final time equals the slab sum",
         )
         check(
-            Fraction(payload["max_radius_h4_dot"]) == max_radius,
+            Fraction(payload[f"max_radius_h{norm_order}_dot"]) == max_radius,
             "chain radius equals the slab maximum",
         )
         check(
-            Fraction(payload["final_delta_h4_dot"]) == delta,
+            Fraction(payload[f"final_delta_h{norm_order}_dot"]) == delta,
             "final delta equals the recurrence output",
         )
         check(
@@ -1158,10 +1464,21 @@ def verify_chain_certificate(payload: dict) -> dict:
             "H3 distance uses the recorded sqrt8 bound",
         )
         conclusion = payload.get("conclusion", {})
-        check(
-            conclusion.get("kind") == ALLOWED_WORDING[0],
-            "conclusion uses the allowed conditional wording",
-        )
+        if audited:
+            check(
+                conclusion.get("kind") == AUDITED_KIND,
+                "reissued conclusion uses the audited kind verbatim",
+            )
+            if mode == "h3_kato":
+                check(
+                    "P3-3" in str(conclusion.get("continuation_form_consumed", "")),
+                    "the n=3 lane names Corollary P3-3 as its continuation form",
+                )
+        else:
+            check(
+                conclusion.get("kind") == ALLOWED_WORDING[0],
+                "conclusion uses the allowed conditional wording",
+            )
         check(
             conclusion.get("unconditional_part") == ALLOWED_WORDING[1],
             "conclusion separates the unconditional part",

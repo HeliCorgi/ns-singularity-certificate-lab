@@ -1,39 +1,88 @@
 # Project status
 
-最終更新: 2026-07-31 第 10 便(branch `fable5-mainline`)
-状態: **第 10 便で Track P の単発スラブを連結し、条件付き certified existence
-interval を実際に延長した。** 各スラブは厳密有理・厳密発散ゼロの再中心化点から
-開始(Taylor 終端包絡 → dyadic 丸め → 厳密 Leray 射影; 捨てた幅は
-δ_{n+1} = R_n(t_{n+1}) + transfer としてスカラー半径に課金)するため、区間 box が
-スラブ境界を越えて伝播せず **wrapping は構造的に不発生**(前登録の Lohner/QR
-導入条件は実測で不発火 — transfer は丸め床 ~1e-8 に張り付き、tube 半径 1e-3
-に対して無視可能)。スイープ 12 連結(P1/P2/P3 × ν∈{1/4,1/10,1/40,1/100}、h₀=1/2048)は スラブ数 12〜15、certified horizon 2.01e-03〜4.88e-03(単発スラブ長の 4.1〜10.0 倍)。長尺(P1、ν=1/10、h=1/8192、倍増なし)は 41 スラブ連結、T=4.90e-03(1/2048 基準で 10.0 倍)。停止分類は ['control_linear_coefficient']、checker 全数合格=True。
-停止は前登録分類法で必ず分類され、**一貫して「control ODE の粗い線形係数
-9(K₁+K₂) が縛り」= 解の性質ではなく方法の限界**(Riccati 天井
-T* ≈ (1/a)log(a²/(bε)) ≈ 5.7e-3 @P1)。**証明区間の終了は特異点の主張ではない**
-(checker が文言を強制)。Lean は連結の有限不等式骨格 9 定理
-(`TrackPChain.lean`: 2 スラブ合成・n スラブ帰納法・転送三角不等式・離散
-Grönwall・Lagrange 終端剰余)+ 二次 ODE の Picard–Lindelöf 5 定理
-(`GalerkinPicard.lean`: 明示 Lipschitz 定数・存在区間半幅 ε=1/(L+1)・一意性 —
-EXT-P1 の Galerkin 半分の有限次元核)を追加、`lake build` 8670 jobs、監査
-110/110 が古典 3 公理のみ。EXT-P1 は**完全な紙上証明(未監査)**と 14 行依存表を
-`ext_dependencies.md` に整備(一様 H⁴ 界は本 repo の可換子代数の再利用:
-d/dt Y ≤ −2νY + 270Ȧ Y^{3/2}、T* = 1/(270Ȧ‖u₀‖_Ḣ⁴))— **payload の
-proved:false は監査完了まで不変**。EXT-P2 の各時刻 Dini 節は未達で外部のまま
-(正直に記録)。R³ 側 J>0 は勾配形式 −3∫|u|u·∇p_h で再構成:
-**圧力×流束の非相関化は成功**(P 下界が各解像度で 3〜4 倍改善、依存過大評価は
-負 = 搾れる相関はもう無い)が、**閉じない** — 拘束幅は ν=1e-3 では粘性上界の
-過大評価(16〜90 倍)、ν→0 極限では速度因子の cell 包絡。しかも float 再計算で
-J>0 となるのは ν < ~1e-4 のみ(第 9 便の参照値 −2.5e-3/+1.1e-5 はコードと
-不整合と判明 — 本便の測定が上書き)。最良 P 下界 −5.13e-6 vs 真値 +3.25e-7、
-必要精細化 ~40 倍(~10⁴ 倍コスト)。**候補昇格ゼロ、δ_J なし、短時間継続
-ドラフトは発火条件未達のため書かず。** 新離散圧力仮定 P1G は payload に
-proved:false で記録され checker が強制。
+最終更新: 2026-07-31 第 11 便(branch `fable5-mainline`)
+状態: **第 11 便で (1) EXT-P1/P2/P3 を敵対的監査で閉鎖し(監査済み紙上証明)、
+(2) 正規化完全一致の n=3 Kato 定数を自前導出・証明書化し、(3) チェーンの
+certified horizon を実測 11〜13 倍に延長した。**
+
+**EXT 監査**(`ext_p1_p2_p3_audit.md`): 3 名の敵対的監査(compactness /
+不等式・正規化 / statement-vs-use)→ 全指摘 minor・修理適用 → 再監査 2 名
+(拒否権つき、反証を試行)の結論: **EXT-P1★(6 節完全文)・EXT-P2-INT +
+Lemma C(積分形 — Dini 微分を全経路から排除)・EXT-P3★・系 P3-3(H³ 継続、
+32Ȧ 平滑化評価)すべて閉鎖**。旧 Dini 節のみ G-DINI として open だが
+**どこからも消費されない**(checker 強制)。`EXTERNAL_THEOREMS_AUDITED` は
+proved:true + 閉鎖メタデータ必須(= **監査済み紙上証明の意味であり Lean
+形式化ではない**; lean_formalised:false 固定、公理化は不変で禁止)。全 27
+チェーン(v1 の 13 + h3 の 14)を `reissue_chain_certificate` で再発行し、
+independent checker が全リンク再計算+新旧混在拒否で全数合格
+(`outputs/track_p_chain_reissued_v2/`)。
+
+**n=3 Kato 定数**(`kato_h3_constants.md` + `kato_constant.py`): 素朴な
+sup 型格子和が発散する 2 領域を反例つきで記録した上で、離散 Kato–Ponce
+可換子+発散ゼロ相殺経由の **G₃ ≤ 12√A₄ ≤ 49.37**(N=40; 単調改善、
+MP 換算値 ~6.9 との比較は検証専用)、per-trajectory 厳密帯域和
+C_kato = 6Σ(|p|+|p|³)|û_p|・C_shift = Σ|j|(1+|j|)³|û_j|。P1 の box 上実測:
+**linear = 60.0(旧 9(K₁+K₂) = 1242 の 20.7 分の 1)、quadratic = 49.4
+(旧 135Ȧ = 562 の 11.4 分の 1)** — 改善率は証明定数から計算、事前推定は
+結果として扱わない。
+
+**チェーン再実行**(前登録 config、`outputs/track_p_chain_h3_v1/`):
+P1: T = 5.35e-02〜5.86e-02(旧比 11.1〜12.0 倍)、P2: 3.26e-02〜3.49e-02、P3: 2.38e-02〜2.45e-02; 改善率は全 12 組で 11.1〜12.6 倍(実測)。同一 h=1/2048 の厳密比較は 40 スラブ・T = 1.95e-02(slab_budget_exhausted)、cutoff_sq=6 プローブは T = 4.14e-02(control_linear_coefficient)。
+停止分類は全て `control_linear_coefficient` のまま(= C_kato+C_shift が
+新しい律速; 粘性依存はごく弱い)。wrapping トリガー不発火は不変。
+
+**Lean**(+28 定理、計 124; 123 が古典 3 公理のみ + cond_to_uncond は公理
+非依存): `KatoConstant.lean`(G₃ 証明書の有限代数 + 格子 tail telescoping)、
+`ChainAnalysis.lean`(**積分形比較定理** integral_comparison /
+integral_riccati_comparison = EXT-P2-INT+Lemma C のスカラー半分、EXT-P3 の
+貼り合わせ・端点延長論理、cond_to_uncond)、`lake build` 8672 jobs。
+
+**R³ J>0(低コスト枠、停止則発火)**: 等方 Gaussian–Hermite 基底の自由空間
+∇p が熱半群計算で**厳密閉形式**に(打切り不要、Δp+σ≡0 の厳密有理自己検証)。
+この経路では **P1/P1G 仮定が消滅し、lane 初の無条件 J 下界**を確立:
+J ≥ −2.96e-4(ν=1e-3)/ −7.69e-5(ν→0)— 依然負で、閉鎖には ~2e4 倍計算が
+必要のため前登録停止則どおり停止(候補昇格なし)。仮定除去のコストは幅
+~4〜7 倍。証明下界を目的関数にした再最適化は幅支配のため時期尚早と判明。
 **特異点証明ではなく、Clay 問題も解決していない。**
 
-前便まで: 第 9 便で Track P 新設(12/12 スラブ)+ Gaussian–Hermite 基底、
-第 8 便で L3 生成恒等式・純粋旋回 no-go、第 7 便で Picard 領域離脱、
-第 3〜6 便で有限帯域 no-go・Gate 群・区間証明書層。
+前便まで: 第 10 便でスラブ連結(10 倍地平・wrapping 構造的回避)、第 9 便で
+Track P 新設 + Gaussian–Hermite、第 8 便で L3 生成恒等式・純粋旋回 no-go。
+
+## 2026-07-31 第 11 便の結果(fable5-mainline)
+
+### 無条件に閉じた EXT 定理(監査済み紙上証明; Lean 形式化ではない)
+
+- **EXT-P1★**: 周期 H⁴_σ 局所存在・一意性の 6 節完全文(時間正則性
+  C¹H²+L²Ḣ³、空間正則性 CH⁴+L²Ḣ⁵、Leray/圧力/係数形式の同値(両逆向き
+  込み)、datum への強連続、一意性クラス = C(H⁴_σ)∩C¹(H²)、最大時刻
+  T* = 1/(270Ȧ‖u₀‖₄)、u₀=0 規約)。Galerkin 構成の全ステップ監査済み。
+- **EXT-P2-INT + Lemma C**: chain が実際に消費する最小積分形(‖w‖ 連続 +
+  ‖w‖² AC + 積分 energy 不等式)とスカラー比較。**Dini 微分は不要になった**
+  (旧 Dini 節は G-DINI として open のまま・未消費)。
+- **EXT-P3★ + 系 P3-3**: H⁴ 継続(一様局所時間+重なり貼り合わせ)と
+  n=3 チェーンが消費する H³ 継続(新規 32Ȧ 平滑化評価、再監査 2 名が独立
+  再導出)。h3 payload は P3-3 消費を明名。
+- Lean 未形式化の無限次元部分は監査文書 §5 と台帳に列挙(公理化はしない)。
+
+### Kato 定数の厳密上界(第 3 節の成果物)
+
+- **G₃ ≤ 12√A₄**: N=20/40/60 で 49.9450/49.3672/49.1752(単調)。
+  4 つの粗ステップ(MVT 立方、平方展開、AM-GM、ℓ¹ Young)を鋭化レバーとして
+  記録。K₃ 対 = (4√A₄)‖v‖₃‖w‖₃ + (4√A₆)‖v‖₃‖w‖₄、A₆ ≤ 8.402。
+  独立 checker(自前の格子ループで A₄/A₆ 再計算)+ 改竄拒否 + 文献比較は
+  verification_only フラグつき。
+
+### Certified horizon(実測、旧定数との同一条件比較込み)
+
+上記ヘッダの表のとおり。厳密同一 h 比較と cutoff プローブも保存。
+
+### 未解決のまま
+
+- G-DINI(未消費)、Lean の無限次元部分(L-EXT-P1-c1…e1)、HS-5 全空間版、
+  NT-N1、H3。J>0 は無条件下界 −7.7e-5(ν→0)まで来たが閉じない。
+  n=3 の次のレバー: G₃ の 4 ステップ鋭化(MP 型)、C_kato/C_shift の
+  band-shape 最適化。
+
 
 ## 2026-07-31 第 10 便の結果(fable5-mainline)
 
