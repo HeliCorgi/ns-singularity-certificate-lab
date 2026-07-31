@@ -102,7 +102,7 @@ __all__ = [
 
 
 def require_clay_admissible(family) -> None:
-    """Refuse to score or certify a family that is not a legitimate candidate.
+    r"""Refuse to score or certify a family that is not a legitimate candidate.
 
     The Clay statements require ``C^\infty`` data.  A finite-``C^k`` surrogate
     (a spline basis, for instance) is a permitted *tool* — for checker
