@@ -1,4 +1,8 @@
 /-
+Copyright (c) 2026 ns-singularity-certificate-lab contributors.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
+/-
 The algebraic core of the `L^3` generation identity, and of the pure-swirl no-go
 that rules out the most obvious family of candidate initial data.
 

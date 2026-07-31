@@ -1,4 +1,8 @@
 /-
+Copyright (c) 2026 ns-singularity-certificate-lab contributors.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
+/-
 Track P — the periodic lane — algebraic and finite-dimensional core.
 
 ## The mathematics this file sits under

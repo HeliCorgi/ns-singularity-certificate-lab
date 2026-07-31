@@ -1,3 +1,7 @@
+/-
+Copyright (c) 2026 ns-singularity-certificate-lab contributors.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
 import NSSingularity.ClayStatement
 import NSSingularity.VelocityRecovery
 import NSSingularity.FiniteTime

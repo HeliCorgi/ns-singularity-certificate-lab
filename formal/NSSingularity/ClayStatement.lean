@@ -1,4 +1,8 @@
 /-
+Copyright (c) 2026 ns-singularity-certificate-lab contributors.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
+/-
 Stage 0 of `LEAN4_VERIFICATION_POLICY.md`: fix the Clay Navier–Stokes
 statements as Lean `Prop`s.
 
