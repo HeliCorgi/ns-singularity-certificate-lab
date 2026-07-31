@@ -19,6 +19,13 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
+        with:
+          # tests/test_readme_claims.py verifies that the commit the README
+          # pins for exact reproduction really exists and contains the
+          # artifact it cites, and that the branches the README names are
+          # real.  The default shallow, single-branch checkout has neither
+          # the history nor the refs, so those guards would skip.
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v6
