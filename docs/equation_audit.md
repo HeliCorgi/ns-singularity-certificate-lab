@@ -1011,6 +1011,41 @@ manufactured oracleへ直接照合し、円柱radial符号、成分写像、渦�
 証明しない。将来の未知候補には、候補固有の圧力・時間微分・境界・精度検査を
 改めて適用しなければならない。
 
+## 12b. Zeno packet / moving-front discovery equation audit
+
+2026-08-01 の discovery portfolio で導入した式は、既存の軸対称方程式
+E-01--E-31とは独立な一般3D/Fourier仮説である。review gate 1 の現状を以下で固定する。
+
+| ID | statement | status | implementation use |
+|---|---|---|---|
+| Z-01 | torus shellを \(1\le\lambda_j\le N\) の**有限和**として計算した energy/enstrophy/critical Besov の3区分 | **代数的に確認済み** | finite-sum classifierのみに可 |
+| Z-02 | compact divergence-free packets \(w_j=\lambda_jW(\lambda_j(x-x_j))\) の total energy、disjoint \(L^3\)、enstrophy scaling | **kinematic identityとして確認済み** | physical packet metricsのみに可 |
+| Z-03 | \(D^4(4\pi|x|)^{-1}\) tensor と、明示的 \(W_a=(a\times x)e^{-|x|^2/2}\) の rank-two moment が favourable leading signを持つこと | **leading algebraとして確認済み** | tensor regressionのみに可 |
+| Z-04 | exact torus pressure、他packetとのcross terms、multipole remainderを含めても favourable strainが残ること | **未確認** | 実装 premise に不可 |
+| Z-05 | signed NS fluxが粘性・wake・off-chain lossを一様に上回り、\(\dot N=kN^3\) を生成すること | **未確認**。Bernsteinから出るのは上界だけ | ODEはconditional modelに限定 |
+| Z-06 | smooth future seeds、relative-front orbit、finite-band smooth force、local \(L^3\) lower bound、Clay (D)接続 | **未確認** | solution/certificate premise に不可 |
+
+Z-01 と Z-02 を同一視してはならない。非零関数は compact support と exact Fourier
+band limitation を同時に持てないため、
+
+\[
+\|w_j\|_2^2\asymp\lambda_j^{-1}
+\quad\not\Rightarrow\quad
+\|P_j\sum_iw_i\|_2^2\asymp\lambda_j^{-1}
+\]
+
+であり、Littlewood--Paley leakage と translation cross terms が未評価である。
+
+また初回 outputs/zeno_packet_relay_pilot_v1/ が使った
+\(M=\operatorname{diag}(1,0,0)\) は、非零局在発散ゼロ場の energy momentとして
+実現不能である。rank-oneなら \(u=\phi e\) a.e. となり、
+\(\nabla\cdot u=e\cdot\nabla\phi=0\) と局在性から \(\phi=0\) になる。このv1
+algebraic optimumは物理packet witnessとして **棄却** し、保存履歴は削除しない。
+後続v2は Z-03 の明示的 rank-two Gaussian vortexだけを用いる。
+
+従って現段階のZeno資料の正確な状態は
+**FORMAL KINEMATIC SCALING SCENARIO / NOT YET A PDE CANDIDATE** である。
+
 ## 13. 一次資料
 
 - **[F]** Charles L. Fefferman, “Existence and Smoothness of the Navier–Stokes Equation,” Clay Mathematics Institute.

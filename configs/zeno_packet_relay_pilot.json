@@ -1,0 +1,13 @@
+{
+  "schema": "ns-certificate-lab/zeno-packet-relay-pilot-config/v1",
+  "seed": 20260801,
+  "levels": [8, 16, 24, 32],
+  "base": 2.0,
+  "bandwidth_exponent": 0.5,
+  "peak_energy_exponent": 0.5,
+  "spectral_slope": -1.0,
+  "random_orientation_samples": 20000,
+  "front_initial_bandwidth": 1.0,
+  "front_coefficient": 0.5,
+  "front_remaining_fractions": [0.5, 0.25, 0.125, 0.0625]
+}

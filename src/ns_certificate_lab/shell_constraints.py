@@ -1,4 +1,4 @@
-r"""Necessary conditions for a Track-F candidate with diverging bandwidth.
+r"""Historical positive-slope conditions for a diverging-bandwidth candidate.
 
 The fixed-finite-mode no-go (``docs/research_notes/track_f_finite_mode_nogo.md``)
 closes exactly one search class: velocity fields whose Fourier support stays
@@ -28,7 +28,16 @@ with ``lambda_j = 2^j``.  Four necessary conditions then become inequalities on
 Together these force ``0 < gamma < 1`` and ``max(0, 2 gamma - 1) < sigma <
 gamma``.  Everything outside that open triangle is excluded.
 
-Scope.  These are **necessary conditions on an assumed power law**, not an
+Correction (2026-08-01).  On the torus the lowest nonzero shell is fixed, so
+the low-frequency sum has only ``J+1`` terms when ``N=2**J``.  Consequently
+``beta > 0`` is not necessary in the full finite-floor model.  This module is
+retained as the historical **positive-slope branch** and for artifact
+compatibility.  The corrected piecewise classifier, including the surviving
+``beta=-1, sigma=gamma`` logarithmic boundary, is implemented in
+``zeno_packet_relay.classify_finite_floor_shell_exponents`` and derived in
+``track_f_shell_constraints_finite_floor_erratum.md``.
+
+Scope.  Within ``beta > 0`` these are necessary conditions on an assumed power law, not an
 existence statement: no candidate is constructed, and a point inside the
 feasible triangle is not a solution of anything.  The critical-norm condition
 quotes Escauriaza--Seregin--Sverak; it is neither proved nor formalized here.
@@ -80,7 +89,11 @@ class ShellExponents:
 
     @property
     def spectrum_summable(self) -> bool:
-        """``beta > 0``: the shell sum converges, so the energy is finite."""
+        """Whether this point belongs to the historical positive-slope branch.
+
+        This is not a necessary condition in the corrected finite-floor torus
+        model.  It is preserved for compatibility with preregistered scans.
+        """
         return self.spectral_slope > 0.0
 
     @property
