@@ -494,3 +494,19 @@ PO-05/PO-14 の**前段**として本セッションで追加したもの(いず
 free-space 楕円経路、\(R_{\max}\)/\(Z_{\max}\) 独立拡大、低波数 stress
 test。これが通るまで、現在の Hou 機構を Clay の \(\mathbb R^3\) 候補と
 呼ばず、中後期成長・blow-up fit・AI 候補探索へ進まない。
+
+## 9. EXT-P1/P2/P3 依存台帳への相互参照(2026-07-31 追記)
+
+Track P / Track P chain の証明書が条件として運ぶ外部定理 EXT-P1/P2/P3
+(周期 \(H^4\) 局所存在・一意性、エネルギー評価を走らせる正則性、\(H^4\)
+継続判定)の**完全量化文**、mathlib / 紙 / Lean 近期着手可能性の依存表、
+および EXT-P1 の Galerkin 法による**完全紙上証明(未監査)**は
+[research_notes/ext_dependencies.md](research_notes/ext_dependencies.md)
+にある。PO-03(局所解の存在・一意性)の周期版はこの台帳の EXT-P1 に対応し、
+PO-15 の「信頼する外部定理として境界を明記」の周期側の実体がこの台帳である。
+紙上証明が独立監査され、かつ有限次元部分が Lean で形式化されるまで、
+EXT-P1/P2/P3 は全 payload で `proved: false` のままであり(同 §3.6 監査箱・
+§4)、Lean への公理としての挿入は引き続き禁止である。証明書の結論の語彙は
+「conditional PDE certificate assuming EXT-P1/P2/P3」と「the
+finite-dimensional Galerkin enclosure and the scalar control ODE are
+verified unconditionally」の二文から変わらない。

@@ -1,0 +1,48 @@
+{
+  "preregistered": true,
+  "registered_at": "2026-07-31",
+  "note": "thresholds fixed before any chain run; changes require a recorded reason BEFORE looking at results",
+  "sweep": {
+    "families": ["P1", "P2", "P3"],
+    "viscosities": ["1/4", "1/10", "1/40", "1/100"],
+    "cutoff_sq": 4,
+    "initial_step": "1/2048",
+    "min_step": "1/32768",
+    "max_slabs": 24,
+    "relative_radius_cap": "1/2",
+    "taylor_order": 6,
+    "max_taylor_order": 10,
+    "rounding_bits": 64,
+    "bits": 64,
+    "lattice_cut": 20,
+    "allow_step_doubling": true
+  },
+  "long": {
+    "family": "P1",
+    "viscosity": "1/10",
+    "cutoff_sq": 4,
+    "initial_step": "1/8192",
+    "min_step": "1/65536",
+    "max_slabs": 48,
+    "relative_radius_cap": "1/2",
+    "taylor_order": 6,
+    "max_taylor_order": 10,
+    "rounding_bits": 64,
+    "bits": 64,
+    "lattice_cut": 20,
+    "allow_step_doubling": false
+  },
+  "acceptance": {
+    "every_chain_at_least_slabs": 4,
+    "at_least_one_chain_horizon_over_reference": 8.0,
+    "horizon_reference_step": "1/2048",
+    "long_chain_target_slabs": 32,
+    "checker_must_verify_every_emitted_chain": true,
+    "every_termination_must_be_classified": true
+  },
+  "lohner_triggers_preregistered": [
+    "wrapping amplification >= 2 for three consecutive slabs",
+    "interval widths not reduced by halving the slab",
+    "coefficient enclosure ends the proof while the point residual is small"
+  ]
+}

@@ -91,12 +91,15 @@ __all__ = [
     "ExteriorTailBound",
     "GaussianFamily",
     "GaussianTerm",
+    "VelocityCellEnclosure",
     "as_gaussian_term",
     "build_gaussian_generation_certificate",
     "cell_enclosure_gaussian",
+    "cell_velocity_enclosure",
     "clear_gaussian_cache",
     "exterior_viscous_tail",
     "gaussian_box",
+    "gaussian_reference_field",
     "gaussian_tail_moment",
     "interval_poly_eval",
     "seed_gaussian_family",
@@ -689,6 +692,125 @@ def cell_enclosure_gaussian(
         flux=flux,
         divergence=divergence,
     )
+
+
+@dataclass(frozen=True)
+class VelocityCellEnclosure:
+    r"""Component-level enclosures over one cell, for pairings that need the
+    velocity itself rather than only the assembled ``J`` integrands.
+
+    The gradient-form pressure pairing of
+    :mod:`ns_certificate_lab.gaussian_gradient_certificate` integrates
+    ``-3\,|u|\,(u^r\partial_r p_h + u^z\partial_z p_h)`` and therefore needs
+    rigorous cell enclosures of ``u^r``, ``u^z`` and ``|u|`` separately —
+    :class:`~ns_certificate_lab.interval_generators.CellEnclosure` deliberately
+    exposes only the assembled integrands.  The assembly here is byte-for-byte
+    the one inside :func:`cell_enclosure_gaussian`; only the returned fields
+    differ.
+    """
+
+    u_r: Interval
+    u_theta: Interval
+    u_z: Interval
+    speed_squared: Interval
+    speed: Interval
+    gradient_squared: Interval
+    viscous_integrand: Interval
+
+    def as_dict(self) -> dict[str, list[str]]:
+        return {
+            name: getattr(self, name).as_pair() for name in self.__dataclass_fields__
+        }
+
+
+def cell_velocity_enclosure(
+    family_or_triples,
+    r_box: Interval,
+    z_box: Interval,
+    *,
+    terms: int = 32,
+    bits: int = DEFAULT_PRECISION_BITS,
+) -> VelocityCellEnclosure:
+    r"""Enclose the velocity components and the viscous integrand over a cell.
+
+    Same Gaussian--Hermite mechanics as :func:`cell_enclosure_gaussian` — the
+    six exact derivative polynomials per term, the sharp Gaussian box, the
+    audited recovery ``u^\theta = r u_1``, ``u^r = -r\partial_z\psi_1``,
+    ``u^z = 2\psi_1 + 2s\partial_s\psi_1`` — but returning the *components*.
+    The viscous integrand ``2|u||\nabla u|^2`` (the Kato-bounded upper form)
+    is computed in the same pass so a gradient-form sweep needs one cell
+    evaluation, not two.
+    """
+    swirl_terms, stream_terms = _family_terms(family_or_triples)
+    if r_box.lower < 0:
+        raise ValueError("the radial box cannot extend below the axis")
+    s_box = _round(square(r_box), bits)
+
+    swirl = GeneratorIntervals.zero()
+    for term in swirl_terms:
+        swirl = swirl + _term_intervals(term, s_box, z_box, terms=terms, bits=bits)
+    stream = GeneratorIntervals.zero()
+    for term in stream_terms:
+        stream = stream + _term_intervals(term, s_box, z_box, terms=terms, bits=bits)
+
+    two_s = s_box.scale(Fraction(2))
+    u_theta = _round(r_box * swirl.value, bits)
+    u_r = _round(-(r_box * stream.dz), bits)
+    u_z = _round(
+        stream.value.scale(Fraction(2)) + _round(two_s * stream.ds, bits), bits
+    )
+
+    gradient = {
+        "rr": -(stream.dz + _round(two_s * stream.dsz, bits)),
+        "rt": swirl.value + _round(two_s * swirl.ds, bits),
+        "rz": _round(
+            r_box.scale(Fraction(2))
+            * _round(stream.ds.scale(Fraction(4)) + _round(two_s * stream.dss, bits),
+                     bits),
+            bits,
+        ),
+        "tr": -swirl.value,
+        "tt": -stream.dz,
+        "tz": _ZERO,
+        "zr": -_round(r_box * stream.dzz, bits),
+        "zt": _round(r_box * swirl.dz, bits),
+        "zz": stream.dz.scale(Fraction(2)) + _round(two_s * stream.dsz, bits),
+    }
+    gradient = {key: _round(value, bits) for key, value in gradient.items()}
+
+    speed_squared = _round(
+        _round(square(u_r), bits) + _round(square(u_theta), bits)
+        + _round(square(u_z), bits),
+        bits,
+    )
+    speed_squared = Interval(
+        max(speed_squared.lower, Fraction(0)), max(speed_squared.upper, Fraction(0))
+    )
+    speed = _round(sqrt_interval(speed_squared, bits=bits), bits)
+    gradient_squared = _round(
+        sum((_round(square(v), bits) for v in gradient.values()), _ZERO), bits
+    )
+    viscous = _round((speed * gradient_squared).scale(Fraction(2)), bits)
+    return VelocityCellEnclosure(
+        u_r=u_r,
+        u_theta=u_theta,
+        u_z=u_z,
+        speed_squared=speed_squared,
+        speed=speed,
+        gradient_squared=gradient_squared,
+        viscous_integrand=viscous,
+    )
+
+
+def gaussian_reference_field(family, grid):
+    """Public entry to the binary64 reference field (windowed to the box).
+
+    Nothing rigorous consumes the result — it exists so the gradient-form
+    certificate builder can produce the SAME discrete pressure ``p_h`` as
+    :func:`build_gaussian_generation_certificate` without reaching into a
+    private helper.  See :func:`_float_field` for the windowing rationale.
+    """
+    return _float_field(family, grid)
 
 
 # --------------------------------------------------------------------------- #

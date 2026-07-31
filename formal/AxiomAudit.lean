@@ -10,6 +10,8 @@ import NSSingularity.ControlODE
 import NSSingularity.L3Generation
 import NSSingularity.TrackPFourier
 import NSSingularity.GaussianTransfer
+import NSSingularity.TrackPChain
+import NSSingularity.GalerkinPicard
 
 /-!
 # Axiom audit (P0 Lean gate)
@@ -200,3 +202,36 @@ open NSSingularity
 
 -- G3: the Track-P torus specialisation of the Riccati comparison.
 #print axioms NSSingularity.torus_control_bound
+
+-- Track P chain, C1-C2: the two-slab composition and the transfer triangle.
+#print axioms NSSingularity.two_slab_composition
+#print axioms NSSingularity.transfer_triangle
+
+-- Track P chain, C3: the n-slab induction and its union form.
+#print axioms NSSingularity.chain_composition
+#print axioms NSSingularity.chain_composition_union
+
+-- Track P chain, C4: the discrete Gronwall inequality for the datum radii.
+#print axioms NSSingularity.discrete_gronwall
+
+-- Track P chain, C5: the chained bound never exceeds the per-slab maximum.
+#print axioms NSSingularity.piecewise_radius_le_max
+#print axioms NSSingularity.le_foldr_max
+#print axioms NSSingularity.chain_radius_le_foldr_max
+
+-- Track P chain, C6: the Lagrange endpoint bound behind the recentring
+-- transfer.
+#print axioms NSSingularity.taylor_endpoint_remainder_bound
+
+-- Galerkin Picard-Lindelof, GP1: the quadratic field is Lipschitz on a ball
+-- with the explicit constant.
+#print axioms NSSingularity.quadraticField_apply
+#print axioms NSSingularity.quadratic_field_lipschitzOnWith
+
+-- GP2: local existence for the quadratic Galerkin ODE, closed-interval and
+-- interior-derivative forms.
+#print axioms NSSingularity.quadratic_ode_local_solution
+#print axioms NSSingularity.quadratic_ode_local_solution_hasDerivAt
+
+-- GP3: uniqueness of the quadratic Galerkin ODE solution in a ball.
+#print axioms NSSingularity.quadratic_ode_unique

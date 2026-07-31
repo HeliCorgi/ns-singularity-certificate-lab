@@ -224,6 +224,22 @@ P3 対称性破れ・圧力駆動)について、`H⁴` control 不等式
 スラブ全体に存在し `‖u−u_a‖_Ḣ⁴ ≤ R(t)`(相対 5e-4〜9e-4)。
 **これは軌道近傍の正則性の証明であり、特異点証明の反対物である。**
 
+**第 10 便の成果(スラブ連結)**: 単発スラブをスカラー `H⁴` 誤差半径で連結する
+レーンを実装(`torus_chain.py`、`docs/research_notes/track_p_chain.md`)。
+各スラブは**厳密有理・厳密発散ゼロの再中心化点**から開始し、区間 box は
+スラブ境界を越えて伝播しない(wrapping の入る場所が構造的にない — 前登録の
+Lohner/QR 導入条件は実測で不発火)。δ 漸化式
+`δ_{n+1} = R_n(t_{n+1}) + transfer` と連結の有限不等式骨格は Lean
+(`TrackPChain.lean`)で証明。3 族 × 4 粘性 + 長尺 1 本の連結が
+`outputs/track_p_chain_v1/` にあり、全て独立 checker が全リンクを再計算して
+検証。到達地平は Riccati 天井 `T* ≈ (1/a)log(a²/(bε))` に律速され、停止分類は
+一貫して `control_linear_coefficient`(粗い自前定数 `9(K₁+K₂)` が縛り —
+解の性質ではない)。**証明区間の終了は特異点の主張ではない**(checker 強制)。
+EXT-P1 については完全な紙上証明(未監査)と依存表が
+`docs/research_notes/ext_dependencies.md` に整備され、有限次元核
+(二次 ODE の Picard–Lindelöf)は `GalerkinPicard.lean` で無条件に証明済み。
+EXT-P1/P2/P3 は引き続き全 payload で `proved: false`。
+
 ## 5. 証明義務の状態一覧(`docs/proof_obligations.md` の PO と対応)
 
 | PO | 内容 | 状態 | 備考 |

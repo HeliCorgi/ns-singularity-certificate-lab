@@ -547,3 +547,30 @@ F-7c 追加後は 8664 jobs で成功 —
   定理は記述どおり無条件に真)。
 - `lake build` 8668 jobs 成功、`#print axioms` 全 96 定理が
   `[propext, Classical.choice, Quot.sound]` のみ。
+
+### Track P chain / Galerkin Picard 層 — **形式化済み**(2026-07-31 第 10 便)
+
+- **ファイル:** `formal/NSSingularity/TrackPChain.lean`(9 定理)、
+  `formal/NSSingularity/GalerkinPicard.lean`(5 定理)。
+- **TrackPChain:** スラブ連結の有限不等式骨格 — `two_slab_composition`
+  (2 スラブ合成、piecewise 中心・半径は文字通り `if t ≤ t₁ then … else …`)、
+  `transfer_triangle`(再中心化予算の 3 項三角不等式: tube 終端 + Taylor 剰余 +
+  丸め・Leray 射影)、`ChainLink`/`LinkCertified`/`LinkComposable` +
+  `chain_composition`(リスト帰納法による n スラブ合成; `LinkComposable` は
+  Python の `delta_out = delta_end + transfer` の Lean 転写)、
+  `chain_composition_union`(スラブ和集合上の被覆形)、`discrete_gronwall`
+  (`x_{n+1} ≤ A x_n + B ⇒ x_n ≤ Aⁿx₀ + B Σ Aⁱ`)、
+  `piecewise_radius_le_max`/`le_foldr_max`/`chain_radius_le_foldr_max`
+  (連結半径 ≤ スラブ半径の最大)、`taylor_endpoint_remainder_bound`
+  (mathlib の Lagrange 剰余定理の特殊化: `|f(t₀+h) − Taylor_m| ≤ M h^{m+1}/(m+1)!`)。
+- **GalerkinPicard:** 二次 ODE `u' = A u + B u u` の有限次元局所存在・一意性 —
+  `quadratic_field_lipschitzOnWith`(閉球上の明示 Lipschitz 定数
+  `‖A‖ + 2‖B‖(‖x₀‖+r)`)、`quadratic_ode_local_solution`(存在区間半幅
+  `ε = 1/(L+1)` を明示、mathlib Picard–Lindelöf 経由)、
+  `quadratic_ode_unique`。**これは EXT-P1 の Galerkin 半分の有限次元核**であり、
+  Python の Picard box テストはその具体的インスタンス。EXT-P1 自体(PDE 命題)は
+  未証明のままで、主張しない(docstring に明記)。
+- 真の解の per-slab tube(`LinkCertified`)は仮定として入る: それを
+  Navier–Stokes に供給するのは解析層 + EXT-P1/2/3(忠実記録、公理化なし)。
+- `lake build` 8670 jobs 成功、`#print axioms` 全 110 定理が
+  `[propext, Classical.choice, Quot.sound]` のみ。

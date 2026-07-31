@@ -258,6 +258,22 @@ Lean 公理化なし)を 12 スラブ分生成・独立検査します
 ([docs/research_notes/track_p_periodic.md](docs/research_notes/track_p_periodic.md))。
 **これは特異点証明ではなく、軌道近傍の正則性の証明です。**
 
+### 13.6 Track P スラブ連結(certified horizon、約 1 時間)
+
+```console
+python experiments/run_track_p_chain.py
+```
+
+第 9 便の単発スラブをスカラー H⁴ 誤差半径で連結します: 各スラブは**厳密有理
+再中心化点**から開始し(区間 box はスラブ境界を越えて伝播しない = wrapping の
+入る場所が構造的にない)、Taylor 終端包絡+dyadic 丸め+厳密 Leray 射影で捨てた
+幅は δ_{n+1} = R_n(h) + transfer としてスカラー半径に課金されます。P1/P2/P3 ×
+ν ∈ {1/4, 1/10, 1/40, 1/100} の 12 連結 + 長尺 1 本(h = 1/8192、48 スラブ予算)
+を前登録 config([configs/track_p_chain.json](configs/track_p_chain.json))で実行し、
+独立 checker が全リンクを再計算します。停止は前登録分類法で必ず分類され、
+**証明区間の終了は特異点の主張ではありません**
+([docs/research_notes/track_p_chain.md](docs/research_notes/track_p_chain.md))。
+
 ### 14. 全空間 Gate 7(Picard 領域からの離脱・τ/Re 継続・時空スラブ証明書、数分)
 
 ```console
