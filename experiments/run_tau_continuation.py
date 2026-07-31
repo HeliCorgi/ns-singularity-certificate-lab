@@ -475,9 +475,22 @@ def build_flagship_slab(
     lower, upper = tampered["enclosures"]["omega1"]
     tampered["enclosures"]["omega1"] = [upper, lower]
     narrowed = verify_slab_certificate(tampered)
-    # Tamper test: claiming a hypothesis is proved must be rejected.
+    # Tamper test: claiming a hypothesis is proved must be rejected.  The
+    # hypothesis set evolves (turn 8 withdrew H2), so forge whichever
+    # unproved hypothesis the payload actually carries instead of a
+    # hard-coded key.
     forged = json.loads(json.dumps(payload))
-    forged["hypotheses"]["H2_hermite_remainder"]["proved"] = True
+    unproved = [
+        name
+        for name, block in forged.get("hypotheses", {}).items()
+        if isinstance(block, dict) and block.get("proved") is False
+    ]
+    if not unproved:
+        raise AssertionError(
+            "the flagship slab payload carries no unproved hypothesis to "
+            "forge; the tamper demonstration needs one"
+        )
+    forged["hypotheses"][unproved[0]]["proved"] = True
     forged_verdict = verify_slab_certificate(forged)
 
     return {
