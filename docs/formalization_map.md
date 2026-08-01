@@ -593,8 +593,13 @@ F-7c 追加後は 8664 jobs で成功 —
   (`glued_continuous`、一様連続度による Cauchy 性、`extendFrom` による
   端点延長)、`cond_to_uncond`(条件付き証明書の仮定放電の命題論理;
   公理ゼロ)。
+- **MesoscopicDuhamelNoGo:** empty-child 上界の有限代数核
+  \((V/U)^2\le2\kappa^2\tau^2c_EM_{\rm eff}/N^3\)、
+  \(M_{\rm eff}\le M\) 版、F-13 の有限 Cauchy--Schwarz を再利用した
+  \(M_{\rm eff}\le|\operatorname{support}|\) 版。Fourier/Leray/PDE から
+  bilinear・Duhamel 仮定を導く bridge は形式化していない。
 - **形式化していないこと:** 無限次元 Kato–Ponce 可換子評価そのもの
   (紙上・監査済み、`kato_h3_constants.md` §4; 公理化はしない)、
   延長関数が方程式を満たすことの同定(EXT-P3 の解析半分)。
-- `lake build` 8672 jobs 成功、監査 124 定理 = 123 が古典 3 公理のみ +
+- `lake build` 8673 jobs 成功、監査 129 定理 = 128 が古典 3 公理のみ +
   `cond_to_uncond` は公理非依存。

@@ -72,7 +72,12 @@ def test_negative_energy_exponent_is_excluded():
     assert "energy_bounded" in verdict.failed_conditions
 
 
-def test_flat_spectrum_is_excluded_because_the_shell_sum_diverges():
+def test_flat_spectrum_is_outside_the_historical_positive_slope_branch():
+    """The corrected finite-floor classifier treats beta=0 piecewise.
+
+    This assertion is retained only for compatibility with the preregistered
+    beta-positive scan; see ``test_zeno_packet_relay.py`` for the correction.
+    """
     verdict = classify_shell_exponents(_point(0.5, 0.25, beta=0.0))
     assert "spectrum_summable" in verdict.failed_conditions
 

@@ -1,0 +1,18 @@
+{
+  "schema": "ns-certificate-lab/leray-relay-discovery-config/v1",
+  "seed": 20260801,
+  "viscosity": "1/40",
+  "exact_scale": 1,
+  "exact_parent_sine": "1",
+  "exact_parent_cosine": "1",
+  "exact_child_cosine": "1/8",
+  "search_grid_size": 64,
+  "recursive_grid_size": 128,
+  "carrier": 6,
+  "envelope": 2,
+  "random_polarization_samples": 18,
+  "chirp_values": [0.0, 0.75, 1.5],
+  "recursive_harmonics": [2, 4, 8],
+  "baseline_polarization_real": [0.63377081, -0.12052672, -0.23055982],
+  "baseline_polarization_imag": [-0.71460668, -0.13277247, -0.04856754]
+}

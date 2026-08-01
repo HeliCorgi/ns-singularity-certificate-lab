@@ -1,0 +1,1 @@
+{"base_steps":16,"cfl_safety":8.0,"drop_below_options":[3,null],"energy_constants":[1.0,30.0,100.0,228.0,500.0],"grid_size":64,"max_steps":256,"scale":4,"schema":"ns-certificate-lab/renormalized-cascade-config/v1","stages":12,"tau":0.25,"viscosity":0.025,"width":2}

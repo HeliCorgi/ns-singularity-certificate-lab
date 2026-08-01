@@ -18,6 +18,7 @@ import NSSingularity.TrackPChain
 import NSSingularity.GalerkinPicard
 import NSSingularity.KatoConstant
 import NSSingularity.ChainAnalysis
+import NSSingularity.MesoscopicDuhamelNoGo
 
 /-!
 # Axiom audit (P0 Lean gate)
@@ -265,3 +266,12 @@ open NSSingularity
 
 -- Chain analysis, A3: the certificate-dependency discharge shape.
 #print axioms NSSingularity.cond_to_uncond
+
+-- Mesoscopic Duhamel no-go, MD1-MD3: only the finite nonnegative-real
+-- algebra and finite coefficient Cauchy--Schwarz.  There is no PDE/Fourier
+-- bridge in this module.
+#print axioms NSSingularity.emptyChild_duhamel_ratio_sq_le
+#print axioms NSSingularity.emptyChild_duhamel_ratio_sq_le_of_effectiveCount_le
+#print axioms NSSingularity.finiteEffectiveModeCount_nonneg
+#print axioms NSSingularity.finiteEffectiveModeCount_le_card
+#print axioms NSSingularity.emptyChild_duhamel_ratio_sq_le_card

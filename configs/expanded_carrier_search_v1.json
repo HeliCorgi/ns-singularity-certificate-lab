@@ -1,0 +1,18 @@
+{
+  "schema": "ns-certificate-lab/expanded-carrier-search-config/v1",
+  "reviewed_experiment_specification": {
+    "reviewed": true,
+    "requested_by_user": true,
+    "scope_fixed_before_execution": true,
+    "recorded_date": "2026-08-01",
+    "estimated_runtime_seconds": 10,
+    "claim_boundary": "finite exact carrier algebra only"
+  },
+  "wave_bound": 2,
+  "polarization_component_bound": 2,
+  "maximum_ordered_wave_pair_tests": 10000,
+  "maximum_polarization_pair_tests": 200000,
+  "maximum_saved_structural_records": 5000,
+  "maximum_saved_unique_hits": 64,
+  "top_partial_limit": 16
+}
