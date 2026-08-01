@@ -1,0 +1,21 @@
+kind,n_or_pair,c_E,value,sigma_fit,r_squared,notes
+convolution_consistency,8->16,,1.647486935e-03,,,float; RECORDED BUT EXCLUDED FROM FIT: realized relative width 0.1250 vs 0.1875 (floor(3N/16) is exact only for 16|N)
+convolution_consistency,16->32,,5.143077010e-02,1.824947,0.999369,float; continuum-fixed profile; eta=3/16 exact on both members; 125 paired modes
+convolution_consistency,24->48,,1.777271509e-01,,,float; RECORDED BUT EXCLUDED FROM FIT: realized relative width 0.1667 vs 0.1875 (floor(3N/16) is exact only for 16|N)
+convolution_consistency,32->64,,1.533793988e-02,1.824947,0.999369,float; continuum-fixed profile; eta=3/16 exact on both members; 1331 paired modes
+convolution_consistency,48->96,,7.116861748e-03,1.824947,0.999369,float; continuum-fixed profile; eta=3/16 exact on both members; 4913 paired modes
+convolution_consistency,64->128,,4.078812742e-03,1.824947,0.999369,float; continuum-fixed profile; eta=3/16 exact on both members; 12167 paired modes
+convolution_consistency,16->32,,2.450737406e-01,-0.968582,0.998397,"float; NULL CONTROL: N-independent integer phase slope, so the profile is not fixed in xi and the error must not decay"
+convolution_consistency,32->64,,4.993692007e-01,-0.968582,0.998397,"float; NULL CONTROL: N-independent integer phase slope, so the profile is not fixed in xi and the error must not decay"
+convolution_consistency,48->96,,7.317198956e-01,-0.968582,0.998397,"float; NULL CONTROL: N-independent integer phase slope, so the profile is not fixed in xi and the error must not decay"
+convolution_consistency,64->128,,9.307006072e-01,-0.968582,0.998397,"float; NULL CONTROL: N-independent integer phase slope, so the profile is not fixed in xi and the error must not decay"
+map_consistency,4->8,1,6.493144784e-01,,,"float; prescribed pair (W=2/2, grid=64/80, steps=16/16); drop_below=None; shape overlap 0.994925"
+map_consistency,4->8,1,8.355043347e-01,,,"float; profile-matched pair (W=2/3, grid=64/96, steps=16/16); drop_below=None; shape overlap 0.998323"
+map_consistency,4->8,100,7.689782061e-01,,,"float; prescribed pair (W=2/2, grid=64/80, steps=63/21); drop_below=None; shape overlap 0.752431"
+map_consistency,4->8,100,7.043170899e-01,,,"float; profile-matched pair (W=2/3, grid=64/96, steps=63/48); drop_below=None; shape overlap 0.941279"
+contraction,4,1,1.470805288e+01,,,float; trial 0; |delta|/|u|=1e-06; front-only drop_below=3; steps=16; margin 1-L=-1.370805e+01
+contraction,4,1,1.459555814e+01,,,float; trial 1; |delta|/|u|=1e-06; front-only drop_below=3; steps=16; margin 1-L=-1.359556e+01
+contraction,4,1,1.501376572e+01,,,float; trial 2; |delta|/|u|=1e-06; front-only drop_below=3; steps=16; margin 1-L=-1.401377e+01
+contraction,4,100,1.733526401e+00,,,float; trial 0; |delta|/|u|=1e-06; front-only drop_below=3; steps=63; margin 1-L=-7.335264e-01
+contraction,4,100,1.805985471e+00,,,float; trial 1; |delta|/|u|=1e-06; front-only drop_below=3; steps=63; margin 1-L=-8.059855e-01
+contraction,4,100,1.786890096e+00,,,float; trial 2; |delta|/|u|=1e-06; front-only drop_below=3; steps=63; margin 1-L=-7.868901e-01

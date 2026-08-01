@@ -26,6 +26,22 @@ rational even though each piece separately contains a square root, so this
 module certifies the decomposition through the rational total together with
 the squared Cauchy--Schwarz certificate ``Cov^2 <= V_r G_r/H_r``.
 
+**Convention warning (verification sprint V1, workstream C).** :func:`_ledger`
+iterates over the *field's* coefficient table, so the ``G_r`` it returns — and
+therefore the ``G_r``, ``K`` and deficit of :func:`front_gap_identity` and
+:func:`front_wavenumber` — is the **in-support** moment
+``G_r^{in}=\sum_{k:e_k>0}x_k^rn_k``.  That is legitimate and in fact sharper in
+(I.2) (``a_k=0`` off the support of ``u``), but it is *not* the published
+``G_0=\tfrac12\|\mathbb P(u\cdot\nabla u)\|_2^2`` that Lemma K bounds and that
+``KD\le\|u\|_\infty^2`` refers to.  Use :func:`full_nonlinear_power` or
+``front_defect_decomposition(..., convention="full")`` for the published
+object; the difference is the *leakage* ``G_r^{out}``.  See
+``docs/research_notes/verification_sprint_v1/lambda_O9_defect_decomposition.md``
+§4, which also records that the deficit reported by
+:func:`front_gap_identity` is minimised over ``nu`` at ``nu_*=Cov/(2V_r)`` with
+the viscosity-free value ``1-Cov^2H_r/(V_rG_r)`` — the pilot's 0.865/0.740 are
+artefacts of ``nu=1/40``, not saturation measurements.
+
 Companion unconditional bound (Lemma K): the nonlinear front wavenumber
 ``K = \|P(u.grad u)\|_2^2/\|\nabla u\|_2^4`` of a band-limited field obeys
 ``K <= S_N`` with ``S_N=\sum_{0<|k|^2\le N^2}|k|^{-2}`` (an exactly rational
@@ -48,11 +64,15 @@ import numpy as np
 import numpy.typing as npt
 
 from .fourier_torus import TrigVector, advection, leray
+from .snapshot_certificate import Interval
 
 __all__ = [
+    "FrontDefectDecomposition",
     "FrontGapIdentity",
+    "front_defect_decomposition",
     "front_gap_identity",
     "front_wavenumber",
+    "full_nonlinear_power",
     "inverse_square_lattice_sum",
     "lemma_k_certificate",
     "sparse_parent_delocalization",
@@ -237,6 +257,274 @@ def front_gap_identity(
         gap_total=gap_total,
         saturation_deficit=deficit,
         cauchy_schwarz_certificate=certificate,
+    )
+
+
+def full_nonlinear_power(field: TrigVector, maximum_order: int) -> list[Fraction]:
+    r"""Return ``G_r=\sum_k x_k^r n_k`` over **all** modes of ``N``, exactly.
+
+    :func:`_ledger` deliberately restricts every moment to the support of the
+    field, so its ``G_r`` is the *sharper* in-support moment
+    ``G_r^{in}=\sum_{k:e_k>0}x_k^rn_k`` (legitimate in (I.2), because
+    ``a_k=0`` off the support of ``u``).  The published monotone instead uses
+    the full ``G_0=\tfrac12\|\mathbb P(u\cdot\nabla u)\|_2^2`` — that is the
+    quantity Lemma K bounds and the one the Serrin domination
+    ``KD\le\|u\|_\infty^2`` refers to.  The two differ by the *leakage*
+    ``G_r^{out}``, the nonlinear power that the convolution deposits on modes
+    the field does not occupy.  Both are returned by callers so the
+    convention is never silently swapped.
+    """
+
+    if maximum_order < 0:
+        raise ValueError("maximum_order must be nonnegative")
+    nonlinear = -leray(advection(field, field)).cleaned()
+    totals = [Fraction(0) for _ in range(maximum_order + 1)]
+    for wave, pair in nonlinear.coefficient_table().items():
+        if wave == (0, 0, 0):
+            continue
+        power = _pair_energy(pair)
+        if power == 0:
+            continue
+        x = Fraction(_norm_squared(wave))
+        for order in range(maximum_order + 1):
+            totals[order] += x**order * power
+    return totals
+
+
+@dataclass(frozen=True)
+class FrontDefectDecomposition:
+    """Exact defect decomposition of the chain (I.1) -> (I.2) -> (I.3).
+
+    Every field is a string of an exact ``Fraction`` unless the name ends in
+    ``_lower`` / ``_upper``, which are the endpoints of a rigorous rational
+    enclosure of an irrational (square-root) quantity.
+    """
+
+    order: int
+    viscosity: Fraction
+    convention: str
+    h_r: Fraction
+    h_r1: Fraction
+    h_r2: Fraction
+    t_r: Fraction
+    t_r1: Fraction
+    g_in: Fraction
+    g_full: Fraction
+    g_r: Fraction
+    bandwidth_squared: Fraction
+    variance: Fraction
+    covariance: Fraction
+    absolute_covariance: Fraction
+    delta_sign: Fraction
+    rational_remainder: Fraction
+    gap_total: Fraction
+    closable_upper: Fraction
+    saturation_deficit: Fraction
+    optimal_viscosity: Fraction | None
+    optimal_deficit: Fraction
+    delta_cs_modal: tuple[Fraction, Fraction]
+    delta_cs_vector: tuple[Fraction, Fraction]
+    delta_square_completion: tuple[Fraction, Fraction]
+    split_residual: tuple[Fraction, Fraction]
+    per_mode_cs_defect: dict[tuple[int, int, int], Fraction]
+
+    def as_dict(self) -> dict[str, object]:
+        def pair(value: tuple[Fraction, Fraction]) -> list[str]:
+            return [str(value[0]), str(value[1])]
+
+        return {
+            "order": self.order,
+            "viscosity": str(self.viscosity),
+            "convention": self.convention,
+            "h_r": str(self.h_r),
+            "h_r1": str(self.h_r1),
+            "h_r2": str(self.h_r2),
+            "t_r": str(self.t_r),
+            "t_r1": str(self.t_r1),
+            "g_in_support": str(self.g_in),
+            "g_full": str(self.g_full),
+            "g_r_used": str(self.g_r),
+            "bandwidth_squared": str(self.bandwidth_squared),
+            "variance": str(self.variance),
+            "covariance": str(self.covariance),
+            "absolute_covariance": str(self.absolute_covariance),
+            "delta_sign": str(self.delta_sign),
+            "rational_remainder": str(self.rational_remainder),
+            "gap_total": str(self.gap_total),
+            "closable_upper": str(self.closable_upper),
+            "saturation_deficit": str(self.saturation_deficit),
+            "optimal_viscosity": (
+                None if self.optimal_viscosity is None
+                else str(self.optimal_viscosity)
+            ),
+            "optimal_deficit": str(self.optimal_deficit),
+            "delta_cs_modal_enclosure": pair(self.delta_cs_modal),
+            "delta_cs_vector_enclosure": pair(self.delta_cs_vector),
+            "delta_square_completion_enclosure": pair(self.delta_square_completion),
+            "split_residual_enclosure": pair(self.split_residual),
+            "per_mode_cs_defect": {
+                str(list(wave)): str(value)
+                for wave, value in sorted(self.per_mode_cs_defect.items())
+            },
+        }
+
+
+def _sqrt_enclosure(value: Fraction, *, bits: int) -> tuple[Fraction, Fraction]:
+    from .l3_certificate import sqrt_interval
+
+    if value < 0:
+        raise ValueError("cannot enclose the square root of a negative rational")
+    result = sqrt_interval(Interval(value, value), bits=bits)
+    return (result.lower, result.upper)
+
+
+def front_defect_decomposition(
+    field: TrigVector,
+    *,
+    order: int,
+    viscosity: Fraction | int,
+    convention: str = "full",
+    bits: int = 96,
+) -> FrontDefectDecomposition:
+    r"""Split the (I.3) gap into four explicitly nonnegative defects.
+
+    With ``w_k=x_k^r|x_k-\mu|/H_r``, ``C=\mathrm{Cov}_{p_r}(x,g)``,
+    ``A=\sum_kw_k|a_k|``, ``B=\sum_kw_k\sqrt{e_kn_k}`` and
+    ``S=\sqrt{V_rG_r/H_r}`` the chain ``C\le A\le B\le S`` gives
+
+    ``\hat\Delta_{sign}=(2/\mu)(A-C)``,
+    ``\hat\Delta_{CS,modal}=(2/\mu)(B-A)``,
+    ``\hat\Delta_{CS,vector}=(2/\mu)(S-B)``,
+    ``\hat\Delta_{SC}=(2\nu/\mu)(\sqrt{V_r}-\sqrt{G_r/H_r}/(2\nu))^2``,
+
+    and the telescoping identity
+
+    ``G_r/(2\nu H_{r+1})-\tfrac{d}{dt}\log N_r^2
+      =\hat\Delta_{sign}+\hat\Delta_{CS,modal}+\hat\Delta_{CS,vector}
+       +\hat\Delta_{SC}``.
+
+    ``\hat\Delta_{sign}`` and the *sum* of the last three,
+    ``R=(2/\mu)[\nu V_r+G_r/(4\nu H_r)-A]``, are exactly rational and are
+    checked as exact ``Fraction`` equalities; the individual last three carry
+    square roots and are returned as rigorous rational enclosures whose sum is
+    verified to contain ``R``.
+
+    ``convention`` selects ``G_r``: ``"full"`` (the published monotone's
+    ``G_0=\tfrac12\|\mathbb P(u\cdot\nabla u)\|_2^2``) or ``"in_support"``
+    (the sharper moment used by :func:`front_gap_identity`).
+    """
+
+    if isinstance(order, bool) or not isinstance(order, int) or order < 0:
+        raise ValueError("order must be a nonnegative integer")
+    if convention not in ("full", "in_support"):
+        raise ValueError("convention must be 'full' or 'in_support'")
+    nu = Fraction(viscosity)
+    if nu <= 0:
+        raise ValueError("viscosity must be positive")
+    energies, growth, power, h, t, g = _ledger(field, order + 2)
+    h_r, h_r1, h_r2 = h[order], h[order + 1], h[order + 2]
+    if h_r <= 0 or h_r1 <= 0:
+        raise ValueError("the requested modal moments must be positive")
+    g_in = g[order]
+    g_full = full_nonlinear_power(field, order)[order]
+    if g_full < g_in:
+        raise AssertionError("the full nonlinear power is below its restriction")
+    g_r = g_full if convention == "full" else g_in
+
+    mu = h_r1 / h_r
+    covariance = t[order + 1] / h_r - mu * (t[order] / h_r)
+    variance = Fraction(0)
+    absolute = Fraction(0)
+    defects: dict[tuple[int, int, int], Fraction] = {}
+    modal_terms: list[tuple[Fraction, Fraction]] = []
+    for wave, energy in energies.items():
+        x = Fraction(_norm_squared(wave))
+        weight = x**order * abs(x - mu) / h_r
+        variance += x**order * energy * (x - mu) ** 2
+        absolute += weight * abs(growth[wave])
+        defects[wave] = energy * power[wave] - growth[wave] ** 2
+        if defects[wave] < 0:
+            raise AssertionError("the modal Cauchy--Schwarz certificate failed")
+        modal_terms.append((weight, energy * power[wave]))
+    variance /= h_r
+    if variance != h_r2 / h_r - mu * mu:
+        raise AssertionError("exact variance bookkeeping disagreement")
+
+    log_derivative = 2 * (covariance / mu - nu * variance / mu)
+    closable_upper = g_r / (2 * nu * h_r1)
+    gap_total = closable_upper - log_derivative
+    delta_sign = 2 * (absolute - covariance) / mu
+    remainder = 2 * (nu * variance + g_r / (4 * nu * h_r) - absolute) / mu
+    if delta_sign < 0:
+        raise AssertionError("the sign defect is negative")
+    if remainder < 0:
+        raise AssertionError("the rational remainder defect is negative")
+    if gap_total != delta_sign + remainder:
+        raise AssertionError("the exact defect telescoping failed")
+
+    # Enclosures for the three radical defects.
+    b_lower = Fraction(0)
+    b_upper = Fraction(0)
+    for weight, product in modal_terms:
+        low, high = _sqrt_enclosure(product, bits=bits)
+        b_lower += weight * low
+        b_upper += weight * high
+    s_lower, s_upper = _sqrt_enclosure(variance * g_r / h_r, bits=bits)
+    v_lower, v_upper = _sqrt_enclosure(variance, bits=bits)
+    q_lower, q_upper = _sqrt_enclosure(g_r / h_r, bits=bits)
+    modal = (2 * (b_lower - absolute) / mu, 2 * (b_upper - absolute) / mu)
+    vector = (2 * (s_lower - b_upper) / mu, 2 * (s_upper - b_lower) / mu)
+    low_gap = v_lower - q_upper / (2 * nu)
+    high_gap = v_upper - q_lower / (2 * nu)
+    squares = sorted(value * value for value in (low_gap, high_gap))
+    inner = Fraction(0) if low_gap <= 0 <= high_gap else squares[0]
+    completion = (2 * nu * inner / mu, 2 * nu * squares[1] / mu)
+    split = (
+        modal[0] + vector[0] + completion[0] - remainder,
+        modal[1] + vector[1] + completion[1] - remainder,
+    )
+    if not (split[0] <= 0 <= split[1]):
+        raise AssertionError("the radical defect split does not enclose R")
+    if modal[1] < 0 or vector[1] < 0 or completion[1] < 0:
+        raise AssertionError("a radical defect enclosure is strictly negative")
+
+    deficit = gap_total / closable_upper if closable_upper > 0 else Fraction(0)
+    if covariance > 0 and variance > 0:
+        optimal_viscosity = covariance / (2 * variance)
+        optimal_deficit = 1 - covariance * covariance * h_r / (variance * g_r)
+    else:
+        optimal_viscosity = None
+        optimal_deficit = Fraction(1)
+    if optimal_deficit < 0:
+        raise AssertionError("the viscosity-optimised deficit is negative")
+    return FrontDefectDecomposition(
+        order=order,
+        viscosity=nu,
+        convention=convention,
+        h_r=h_r,
+        h_r1=h_r1,
+        h_r2=h_r2,
+        t_r=t[order],
+        t_r1=t[order + 1],
+        g_in=g_in,
+        g_full=g_full,
+        g_r=g_r,
+        bandwidth_squared=mu,
+        variance=variance,
+        covariance=covariance,
+        absolute_covariance=absolute,
+        delta_sign=delta_sign,
+        rational_remainder=remainder,
+        gap_total=gap_total,
+        closable_upper=closable_upper,
+        saturation_deficit=deficit,
+        optimal_viscosity=optimal_viscosity,
+        optimal_deficit=optimal_deficit,
+        delta_cs_modal=modal,
+        delta_cs_vector=vector,
+        delta_square_completion=completion,
+        split_residual=split,
+        per_mode_cs_defect=defects,
     )
 
 
