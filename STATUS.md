@@ -1,9 +1,149 @@
 # Project status
 
-最終更新: 2026-07-31 第 11 便(branch `fable5-mainline`)
-状態: **第 11 便で (1) EXT-P1/P2/P3 を敵対的監査で閉鎖し(監査済み紙上証明)、
-(2) 正規化完全一致の n=3 Kato 定数を自前導出・証明書化し、(3) チェーンの
-certified horizon を実測 11〜13 倍に延長した。**
+最終更新: 2026-08-01 discovery lane 第二便 (branch `fable5-mainline`)
+状態: **Clay 問題は未解決。第二便で (1) 固定相対幅 cloud の連続極限を
+carrier-frame front flow として定式化し、敵対的監査で定常解が Tsai 1998 に
+殺されること(生存は離散自己相似軌道のみ)を確定、(2) 14 方向の discovery
+portfolio を生成・審査し、正則性側の新候補 Λ(spectral front monotone /
+bandwidth–dissipation dichotomy)を PROOF CANDIDATE として登録、(3) 二つの
+pilot を実行 — 倍化写像の前進積分は走査箱内で吸引軌道なし(negative)、
+exact front-gap 台帳は恒等式全通過かつ固定相対幅 family が独立の
+非局在化 kill test を生存。**
+
+## 2026-08-01 第二便 — front-flow portfolio の結果
+
+- **Carrier-frame front flow**(新規 rescaled PDE):
+  \(\widehat u(k,t)=N^{-2}\Psi(k/N,s)\)、\(ds=N^2dt\) で
+  \(\partial_s\Psi=a(2\Psi+\xi\cdot\nabla\Psi)-\nu\xi^2\Psi-\mathcal Q(\Psi,\Psi)\)、
+  \(a=\dot N/N^3\)。\(\mathcal Q\) の carrier-cell 制限は既存の
+  \(\mathfrak T_2\)(候補文書 eq 6.6)と一致し、frozen 一段写像はこの流れの
+  Euler 一歩。厳密 scaling 群 \((\Psi,s,a,\nu)\to(\mu\Psi,s/\mu,\mu a,\mu\nu)\)
+  により全チャネル比は \(c_E\) 不変(shape closure だけが障害)。
+- **敵対的監査**(12 項目の正誤表つき、
+  `docs/research_notes/ideas_2026_08_01/audit_front_flow_seed.md`):
+  S1 代数は全確認。**定常 front profile は Leray profile そのものになり、
+  critical wake \(U\asymp|x|^{-1}\) の局所エネルギー有限性から Tsai 1998 が
+  \(u\equiv0\) を強制**。格子 \(2^{\mathbb Z}\) の離散自己相似軌道のみ生存し、
+  周期内 critical-norm 振動が refinement で消える軌道は死(kill gate として
+  前登録)。1-D shell 還元の閉包 \(F=\chi\xi e^{3/2}\) は critical wake と
+  過剰決定で \(1<\xi<\varphi\) 上不整合(修正済み)。helicity 予算 no-go は
+  反証(slack \(2^{J/2}\))、設計則としてのみ保持。
+- **14 方向 portfolio**(各方向とも Clay target・導出済み中心数式・scaling
+  table・feedback loop・no-go 監査・最小反証実験・証明鎖を含む;
+  `docs/research_notes/ideas_2026_08_01/`、統合は
+  `docs/research_notes/discovery_2026_08_01_front_flow_portfolio.md`)。
+  審査 3 名の consensus 上位: (1) **Λ monotone-dichotomy** — 閉包可能な
+  front 恒等式 (I.1)–(I.4) + Lemma K + 単調量
+  \(\Lambda=\log N_0^2-\frac1{2\nu}\int KD\)、その作用は Serrin \((\infty,2)\)
+  と臨界渦度 \((3,2)\) の両作用に支配される真に強い判定 —
+  `docs/candidates/CANDIDATE_SOLUTION_SPECTRAL_FRONT_DICHOTOMY.md` に昇格;
+  (2) **\(\mu_N\) 非局在化床**(flux 側からの \(M^{\rm eff}\gtrsim N^3\) の
+  再導出); (3) **parametric resonance Prop 1** — 全 tree/forest relay は
+  任意変調で Floquet 指数 \(\le-\min\nu|k|^2\)(過去の全 relay 失敗を遡及
+  説明する新 no-go)+ 巡回 holonomy \(\mathcal C\neq-1\) escape。
+  新規に判明した fatal flaw 群(pressure-feedback の companion が core 内部、
+  multi-center の \(\dot d=0\)、space-fourier-mismatch の inviscid 相対化等)は
+  各文書に REJECTED 式つきで保存。
+- **Pilot A — renormalized Galerkin cascade**
+  (`renormalized_cascade.py`、`outputs/renormalized_cascade_v1/`):
+  full Galerkin 一段発展 → 厳密格子倍化 pullback \(w(k)=4v(2k)\)(実性・
+  発散ゼロを厳密保存)→ 射影正規化の前進反復。
+  \(c_E\in\{1,30,100,228,500\}\times\{\)front-only, keep-sea\(\}\)、
+  \(N_0=4,W=2\) の走査で**正 gain の plateau・回帰形状なし**。10 本中 9 本は
+  6–11 段で binary64 noise floor に崩壊、最強の \(c_E=500\) front-only のみ
+  12 段完走で decaying(final gain \(9.4\times10^{-5}\); gain は \(c_E\)
+  単調増)。これは最小格子実現(54 modes)の decimation 写像に対する
+  否定であり、連続 \(\mathfrak T_2\) には触れない。
+- **Pilot B — exact spectral front-gap 台帳**
+  (`spectral_front_monotone.py`、`outputs/spectral_front_ledger_v1/`):
+  modal Cauchy–Schwarz \(a_k^2\le e_kn_k\)、(I.3)、(I.4) の有理 total、
+  Lemma K \(K\le S_N\) が relay triad(\(s=1,2\))と四親 carrier field で
+  厳密成立(K1/K2 不発火)。飽和欠損 \(\mathfrak d\): 0.865 → 0.740
+  (scale とともに減少 — K3 は open)。**固定相対幅 family の非局在化比
+  \(\mu_N=M^{\rm eff}/N^3\) は全 \(\eta\) で正の床に収束**
+  (\(\eta=0.20\) で 0.176、\(0.30\) で 0.704; K4 kill 不発火)—
+  cloud lane は独立議論の kill test を生存。
+- 検証フェーズへの義務は portfolio note §8(Λ の O-3/O-4/O-7/O-9、
+  \(\mu_N\) 床の補題化、\(\mathcal C=-1\) null control 付き巡回 carrier
+  列挙、scale-stagger sumset-miss 証明書、helicity 2-colouring の厳密
+  ゼロ検証、補間型 pullback での周期軌道探索、§7 の指数矛盾解消)。
+- 付随修正: `mesoscopic_local_fft.py` の NumPy 2.0 非推奨
+  (`fftn` の `s`/`axes`)を修正、全テスト緑。
+
+## 2026-08-01 Leray cloud discovery の結果
+
+- 中心 triad \(p=(1,1,0),q=(1,0,1),c=(2,1,1)\) は、親偏極
+  \((e_3,e_2)\)、子偏極 \((1,-1,-1)\) により、sum child への正の transfer
+  と Leray-zero の difference branch を厳密有理演算で持つ。
+- 臨界正規化 \(E_N=c_E/N\)、空の子、時間 \(t=\tau N^{-2}\) では
+  \[
+  {E_{\rm child}\over E_{\rm parent}}
+  ={2c_E\over N}H_NG_N^2.
+  \]
+  さらに \(M_{\rm eff}=(\sum|\widehat u_k|)^2/\|u\|_2^2\) とすると
+  \(E_{\rm child}/E_{\rm parent}\le
+  2\kappa^2\tau^2c_EM_{\rm eff}/N^3\)。従って
+  \(W_N=N^\gamma,\gamma<1\) は位相に依らず棄却され、ideal capacity の
+  \(N^{3\gamma-3}\) はその matching exponent にすぎない。gain の増加だけを
+  成功とする判定を棄却した。
+- この no-go の非負実数代数核と
+  \(M_{\rm eff}\le|\operatorname{supp}\widehat u|\) の有限
+  Cauchy--Schwarz 部分は Lean 4 で sorry・新規公理なしに形式化した。
+  Fourier/Leray/PDE から仮定を導く解析的 bridge は未形式化。
+- 小さい full Fourier--Galerkin check \(N=4,W=2\) では
+  \(D_{\rm frozen}=2.04074\times10^{-3}\)、
+  \(D_{\rm full}=1.97616\times10^{-3}\)。親の時間発展は応答を消さないが、
+  応答自体が目標 \(1/2\) より大幅に小さい。
+- \(K=4W-3\) の zero-padding を用いる全係数 local-FFT convolution は、
+  小幅で独立 sparse 全pair実装と係数ごとに一致した。最大の利用可能行
+  \(N=64,\gamma=0.8,W=27\) は \(G_N=0.963601\)、
+  \(\|v\|_2/\|u\|_2=0.157979\)、
+  \(E_{\rm child}/E_{\rm parent}=0.0249574\)。瞬間 gain がほぼ1でも
+  empty-child relay にはならない。
+- 旧 coordinate-polarization alphabet の16向き全探索は strict hit なし。
+  その partial gadget は目的次段 power 比 \(222/2483\)、target-shell
+  cross-talk 非零、孫相互作用ゼロであり、歴史的 negative として保存した。
+  同じ旧 gadget の二段 full Galerkin も intended child
+  \(5.74749\times10^{-4}\) に対し diagonal cross-talk
+  \(5.68886\times10^{-4}\)、contaminated grandchild
+  \(6.35542\times10^{-8}\) である。
+- 波数 \(\|k\|_\infty\le2\)、primitive 偏極成分 bound 2 へ拡大した exact
+  search は、shell-coherent scope の256偏極 pair を全記録した。排除 histogram
+  は順に second-sum Leray-zero 16、second-difference 非零216、next-sum
+  Leray-zero 12、target-shell diagonal cross-talk 10、strict hit 2 であり、
+  最後の2件は親 role の swap だけで同値である。
+- 代表は
+  \[
+  r=(0,1,-1),\quad R={1\over3}(1,2,2),\qquad
+  s=(1,0,-1),\quad S={1\over3}(2,1,2).
+  \]
+  第二 difference は厳密に0、child \(C_2=(1,1,-2)\) の forcing は
+  \((5,5,5)\sin(C_2\cdot x)/27\)、signed flux は \(25/486\)。既知 child
+  \(C_1=(2,1,1)\) との次 sum \((3,2,-1)\) の forcing は
+  \((-5/63,25/189,5/189)\cos\)、signed flux は \(125/10206\)。
+- 全 unintended parent pair の shell \(|k|^2=6\) 出力は厳密に0で、affine
+  phase witness もある。一方、四親 forcing は child
+  \(53/243\) に対して low shell \(17/18\)、low/child power 比
+  \(459/106\)、child fraction \(106/565\) である。次出力は shell 14 と10、
+  その差/sum \(L^2\) 比は \(7/5\)、aligned grandchildren の相互作用は0。
+  shell-6 mirror child で波数を \(\lambda=2\) に閉じる試みも、二つの次出力が
+  Leray-zero なので、これは clean な target-shell fragment であって閉じた
+  relay ではない。
+- 連続偏極方程式を両 relay について解くと、scale を除く非自明解は二つの
+  等価 branch だけである。第一は上の
+  \((P,Q,R,S)=(e_3,e_2,(1,2,2),(2,1,2))\)、第二は
+  \(((1,-1,0),(1,0,-1),(-4,1,1),(1,-4,1))\) で、後者は bounded search の
+  偏極 bound 2 の外にある。この分類は cross-talk の存在問題を解くが、低波数
+  回帰または無限反復を解かない。
+- したがって現在残る特異点側の候補は、十分小さい固定相対幅
+  \(W_N=\eta N\) の \(N^3\)-mode cloud である。その一様 coherence、二段閉包、
+  interval stage budget、PDE 極限、実際の \(L^3\) 発散はすべて未証明。
+  固定相対幅の \(N\to\infty\) 極限は、新しい continuum Leray response
+  operator \(\mathfrak T_2\) の projective periodic-point 問題として明示した。
+
+前回状態: **第 11 便で (1) EXT-P1/P2/P3 を敵対的監査で閉鎖し
+(監査済み紙上証明)、(2) 正規化完全一致の n=3 Kato 定数を自前導出・
+証明書化し、(3) チェーンの certified horizon を実測 11〜13 倍に延長した。**
 
 **EXT 監査**(`ext_p1_p2_p3_audit.md`): 3 名の敵対的監査(compactness /
 不等式・正規化 / statement-vs-use)→ 全指摘 minor・修理適用 → 再監査 2 名
