@@ -66,7 +66,8 @@ formal/
     ├── FiniteModeNoGo.lean     # 段階 1 / F-7a,F-7b,F-12,F-13(証明あり、sorry なし)
     ├── GreenAndCascade.lean    # 段階 1 / F-14,F-15,F-16,F-7c 還元(証明あり、sorry なし)
     ├── CertificateLayer.lean   # 段階 1 / F-17,F-18,F-19(証明あり、sorry なし)
-    └── TimeDependentGalerkin.lean # 段階 1 / F-7c 本体(証明あり、sorry なし)
+    ├── TimeDependentGalerkin.lean # 段階 1 / F-7c 本体(証明あり、sorry なし)
+    └── MesoscopicDuhamelNoGo.lean # MD1-MD3(有限代数のみ、sorry なし)
 ```
 
 以降の段階(1: 有限次元恒等式、2: 解析的な橋、3: 数値証明書、4: 最終定理)は
@@ -343,3 +344,39 @@ Dissipative  A   :=  ∀ x, ⟪x, A x⟫ ≤ 0          -- ⟪u, νΔu⟫ = -ν�
    F-19 は微分不等式を仮定として受け取る。
 3. `FixedBandwidthCandidate` は係数軌道についての構造体であり、
    `ClayStatement.ClayPeriodicBreakdown` への橋は未着手のままである。
+
+## 有限代数 — MD1 / MD2 / MD3(`NSSingularity/MesoscopicDuhamelNoGo.lean`)
+
+phase-independent empty-child 上界のうち、非負実数と有限和だけからなる核を
+形式化する。`U,B,V,N,kappa,tau,cE,Meff` を実数として、`U>0`、`N>0` と
+各量の非負性に加え、次の 3 入力を**仮定として**受け取る。
+
+```text
+U^2 = 2*cE/N
+B <= kappa*N*sqrt(Meff)*U^2
+V <= (tau/N^2)*B
+```
+
+| 定理 | 主張 |
+|---|---|
+| `emptyChild_duhamel_ratio_sq_le`(MD1) | `(V/U)^2 <= 2*kappa^2*tau^2*cE*Meff/N^3` |
+| `emptyChild_duhamel_ratio_sq_le_of_effectiveCount_le`(MD2) | `Meff <= M` を使って右辺の `Meff` を `M` へ置換 |
+| `finiteEffectiveModeCount_nonneg` | 正の有限係数エネルギーなら `Meff=(sum abs c)^2/(sum c^2)` は非負 |
+| `finiteEffectiveModeCount_le_card`(MD3) | F-13 の有限 Cauchy--Schwarz を再利用し `Meff <= card support` |
+| `emptyChild_duhamel_ratio_sq_le_card` | MD1 と MD3 を合成した support-cardinality 版 |
+
+`sorry`・`admit`・新規 `axiom` はない。上記 5 定理は `AxiomAudit.lean` の
+`#print axioms` 対象である。
+
+### 証明していないこと(重要な限界)
+
+1. **Navier--Stokes 方程式から上の 3 入力を導いていない。** 特に `B` が
+   Fourier 畳み込み、Leray 射影、または特定 child mode の source を支配する
+   ことは Lean 側では未形式化である。
+2. empty-child geometry、親 carrier の分離、mode support、位相に依存しない
+   bilinear bound は未形式化である。`kappa` と `Meff` は証明済み定数ではなく
+   仮定中の実数である。
+3. MD3 は有限係数列の Cauchy--Schwarz だけであり、有限列と 3 次元 Fourier
+   場の同一視、Parseval、発散ゼロ条件、PDE 解の Duhamel 公式への橋はない。
+4. 従って本ファイルは Clay (A)--(D) のいずれも証明せず、特異性の存在・不存在
+   について直接の結論を持たない。

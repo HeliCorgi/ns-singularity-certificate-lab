@@ -139,10 +139,10 @@ cd ..
 (`NSSingularity.lean`)から import されていないため、**`lake build` だけでは
 監査は走りません**。上のコマンドで明示的に elaborate する必要があります。
 
-期待出力は 1 定理 1 行の `#print axioms` 報告です。実測(HEAD `fd1e1c5`):
+期待出力は 1 定理 1 行の `#print axioms` 報告です。2026-08-01 の実測:
 
-- 全 **124** 定理。
-- うち **123** 定理が `[propext, Classical.choice, Quot.sound]` のみを報告
+- 全 **129** 定理。
+- うち **128** 定理が `[propext, Classical.choice, Quot.sound]` のみを報告
   (出力上は 121 行が 1 行完結、2 定理は行が折り返されて 3 行で 1 件になります)。
 - **1** 定理 `NSSingularity.cond_to_uncond` は
   `does not depend on any axioms`。
@@ -517,6 +517,40 @@ $\mathrm{Re}=\{10,\dots,400\}$ × 族 S/A/H の 18 run を実行し、乖離ゲ�
 
 ---
 
+### 4.16 真の Leray relay discovery と mesoscopic cloud audit
+
+```console
+python -m experiments.run_leray_relay_discovery --config configs/leray_relay_discovery_v1.json --output-dir <fresh-dir>
+python -m experiments.run_mesoscopic_leray_cloud --config configs/mesoscopic_leray_cloud_v1.json --output-dir <fresh-dir>
+```
+
+一つ目は厳密有理 triad、有限 modal-action 恒等式、dealiased response-map
+pilot を分離して保存します。二つ目は \((N,\gamma)\) scaling table、
+fixed-relative 対照、exact carrier search、空の子の frozen/full 応答、
+cross-talk を分離した二段 carrier Galerkin history と shell-energy SVG を
+保存します。mesoscopic 表の利用可能行は入力辺 \(L=2W-1\) を
+\(K=2L-1=4W-3\) へ zero-pad した local linear FFT convolution で全係数を
+計算し、global 波数上の carrier overlap を合算してから norm を取ります。
+config の `local_fft_maximum_working_bytes` は allocation 前に保守的作業量を
+拒否する上限です。CSV は \(\|v\|_2/\|u\|_2\) と energy ratio を別々に保存し、
+verifier は前者の二乗が後者であることを再計算します。
+`divergence_relative` と `reality_relative` は後方互換の parent-field alias です。
+対象を曖昧にしないため、同じ値を `parent_divergence_relative` /
+`parent_reality_relative` にも保存し、Leray 非線形については別に
+`nonlinear_divergence_relative` / `nonlinear_reality_relative` を保存します。
+verifier はさらに各測定行で \(E_c=c_E/N\),
+\(\|u\|_2^2=2c_E/N\), \(M_N^{\rm eff}\le M_N\),
+\(0<H_N\le\tau^2\), child/full norm 比、および raw energy pairing から
+正規化 cancellation residual を独立再計算します。
+両ドライバとも非空出力先を拒否し、全 payload・manifest に
+`.sha256` sidecar を付け、manifest は実行時 source hash を記録します。
+
+この audit の結論は成功候補ではなく、sublinear width の empty-child exponent
+no-go と有限 carrier の cross-talk 棄却です。binary64 scaling/Galerkin 値は
+`numerically observed`、有限 carrier coefficient table のみ厳密有理です。
+
+---
+
 ## 5. 決定性・来歴・上書き規約
 
 ### 5.1 出力に付く来歴
@@ -539,7 +573,7 @@ $\mathrm{Re}=\{10,\dots,400\}$ × 族 S/A/H の 18 run を実行し、乖離ゲ�
 
 | 形式 | 対象 |
 |---|---|
-| `manifest.json`(ファイル名 → sha256 / バイト数)+ `manifest.json.sha256` | `run_baseline`, `run_time_convergence`, `run_poisson_gate`, `run_poisson_manufactured`, `run_hou_early_time`, `run_hou_snapshot_cartesian_audit`, `run_hou_time_refinement`, `run_track_f_finite_mode_scan`, `run_whole_space_gate4/5/6`, `run_tau_continuation`, `run_track_p_slab` |
+| `manifest.json`(ファイル名 → sha256 / バイト数)+ `manifest.json.sha256` | `run_baseline`, `run_time_convergence`, `run_poisson_gate`, `run_poisson_manufactured`, `run_hou_early_time`, `run_hou_snapshot_cartesian_audit`, `run_hou_time_refinement`, `run_track_f_finite_mode_scan`, `run_whole_space_gate4/5/6`, `run_tau_continuation`, `run_track_p_slab`, `run_leray_relay_discovery`, `run_mesoscopic_leray_cloud` |
 | `manifest.json` のみ(manifest 自身のダイジェストなし) | `run_track_p_chain`, `run_track_p_chain_h3`, `reissue_chains` |
 | 実行単位の manifest ではなく**ファイル毎の `.sha256` サイドカー**(`diagnostics.json.sha256` など) | `run_manufactured` |
 
@@ -555,7 +589,7 @@ sha256 は「その 1 回の実行を認証する」目的にだけ使ってく�
 
 | 挙動 | 対象スクリプト |
 |---|---|
-| **非空**の出力ディレクトリを拒否(`FileExistsError`) | `run_manufactured.py`, `run_baseline.py`, `run_time_convergence.py`, `run_poisson_manufactured.py`, `run_hou_early_time.py`, `run_hou_snapshot_cartesian_audit.py`, `run_hou_time_refinement.py` |
+| **非空**の出力ディレクトリを拒否(`FileExistsError`) | `run_manufactured.py`, `run_baseline.py`, `run_time_convergence.py`, `run_poisson_manufactured.py`, `run_hou_early_time.py`, `run_hou_snapshot_cartesian_audit.py`, `run_hou_time_refinement.py`, `run_leray_relay_discovery.py`, `run_mesoscopic_leray_cloud.py` |
 | ディレクトリの**存在自体**を拒否 | `run_poisson_gate.py`, `run_track_f_finite_mode_scan.py`, `run_whole_space_gate4.py`, `run_whole_space_gate5.py`, `run_whole_space_gate6.py` |
 | **ガードなし(既存を上書きします)** | `run_tau_continuation.py`, `run_track_p_slab.py`, `run_track_p_chain.py`, `run_track_p_chain_h3.py`, `reissue_chains.py` |
 
@@ -599,7 +633,7 @@ sha256 は「その 1 回の実行を認証する」目的にだけ使ってく�
 2. `cd formal && lake exe cache get && lake build`
    — Lean 側の kernel チェック。
 3. `cd formal && lake env lean AxiomAudit.lean`
-   — 124 定理の公理報告。project 固有 axiom / `sorry` / `admit` が 1 つも出ないこと。
+   — 129 定理の公理報告。project 固有 axiom / `sorry` / `admit` が 1 つも出ないこと。
    ここまでが **Lean-verified** の範囲です。
 
 **第 2 段階(数分。certificate-verified の実物を見る)**

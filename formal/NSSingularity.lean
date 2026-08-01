@@ -20,3 +20,4 @@ import NSSingularity.TrackPChain
 import NSSingularity.GalerkinPicard
 import NSSingularity.KatoConstant
 import NSSingularity.ChainAnalysis
+import NSSingularity.MesoscopicDuhamelNoGo

@@ -1046,6 +1046,234 @@ algebraic optimumは物理packet witnessとして **棄却** し、保存履歴�
 従って現段階のZeno資料の正確な状態は
 **FORMAL KINEMATIC SCALING SCENARIO / NOT YET A PDE CANDIDATE** である。
 
+## 12c. Leray relay / modal-front discovery equation audit
+
+2026-08-01 の第二 discovery portfolio は、軸対称系 E-01--E-31を
+implementation premise とせず、周期一般3次元 Fourier Navier--Stokes
+
+\[
+\partial_t\widehat u_k
+=-\widehat{\mathbb P((u\cdot\nabla)u)}_k
+-\nu|k|^2\widehat u_k+\widehat f_k,
+\qquad k\cdot\widehat u_k=0
+\tag{L-00}
+\]
+
+から直接出発する。現状を次で固定する。
+
+| ID | statement | status | implementation use |
+|---|---|---|---|
+| L-01 | \(p=(1,1,0),q=(1,0,1),c=p+q,n=p\times q\) と偏極 \((e_3,e_2,n)\) の三波で \(\Pi_c=sBCD/2\)、difference modeが0、off-graph normが \(3s^2D^2(B^2+C^2)/8\) | **厳密有理演算および独立complex convolutionで確認済み** | 一段transfer witnessと回帰testに可 |
+| L-02 | shell bound \(|\Pi_N|\le C N\sqrt{M_N}E_N^{3/2}\) と、\(E_N=c_E/N\) の下で必要条件 \(M_N\gtrsim(\nu^2/c_E)N^3\) | **Bernstein/Cauchy上界として導出済み**。十分条件ではない | 固定mode数の棄却と探索幅の制約に可 |
+| L-03 | \(g_C=-P_C\mathbb P((p\cdot\nabla)p)\)、\(c=\sqrt{2E_C}g_C/\|g_C\|_2\) なら \(\langle c,g_C\rangle>0\) | **有限次元恒等式として確認済み**。単純反復orbitは数値screenで棄却 | 到達可能・実数対称・非重複bandだけの探索に可 |
+| L-04 | modal covariance (5.5)--(5.9)、\(\dot{\log N_r}\le\sigma_r^2/(4\nu N_r^2)\)、\(H_3=H_0N_0^2N_1^2N_2^2\) | **有限Fourier和で厳密確認済み**。零mode規約とfull-PDE cutoff極限は `AUDIT REQUIRED` | 有限和診断とconditional continuation criterionに可 |
+| L-05 | sigmoid \(H^3\)-quantile front ODE と \((1-\theta)H_3\le C_mK^6H_0\) | **形式導出済み**、実装・PDE極限・front action boundは未確認 | 実装 premise に不可 |
+| L-06 | fixed-relative-thickness \(M_N\asymp N^3\) phase cloudが一様正coherenceとlow-sideband cancellationを持つ | **未確認** | solution/certificate premise に不可 |
+| L-07 | pointwise child gainから \(\Delta t_j=O(N_j^{-2})\)、\(\dot N=kN^3\)、persistent disjoint coresから \(L^3\) 発散 | **未確認**。Z-05, Z-06と同じ橋を含む | conditional modelに限定 |
+| L-08 | Lagrangian Cauchy defect \(Z=F^{-1}(\omega\circ X)\) の粘性方程式と deformation-inhomogeneity action | **形式導出済み**、展開項・continuation estimateは未確認 | 実装 premise に不可 |
+| L-09 | curved cigar、pressure cage、strain ratchet、vortex necklaceのwhole-space modulation則 | **未確認の FORMAL ANSATZ** | pilot設計のみに可 |
+| L-11b | L-11a の非負実数代数核と有限係数 \(M_{\rm eff}\le|\operatorname{supp}|\) | **Lean 4、sorry・新規公理なしで確認済み**。Fourier/Leray/PDE bridge は未形式化 | 有限代数監査に可、PDE 定理としての利用不可 |
+| L-13 | fixed-relative profile の continuum response operator (candidate (6.6)--(6.10)) | **FORMAL ANSATZ / scaling と Jacobian は独立監査済み**。Riemann極限・周期点の存在は未証明 | \(\gamma=1\) の次探索方程式に可 |
+| L-14 | 既知 relay と同じ親 shell から、第二 difference と全 unintended target-shell 出力を厳密に消す有理二段 carrier family | **有限有理演算で確認済み**。bounded search は全256 recordを保存し、別 verifier が再計算する。低 shell return と再帰閉包は失敗 | target-shell-clean fragment のみ。cascade/PDE premise に不可 |
+
+L-02は必要条件にすぎない。特に \(M_N\asymp N^3\) でも、位相が
+coherentでなければ粘性に勝つ十分なsigned fluxは得られない。また絶対幅
+\(O(1)\) の3次元annulusは格子点が \(O(N^2)\) なので L-06 の幾何には
+使えない。
+
+幅 \(W_N=\lfloor N^\gamma\rfloor\) のmesoscopic boxでは、unit-\(L^2\)
+shapeについてBernstein容量を飽和する場合に限り
+
+\[
+M_N\asymp N^{3\gamma},\qquad
+A_N^{\rm unit}\asymp N^{1+3\gamma/2},\qquad
+G_N={A_N\over N^2\|u_N\|_2^2}\asymp N^{3\gamma/2-1}.
+\tag{L-10}
+\]
+
+しかし臨界正規化 \(E_N=c_E/N\)、空の子、
+\(t=\tau N^{-2}\) に対するheat-Duhamel応答は、適切な重み平均
+\(0<H_N\le\tau^2\) を用いて
+
+\[
+{E_{\rm child}(t)\over E_{\rm parent}(0)}
+={2c_E\over N}H_NG_N^2.
+\tag{L-11}
+\]
+
+さらに
+\[
+M_N^{\rm eff}
+={(\sum_k|\widehat u_N(k)|)^2\over\|u_N\|_2^2}\le M_N
+\]
+とし、support 上 \(|k|\le\kappa N\) とすれば、任意の位相について
+
+\[
+\|P_C B(u_N,u_N)\|_2
+\le\kappa N\sqrt{M_N^{\rm eff}}\|u_N\|_2^2,
+\qquad
+{E_{\rm child}\over E_{\rm parent}}
+\le2\kappa^2\tau^2c_E{M_N^{\rm eff}\over N^3}
+\le2\kappa^2\tau^2c_E{M_N\over N^3}.
+\tag{L-11a}
+\]
+
+従って relay の必要条件は support 数だけでなく
+\(M_N^{\rm eff}\gtrsim N^3\) である。特に \(M_N=o(N^3)\)、全
+\(\gamma<1\) は一段の臨界
+empty-child relay として位相に依らず棄却される。容量を飽和する理想形では
+実際の予想指数も \(N^{3\gamma-3}\to0\) である。\(G_N\) の増加だけをrelay
+成功と判定することの状態: **誤り**。さらにbox/cap overlap、dealias不足、
+unit-shape \(A_N\) とcritical \(A_N\) の混同を含む行はscaling fitから
+除外する。
+
+filled box には別の exact support obstruction がある。幅 \(W_N\) の二親の
+convolution support は幅 \(2W_N\) であり、幅 \(W_N\) の child core 外にある
+child spill は一般に scaled-profile の一定割合である。従って元の
+off-core/main \(=O(N^{\gamma-1})\) 予想はこの ansatz では不整合であり、
+off-core、child-spill、outside-child-full を分離する。後者にだけ
+\(O(W_N/N)\) 予想を比較できる。doubling で full child 幅が次親幅と一致する
+のは \(W_{2N}/W_N\to2\)、すなわち fixed-relative \(\gamma=1\) の境界である。
+
+有限二段 carrier の最初の coordinate-polarization candidate では、二つの
+intended child は次段で非零相互作用を持つが、diagonal cross-pair が target
+child shell 上で非零であり、
+
+\[
+{\|B_{\rm intended}\|_2^2\over\|B_{\rm relay-cross}\|_2^2}
+={222\over2483},
+\qquad
+B(C_{\rm sum},C_{\rm difference})=0.
+\tag{L-12}
+\]
+
+全七mode場の \(\sum_k\Pi_k=0\) は厳密有理演算で確認済み。既知 relay を
+固定した coordinate-polarization alphabet の16向きは全探索して strict hit
+なし。状態: **当該旧有限範囲では REJECTED**。旧 partial gadget の full
+Galerkin 時間発展も cross-talk と同程度の intended child、および pathway
+contaminated な微小 grandchild を与えた。この negative は削除せず保存する。
+
+しかし、波数 \(\|k\|_\infty\le2\)、primitive 偏極成分 bound 2 の拡大探索は、
+この coordinate-only negative を反転した。scope-eligible な波数 pair は4、偏極
+pair は256で、排除 histogram は
+
+\[
+16\ (\hbox{second sum zero})+216\ (\hbox{difference nonzero})
++12\ (\hbox{next sum zero})+10\ (\hbox{target cross-talk})
++2\ (\hbox{strict})=256.
+\tag{L-14a}
+\]
+
+二つの strict orientation は第二親の labelled swap である。unit-normalized
+代表は
+
+\[
+r=(0,1,-1),\quad R={1\over3}(1,2,2),\qquad
+s=(1,0,-1),\quad S={1\over3}(2,1,2).
+\tag{L-14b}
+\]
+
+第二 child \(C_2=(1,1,-2)\) では
+
+\[
+B_{C_2}={5\over27}(1,1,1)\sin(C_2\cdot x),\qquad
+\Pi_{C_2}={25\over486},\qquad B_{r-s}=0.
+\tag{L-14c}
+\]
+
+既知 child \(C_1=(2,1,1)\) との次 sum と difference はそれぞれ shell
+\(14\) と \(10\) にあり、
+
+\[
+B_{C_1+C_2}=
+\left(-{5\over63},{25\over189},{5\over189}\right)
+\cos((3,2,-1)\cdot x),\qquad
+\Pi_{C_1+C_2}={125\over10206},
+\tag{L-14d}
+\]
+
+\[
+B_{C_1-C_2}=
+\left({1\over9},-{5\over27},-{1\over27}\right)
+\cos((1,0,3)\cdot x),qquad
+{\|B_{C_1-C_2}\|_2\over\|B_{C_1+C_2}\|_2}={7\over5}.
+\tag{L-14e}
+\]
+
+全4 unintended parent pair の shell \(|k|^2=6\) 出力は0である。しかし四親
+field 全体では
+
+\[
+\|B_{\rm child}\|_2^2={53\over243},\qquad
+\|B_{\rm low}\|_2^2={17\over18},\qquad
+{\|B_{\rm low}\|_2^2\over\|B_{\rm child}\|_2^2}={459\over106},
+\qquad {\|B_{\rm child}\|_2^2\over\|B\|_2^2}={106\over565}.
+\tag{L-14f}
+\]
+
+従って strict は **target-shell cross-talk gate だけ**を意味する。aligned
+grandchildren の raw 相互作用は0であり、shell 14/10 は親 shell 2/child
+shell 6 の形へ戻らない。
+
+固定偏極を外して両 relay の continuous polarization equations を解くと、
+difference-zero の一般形は、非零 phase/amplitude scalars \(t,u\) を用いて
+
+\[
+P=(a,-a,b),\quad Q=t(a,b,-a),\qquad
+R=(e,f,f),\quad S=u(f,e,f).
+\tag{L-14g}
+\]
+
+二つの child polarization の scalar coefficients はそれぞれ
+
+\[
+{2t(2a-b)(a+b)\over3}(1,-1,-1),\qquad
+{2u(e+2f)(e-f)\over3}(1,1,1).
+\tag{L-14h}
+\]
+
+全 target-shell cross output が0であることは
+
+\[
+a(e+4f)=0,qquad b(2e-f)=0
+\tag{L-14i}
+\]
+
+と同値である。非自明解は scale と labelled exchange を除き、
+
+\[
+\begin{array}{ll}
+\text{I:}&a=0,\ f=2e,
+\quad(P,Q,R,S)\sim(e_3,e_2,(1,2,2),(2,1,2)),\\
+\text{II:}&b=0,\ e=-4f,
+\quad(P,Q,R,S)\sim((1,-1,0),(1,0,-1),(-4,1,1),(1,-4,1))
+\end{array}
+\tag{L-14j}
+\]
+
+の二つの正規化同値 branch だけである。bounded search の strict hit は I の
+二つの labelled orientation であり、II は偏極成分 bound 2 の外にある。
+
+さらに波数だけを \(\lambda=2\) で閉じる mirror を exact に調べた。既知
+child \(c_1=(2,1,1)\) に対し、shell 6 の相手で sum が shell 8 になるものは
+符号・格子対称性を除き \(c_2=(-2,1,1)\) である。その親を
+\(r=(-1,1,0),s=(-1,0,1)\) とすると target-cross zero は偏極を
+\(R_m=(2b,2b,b),S_m=(2d,d,2d)\) に制限し、child 偏極は
+\((1,1,1)\) に平行となる。既知 child 偏極 \((-1,1,1)\) との sum
+\((0,2,2)\) と difference \((4,0,0)\) の raw outputs はそれぞれ出力波数に
+平行で、Leray projection 後に双方0である。従ってこの exact mirror も
+single-type \(\lambda=2\) relay closure を与えない。
+
+位相は独立最適化ではなく quarter-turn 単位で
+\(x_0=(-1,0,0),\alpha_A=0,\alpha_B=1\) とする affine witness で
+\((A_1,A_2,B_1,B_2)=(\sin,\cos,\cos,\cos)\) を実現する。
+
+以上の L-01--L-14 のうち、連続体候補を前進させる実装premiseとして現在
+使えるのは L-01--L-03 の有限代数、L-04 の有限和恒等式、L-10--L-11b の
+明示された上界・Duhamel恒等式、L-12 の有限範囲棄却、および L-14 の
+target-shell-clean 有限 fragment だけである。L-14 は低 shell 回帰、反復、
+PDE 軌道を証明せず、これは特異点または大域正則性の証明ではない。
+
 ## 13. 一次資料
 
 - **[F]** Charles L. Fefferman, “Existence and Smoothness of the Navier–Stokes Equation,” Clay Mathematics Institute.
