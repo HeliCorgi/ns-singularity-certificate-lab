@@ -381,9 +381,11 @@ PowerShell では仮想環境の有効化のみ次に置き換えてください
 
 テスト件数や Lean の job 数は開発とともに変動するため、本 README には固定値を
 書きません。**CI([.github/workflows/tests.yml](.github/workflows/tests.yml))が
-毎 push で再実行するのは Python 側(全テストと証明書リプレイ)のみで、
+再実行するのは Python 側(全テストと証明書リプレイ)のみで、
 Lean の build と公理監査は CI に含まれていません** — 上記のコマンドで
-手元で実行してください。
+手元で実行してください。CI は `main` とタグへの push、および全 pull request で
+走ります(作業ブランチへの push で二重に起動しないようにするためで、
+検証範囲は PR 側で確保されます)。
 
 ### Full certificate replay
 
@@ -479,9 +481,10 @@ Lean 側の監査は `lake env lean AxiomAudit.lean`(主要定理の `#print axi
 
 ### Reproducibility and audit infrastructure
 
-- 全実験が config 固定・seed 固定・sha256 付き。**CI が毎 push で再実行するのは
+- 全実験が config 固定・seed 固定・sha256 付き。**CI が再実行するのは
   全テストと 9 本のリプレイのみ**で、Track P chain / $n=3$ / 再発行(各 約 2 時間)と
-  Hou 実行は CI 対象外です。
+  Hou 実行は CI 対象外です。テストとリプレイは並列の2ジョブに分かれています
+  (最長工程は Gate 7 の約 12 分半)。
 - 数値観測と証明を混同しないための STATUS / 証明義務台帳 / 登録簿の分離。
 - README 自体の整合性を CI が検査([tests/test_readme_claims.py](tests/test_readme_claims.py))。
 
