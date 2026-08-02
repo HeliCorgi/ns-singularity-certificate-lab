@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+title: >-
+  Spectral-front identities for periodic Navier-Stokes and a
+  conditional obstruction to uniform pointwise Osgood closure
+message: >-
+  If you refer to this work, please cite the archived release.
+  This repository does not claim a solution to the Clay
+  Navier-Stokes problem in either direction.
+type: software
+authors:
+  # Replace this entry with the author's full name before minting a DOI.
+  - name: HeliCorgi
+    website: "https://github.com/HeliCorgi"
+repository-code: "https://github.com/HeliCorgi/ns-singularity-certificate-lab"
+abstract: >-
+  For strong solutions of the unforced incompressible Navier-Stokes
+  equations on the three-dimensional torus, the spectral bandwidth
+  obeys an exact modal identity giving the monotone quantity
+  Lambda = log N_0^2 - (1/2 nu) int K D, hence a bandwidth-dissipation
+  dichotomy: finiteness of the action int K D forces the solution to be
+  global. The action has the exact representation int K D =
+  int |du/dt|^2/D + nu^2 int H_2/H_1 + nu log(D/D_0) and is dominated
+  pointwise by both the Serrin (infinity,2) and the critical
+  |grad u|_{L^3}^2 actions. Conditionally on one open, finitely
+  certified lattice-sum hypothesis, an explicit coherent
+  critical-spectrum family shows that no Osgood-admissible pointwise
+  majorant K <= Phi(log N_0^2) can hold uniformly, so the dichotomy
+  cannot be upgraded to unconditional regularity by that route.
+  The repository also records, with exact-arithmetic certificates, the
+  candidate mechanisms that were tested and rejected.
+keywords:
+  - Navier-Stokes
+  - regularity criteria
+  - spectral bandwidth
+  - Osgood condition
+  - computer-assisted mathematics
+  - exact rational arithmetic
+  - Lean 4
+license: Apache-2.0
