@@ -30,9 +30,10 @@ WHAT THIS RUN VERIFIED
   * the spectral-front identities of the main theorem, evaluated in exact
     rational arithmetic on finite trigonometric fields, including the
     telescoping of the defect decomposition;
-  * the coherent-family certificates that constitute the finite evidence for
-    Hypothesis L*, including the exact symmetry identities and the exact value
-    of K at small band sizes;
+  * the coherent-family certificates -- exact symmetry identities and exact
+    values of K at small band sizes -- for both the smoothly truncated family
+    used by the (now unconditional) obstruction theorem and the sharply
+    truncated family, whose own capacity bound remains open and unused;
   * the exclusion certificates for the mechanisms this repository tested and
     rejected;
   * the README's own claim guards (cited theorems exist, linked paths resolve,
@@ -41,9 +42,12 @@ WHAT THIS RUN VERIFIED
 
 NOT_VERIFIED = """\
 WHAT THIS RUN DID NOT VERIFY
-  * Hypothesis L* itself.  It is open.  The certificates above are finite
-    evidence at small band sizes plus a float continuation; they are not a
-    proof, and the conditional Proposition depends on L* being true.
+  * The capacity lower bound itself, for either family.  For the smoothly
+    truncated family it is proven on paper (see the note below on paper
+    proofs), not machine-checked here; the certificates above are finite
+    evidence at small band sizes plus a float continuation.  For the sharply
+    truncated family -- the paper's literal Hypothesis L* -- it remains open,
+    and nothing in the paper now depends on it.
   * The infinite-dimensional analysis of the paper.  Those proofs are on
     paper.  They were reviewed adversarially by AI agents, which is not human
     peer review, and they are not machine-checked.

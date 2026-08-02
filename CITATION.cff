@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 title: >-
-  Spectral-front identities for periodic Navier-Stokes and a
-  conditional obstruction to uniform pointwise Osgood closure
+  Spectral-front identities for periodic Navier-Stokes and an
+  obstruction to uniform pointwise Osgood closure
 message: >-
   If you refer to this work, please cite the archived release.
   This repository does not claim a solution to the Clay
@@ -21,11 +21,12 @@ abstract: >-
   global. The action has the exact representation int K D =
   int |du/dt|^2/D + nu^2 int H_2/H_1 + nu log(D/D_0) and is dominated
   pointwise by both the Serrin (infinity,2) and the critical
-  |grad u|_{L^3}^2 actions. Conditionally on one open, finitely
-  certified lattice-sum hypothesis, an explicit coherent
-  critical-spectrum family shows that no Osgood-admissible pointwise
-  majorant K <= Phi(log N_0^2) can hold uniformly, so the dichotomy
-  cannot be upgraded to unconditional regularity by that route.
+  |grad u|_{L^3}^2 actions. Separately, an explicit coherent
+  critical-spectrum family with a smooth spectral cutoff shows that no
+  Osgood-admissible pointwise majorant K <= Phi(log N_0^2) can hold
+  uniformly, so the dichotomy cannot be upgraded to unconditional
+  regularity by that route. That obstruction is unconditional; its
+  constant is not effective.
   The repository also records, with exact-arithmetic certificates, the
   candidate mechanisms that were tested and rejected.
 keywords:

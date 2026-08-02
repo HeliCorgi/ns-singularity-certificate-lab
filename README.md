@@ -1,4 +1,4 @@
-# Spectral-front identities for periodic Navier–Stokes<br>and a conditional obstruction to uniform pointwise Osgood closure
+# Spectral-front identities for periodic Navier–Stokes<br>and an obstruction to uniform pointwise Osgood closure
 
 > ## Not a Clay solution
 >
@@ -9,11 +9,10 @@
 > **Proven** (modulo three classical inputs — Kato-type local theory,
 > subcritical Serrin regularity, mean-zero Sobolev embedding): a
 > bandwidth–dissipation dichotomy on the torus, obtained from exact modal
-> identities, together with an exact representation of the action it turns on.
-> **Conditional:** the accompanying obstruction, which rests on one open
-> lattice-sum hypothesis, certified in exact arithmetic only at small band
-> sizes. **Rejected:** several blow-up mechanisms, each kept on record with the
-> equation or theorem that killed it.
+> identities, together with an exact representation of the action it turns on;
+> and, separately, an obstruction showing that the dichotomy cannot be closed
+> by any uniform pointwise Osgood majorant. **Rejected:** several blow-up
+> mechanisms, each kept on record with the equation or theorem that killed it.
 >
 > Review basis: exact-rational machine certificates and adversarial referee
 > passes run by **AI agents — this is not human peer review.**
@@ -45,21 +44,25 @@ $$\mathcal{N}=-\mathbb{P}(u\cdot\nabla u),\qquad K=\frac{\lVert\mathcal{N}\rVert
 - **(d)** $K D\le\lVert u\rVert_{L^\infty}^2$ and $K D\le C_S^2\lVert\nabla u\rVert_{L^3}^2$, so the criterion in (b) is at least as strong as the Serrin $(\infty,2)$ and the critical $L^3$ gradient actions.
 - **(e)** Any majorant $K D\le\Phi(z)D+R$ with $\Phi$ nondecreasing, $\int^\infty ds/\Phi=\infty$ and $\int_0^{T_{\max}}R\,dt<\infty$ puts the solution in the global case of (b).
 
-**Proposition (conditional).** Assume **Hypothesis L\*** — open, certified
-exactly at small band sizes and measured to $N=32$ — for the explicit coherent
-critical-spectrum family $\hat u_N(k)=P_k v_0/|k|^2$ on $1\le|k|\le N$. Then any
-uniform pointwise bound $K\le\Phi(\log N_0^2)$ over divergence-free
-trigonometric fields forces $\Phi(s)\ge c\,e^{s}$, so no Osgood-admissible
-$\Phi$ exists and the remainder-free route into (e) is closed. Solution-adapted
-remainders $R(t)$ are **not** excluded.
+**Theorem (obstruction).** Let $\Phi$ be nondecreasing with
+$K(u)\le\Phi(\log N_0^2(u))$ for **every** real zero-mean divergence-free
+trigonometric field $u$. Then $\Phi(s)\ge c\,e^{s}$ for all large $s$, so
+$\int^\infty ds/\Phi<\infty$: **no Osgood-admissible $\Phi$ exists**, and the
+remainder-free route into (e) is closed. The proof exhibits one explicit
+family — the coherent critical-spectrum field
+$\hat u_N(k)=\chi(|k|/N)\,P_k v_0/|k|^2$ with a smooth cutoff $\chi$ — for
+which $\lVert\mathbb{P}(u_N\cdot\nabla u_N)\rVert_2^2\gtrsim N^3$, uniformly in
+$\chi$ and $v_0$. Solution-adapted remainders $R(t)$ are **not** excluded, and
+the constant is non-effective.
 
 ## Proven / conditional / rejected
 
 | Status | Content |
 |---|---|
-| **Proven** | (a)–(e) above; the exact action identity; the exact spectral laws of the coherent family. External inputs: Kato-type local theory, subcritical Serrin, mean-zero Sobolev — nothing else. |
-| **Conditional** | The Osgood obstruction, on the single open hypothesis L\*. Also every PDE tube certificate in section C1/C2 below, on its named external theorems. |
-| **Rejected, kept on record** | Steady self-similar front (Tsai 1998, and Chae–Wolf at the weak-$L^3$ level); the exact Leray cycle gate; continuum-to-lattice shadowing; the action–bandwidth *equivalence* (withdrawn after refereeing); the uniform deficit floor. See [VERDICTS.md](docs/research_notes/verification_sprint_v1/VERDICTS.md). |
+| **Proven** | (a)–(e) above; the exact action identity; the obstruction theorem, including the capacity lower bound for the smoothly truncated family that drives it; the exact spectral laws of that family. External inputs: Kato-type local theory, subcritical Serrin, mean-zero Sobolev — nothing else. Constants in (a)–(e) are explicit; the obstruction's constant is **not** effective. |
+| **Conditional** | Every PDE tube certificate in section C1/C2 below, on its named external theorems. |
+| **Rejected, kept on record** | Steady self-similar front (Tsai 1998, and Chae–Wolf at the weak-$L^3$ level); the exact Leray cycle gate; continuum-to-lattice shadowing; the action–bandwidth *equivalence* (withdrawn after refereeing); the uniform deficit floor; a proven no-go for the constant-vector-split route to the capacity bound. See [VERDICTS.md](docs/research_notes/verification_sprint_v1/VERDICTS.md). |
+| **Still open, no longer used** | The capacity bound for the *sharply* truncated family, the repository's original Hypothesis L\*. The obstruction no longer depends on it, because its hypothesis quantifies over all fields and the smooth family suffices. |
 
 ## Verify it yourself — one command
 

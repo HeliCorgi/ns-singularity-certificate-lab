@@ -211,85 +211,209 @@ Hence \(\Omega(z)\), and so \(z\), is bounded; Lemma 5's argument gives
 
 ---
 
-## Proposition (conditional static no-go)
+## Theorem O (unconditional static no-go)
 
-**Lemma 9 (band symmetry identity).** Let
-\(B_N=\{k\in\mathbb Z^3:1\le|k|\le N\}\) and \(f\ge0\) radial. Then
-\(\sum_{k\in B_N}k_ik_jf(|k|^2)
-=\delta_{ij}\tfrac13\sum_{k\in B_N}|k|^2f(|k|^2)\).
+*Formerly stated as a Proposition conditional on a capacity hypothesis
+(L\*). The hypothesis has been discharged — for a smoothly truncated
+member of the same coherent family, which is all the argument ever needed,
+because it quantifies over **all** real zero-mean divergence-free
+trigonometric fields. The capacity input is Theorem 7.1(3) of*
+[lstar/lstar_proof_main.md](lstar/lstar_proof_main.md)*, cited but not
+reproduced here. The sharply truncated family's own capacity bound — the
+literal Hypothesis (L\*) — remains open and is no longer used; see the*
+[audit](dependency_and_gap_audit.md) *§3 and §5.*
 
-*Proof.* \(B_N\) is invariant under each sign flip
-\(k_i\mapsto-k_i\) and under coordinate permutations. For \(i\neq j\)
-the flip \(k_i\mapsto-k_i\) negates the summand, so the sum vanishes.
-The three diagonal sums are equal by permutation invariance and add to
+**The family.** Call \(\chi\) **admissible** if
+\(\chi\in C^\infty([0,\infty);[0,1])\), \(\chi\equiv1\) on
+\([0,\tfrac12]\) and \(\operatorname{supp}\chi\subset[0,1]\) (no
+monotonicity assumed). For \(v_0\in\mathbb R^3\setminus\{0\}\), an
+admissible \(\chi\) and an integer \(N\ge2\), set
+\[
+\widehat u_N(k)=\chi\!\Big(\frac{|k|}N\Big)\frac{P_kv_0}{|k|^2}\ (k\neq0),
+\qquad\widehat u_N(0)=0,
+\]
+a finite trigonometric polynomial banded at \(|k|\le N\). Write
+\[
+S_N^\chi=\sum_{k\neq0}\frac{\chi(|k|/N)^2}{|k|^2},\quad
+T_N^\chi=\sum_{k\neq0}\frac{\chi(|k|/N)^2}{|k|^4},\quad
+\Sigma_N^\chi=\sum_{k\neq0}\frac{\chi(|k|/N)}{|k|^2}.
+\]
+
+**Lemma 9 (band symmetry identity; general radial weight).** Let
+\(f:\mathbb Z^3\setminus\{0\}\to\mathbb R\) be radial
+(\(f(k)=\varphi(|k|^2)\)) with \(\sum_{k\neq0}|k|^2|f(k)|<\infty\). Then
+\[
+\sum_{k\neq0}k_ik_jf(k)=\delta_{ij}\,\tfrac13\sum_{k\neq0}|k|^2f(k).
+\]
+
+*Proof.* Absolute summability makes every rearrangement legitimate. The
+index set \(\mathbb Z^3\setminus\{0\}\) is invariant under each sign flip
+\(k_i\mapsto-k_i\) and under coordinate permutations, and \(f\) is
+invariant under both. For \(i\neq j\) the flip \(k_i\mapsto-k_i\) is a
+bijection of the index set that negates the summand, so that sum equals
+its own negative and vanishes. The three diagonal sums are carried into
+one another by permutations, hence are equal, and add to
 \(\sum|k|^2f\). ∎
 
-**Lemma 10 (family laws).** For
-\(\widehat u_N(k)=P_kv_0/|k|^2\) on \(B_N\) (real, since the
-coefficients are real and \(\pm k\)-symmetric; divergence-free since
+*(Earlier versions stated this only for \(f\ge0\) supported on the sharp
+ball \(B_N=\{1\le|k|\le N\}\); that is the special case
+\(f=\varphi\cdot\mathbb 1_{|k|\le N}\), \(\varphi\ge0\). No positivity is
+needed, only absolute summability — which is what the smooth weight
+\(\chi(|k|/N)^2|k|^{-6}\) requires, since \(\chi\) is not assumed
+monotone and hence not assumed of one sign after differentiation.)*
+
+**Lemma 10 (family laws, smooth truncation).** For the family above
+(real, since the coefficients are real and \(\pm k\)-symmetric;
+zero-mean by \(\widehat u_N(0)=0\); divergence-free since
 \(k\cdot P_kv_0=0\)):
-\(H_0=\tfrac23\|v_0\|^2T_N\), \(H_1=\tfrac23\|v_0\|^2S_N\),
-\(N_0^2=S_N/T_N\), \(u_N(0)=\tfrac23S_Nv_0\), and
-\(\|u_N\|_\infty^2/H_1\ge\tfrac23S_N\).
+\[
+H_0=\tfrac23\|v_0\|^2T_N^\chi,\quad
+H_1=\tfrac23\|v_0\|^2S_N^\chi,\quad
+N_0^2=\frac{S_N^\chi}{T_N^\chi},\quad
+u_N(0)=\tfrac23\Sigma_N^\chi v_0,
+\]
+and \(\|u_N\|_\infty^2/H_1\ge2(\Sigma_N^\chi)^2/(3S_N^\chi)\).
 
 *Proof.* \(|P_kv_0|^2=\|v_0\|^2-(k\cdot v_0)^2/|k|^2\); apply Lemma 9
-with \(f=|k|^{-6}\) resp. \(|k|^{-4}\) to
-\(\sum(k\cdot v_0)^2|k|^{-6}=\tfrac13\|v_0\|^2T_N\) resp.
-\(\tfrac13\|v_0\|^2S_N\); subtract. Point value:
-\(u_N(0)=\sum_k\widehat u_N(k)=v_0S_N-\sum k(k\cdot v_0)|k|^{-4}
-=v_0S_N-\tfrac13v_0S_N\) (Lemma 9, \(f=|k|^{-4}\)). Then
-\(\|u_N\|_\infty^2\ge|u_N(0)|^2=\tfrac49S_N^2\|v_0\|^2
-=\tfrac23S_N\cdot H_1\). ∎
+with the radial weights \(f=\chi(|k|/N)^2|k|^{-6}\) resp.
+\(\chi(|k|/N)^2|k|^{-4}\) (both finitely supported, hence absolutely
+summable) to get
+\(\sum\chi^2(k\cdot v_0)^2|k|^{-6}=\tfrac13\|v_0\|^2T_N^\chi\) resp.
+\(\tfrac13\|v_0\|^2S_N^\chi\); subtract. Point value:
+\(u_N(0)=\sum_k\widehat u_N(k)
+=v_0\Sigma_N^\chi-\sum\chi\,k(k\cdot v_0)|k|^{-4}
+=v_0\Sigma_N^\chi-\tfrac13v_0\Sigma_N^\chi\) (Lemma 9,
+\(f=\chi(|k|/N)|k|^{-4}\)). Then
+\(\|u_N\|_\infty^2\ge|u_N(0)|^2=\tfrac49(\Sigma_N^\chi)^2\|v_0\|^2
+=\tfrac{2(\Sigma_N^\chi)^2}{3S_N^\chi}H_1\). ∎
+
+*(This is Theorem 1.3 of the capacity document. The sharply truncated
+family \(\widehat u_N(k)=P_kv_0/|k|^2\) on \(B_N\) is the formal case
+\(\chi=\mathbb 1_{[0,1]}\), for which \(S_N^\chi=S_N\),
+\(T_N^\chi=T_N\), \(\Sigma_N^\chi=S_N\), \(u_N(0)=\tfrac23S_Nv_0\), and
+the Bernstein ratio is saturated two-sidedly,
+\(\tfrac23S_N\le\|u_N\|_\infty^2/H_1\le S_N\). That family is no longer
+used; \(\mathbb 1_{[0,1]}\) is not admissible.)*
 
 **Lemma 11 (lattice sums; crude explicit constants suffice).** For
-\(N\ge8\):
+\(N\ge32\) and every admissible \(\chi\):
 \[
-\tfrac1{250}\,N\;\le\;S_N\;\le\;432\,N,\qquad
-T_N\nearrow T_\infty<\infty,
+\frac N{348}\;\le\;S_N^\chi\;\le\;128N,\qquad
+6\;\le\;T_N^\chi\;\le\;T_\infty\le128,
 \]
-and consequently, with \(s_N=\log N_0^2(u_N)=\log(S_N/T_N)\), the
-dyadic gaps are bounded above and below for all large \(N\):
+hence \(\dfrac N{44544}\le N_0^2(u_N)\le\dfrac{64}3N\); and consequently,
+with \(s_N=\log N_0^2(u_N)\) and \(q=20\), the \(2^q\)-adic gaps are
+bounded above and below:
 \[
-0<c_-\le s_{2N}-s_N\le c_+<\infty .
+0<c_-=\log\frac{1048576}{950272}=0.0985\ldots\ \le\ s_{2^{20}N}-s_N\ \le\
+c_+=\log\big(2^{20}\cdot950272\big)=27.63\ldots<\infty .
 \]
 
-*Proof.* Upper: group \(B_N\) into dyadic shells
-\(2^j\le|k|<2^{j+1}\); each shell has at most
-\((2\cdot2^{j+1}+1)^3\le27\cdot8^{j+1}\) points (cube count), each
-contributing \(\le4^{-j}\), so
-\(S_N\le\sum_{2^j\le N}216\cdot2^j\le432N\). Lower: the all-positive
-box \(\{N/(2\sqrt3)<k_i\le N/\sqrt3\}\) lies in the shell
-\(N/2<|k|\le N\) and contains \(\ge(N/(2\sqrt3)-1)^3\ge(0.16N)^3\)
-points for \(N\ge8\), each contributing \(\ge N^{-2}\):
-\(S_N\ge0.004N\ge N/250\). \(T_\infty<\infty\): the same dyadic
-grouping with weight \(16^{-j}\) gives a convergent geometric sum.
-Gaps: \(S_{2N}\ge S_N+(\text{points in }N<|k|\le2N)\cdot(2N)^{-2}
-\ge S_N+0.1N^3/(4N^2)=S_N+N/40\ge S_N\bigl(1+\tfrac1{40\cdot432}\bigr)\),
-while \(S_{2N}/S_N\le432\cdot2N/(N/250)\); since
-\(T_{2N}/T_N\to1\), the display follows for large \(N\) with
-\(c_-=\tfrac12\log(1+\tfrac1{17280})\), \(c_+=\log(216000)+1\). ∎
+*Proof.* Let \(S_N=\sum_{1\le|k|\le N}|k|^{-2}\),
+\(T_\infty=\sum_{k\neq0}|k|^{-4}\). Dyadic shell count: for \(j\ge0\),
+\(\#\{2^j\le|k|<2^{j+1}\}\le(2^{j+2}-1)^3<64\cdot8^j\), since such \(k\)
+have \(|k_i|\le2^{j+1}-1\). Upper: with \(J=\lfloor\log_2N\rfloor\),
+\(S_N\le\sum_{j\le J}64\cdot8^j4^{-j}=64(2^{J+1}-1)<128\cdot2^J\le128N\),
+and \(T_\infty\le\sum_{j\ge0}64\cdot8^j16^{-j}=128\). Since
+\(0\le\chi\le1\) with support in \(|k|\le N\), \(S_N^\chi\le S_N\le128N\)
+and \(T_N^\chi\le T_\infty\le128\).
+Lower on \(T_N^\chi\): \(\chi(1/N)=1\) for \(N\ge2\) and the six \(k\)
+with \(|k|=1\) each contribute \(1\).
+Lower on \(S_N^\chi\): \(\chi(|k|/N)=1\) whenever \(|k|\le N/2\), so
+\(S_N^\chi\ge S_{\lfloor N/2\rfloor}\). For \(M\ge16\), the all-positive
+box \(\{M/(2\sqrt3)<k_i\le M/\sqrt3\}\) lies in \(M^2/4<|k|^2\le M^2\),
+so its points are counted in \(S_M\) and contribute \(\ge M^{-2}\) each;
+each coordinate admits \(\ge M/(2\sqrt3)-1\ge0.28868M-0.0625M=0.226M\)
+integers, giving \(\#\ge(0.226M)^3>0.01154M^3\) and
+\(S_M\ge0.01154M\ge M/87\). For \(N\ge32\),
+\(\lfloor N/2\rfloor\ge\max(16,N/4)\), so \(S_N^\chi\ge N/348\).
+Combining, \(N_0^2=S_N^\chi/T_N^\chi\in[\tfrac{N/348}{128},\tfrac{128N}6]
+=[\tfrac N{44544},\tfrac{64}3N]\).
+Gaps: the two-sided bound gives, for every \(q\),
+\(N_0^2(u_{2^qN})/N_0^2(u_N)\in[2^q/950272,\ 2^q\cdot950272]\) with
+\(950272=44544\cdot64/3\); take \(q=20\), where
+\(2^{20}=1048576>950272\), so the lower endpoint exceeds \(1\). ∎
 
-*(Remark, no proof claimed: numerically \(S_N=4\pi N-8.7\pm0.9\) for
-\(N\le200\) and \(T_\infty=16.5323\ldots\); the crude constants above
-are all the Proposition uses.)*
+*(Supersession note. Earlier versions proved \(N/250\le S_N\le432N\) for
+\(N\ge8\) with dyadic gaps \(c_-=\tfrac12\log(1+\tfrac1{17280})\),
+\(c_+=\log(216000)+1\), for the **sharply** truncated family. Those
+constants are **not wrong** — they are merely superseded: \(128\) is the
+tighter shell count, and the gap bound above is elementary and
+\(N\)-uniform because \(T_N^\chi\ge6\) replaces the asymptotic
+"\(T_{2N}/T_N\to1\)". They are recorded for continuity and used
+nowhere.)*
 
-**Proof of the Proposition.** Assume (L\*):
-\(K(u_N)=\|\mathbb P(u_N\cdot\nabla u_N)\|_2^2/H_1^2
-\ge c_0N^3/(\tfrac23\|v_0\|^2S_N)^2\ge c_0'N\ge c_0''N_0^2
-=c_0''e^{s_N}\) (Lemmas 10–11: \(S_N\le432N\) upward,
-\(N_0^2=S_N/T_N\le432N/T_2\) downward-compatible). Take the dyadic
-sequence \(N_j=2^jN_0\): \(s_{N_j}\to\infty\) with gaps
-\(s_{N_{j+1}}-s_{N_j}\in[c_-,c_+]\) for large \(j\) (Lemma 11), so the
-sequence \(\{s_{N_j}\}\) is increasing (eventually) and unbounded. If
+*(Remark, no proof claimed, used nowhere: numerically
+\(S_N=4\pi N-8.7\pm0.9\) for \(N\le200\) and
+\(T_\infty=16.5323\ldots\).)*
+
+**Capacity Theorem (cited, not reproduced).** *Theorem 7.1(3) of*
+[lstar/lstar_proof_main.md](lstar/lstar_proof_main.md)*.* For every
+\(v_0\in\mathbb R^3\setminus\{0\}\) and every admissible \(\chi\) there
+exist \(c_0=c_0(\chi,v_0)>0\) and \(N_*=N_*(\chi,v_0)\) such that
+\[
+\big\|\mathbb P(u_N\cdot\nabla u_N)\big\|_{L^2(\mathbb T^3)}^2
+\;\ge\;c_0N^3\qquad\text{for all }N\ge N_* .
+\]
+That is exactly and only what is used below. For orientation, its proof
+runs: \(\widehat u_N(k)=N^{-2}F(k/N)\) exactly, with
+\(F(\xi)=\chi(|\xi|)P_\xi v_0/|\xi|^2\) (Theorem 3.2 there); an exact
+lattice-Riemann identity \(u_N(y/N)=N(V+E_N)\),
+\(\nabla u_N(y/N)=N^2(\nabla V+E'_N)\) with \(V=\widetilde F\) and
+\(\sup_{|y|\le R}(|E_N|+|E'_N|)=O(N^{-1}\log N)\) (Lemma 4.1,
+Theorem 4.2); pairing against a concentrated divergence-free test field
+\(\psi_N(x)=N^{3/2}\Psi(Nx)\), whose \(L^2(\mathbb T^3)\) norm is
+\(N\)-independent, giving
+\(\|\mathbb P(u_N\cdot\nabla u_N)\|_2^2\ge(2\pi)^{-3}
+N^3|I_\Psi+\mathcal E_N|^2/\|\Psi\|_{L^2(\mathbb R^3)}^2\) with
+\(I_\Psi=\int(V\cdot\nabla V)\cdot\Psi\) (Theorem 5.3, Corollary 5.4);
+and finally the non-degeneracy \(\mathbb P(V\cdot\nabla V)\not\equiv0\),
+proven for **all** admissible \(\chi\) and **all** \(v_0\) from the
+\(\chi\)-independent leading singularity of \(F*F\) at \(\zeta=0\),
+where \(\zeta\times(\tau(\zeta)\zeta)
+=\tfrac{3\pi^3}8\|v_0\|^2\tfrac{\zeta_3}{|\zeta|}(\zeta\times e_3)\neq0\)
+— the Fourier form of "the Oseen field is not a stationary Euler flow"
+(Theorems 6.5, 6.7). The exponent \(3\) is sharp: Lemma 7 with Lemma 10
+caps \(\|\mathbb P(u_N\cdot\nabla u_N)\|_2^2\le\|u_N\|_\infty^2H_1
+\asymp N^3\).
+**The constants \(c_0\) and \(N_*\) are non-effective**, because the test
+field \(\Psi\) is obtained from the density of
+\(C^\infty_{c,\sigma}(\mathbb R^3)\) in \(L^2_\sigma(\mathbb R^3)\); see
+"Constant dependence" in [theorem_statement.md](theorem_statement.md).
+
+**Proof of Theorem O.** Fix any admissible \(\chi\) and any
+\(v_0\in\mathbb R^3\setminus\{0\}\), and use the family \(u_N\); each
+\(u_N\) is a real, zero-mean, divergence-free trigonometric field
+(Lemma 10), hence an admissible test object for the hypothesis on
+\(\Phi\).
+By Lemma 10 and Lemma 11, \(H_1=\tfrac23\|v_0\|^2S_N^\chi
+\le\tfrac{256}3\|v_0\|^2N\) for \(N\ge32\), so by the Capacity Theorem,
+for \(N\ge\max(N_*,32)\),
+\[
+K(u_N)=\frac{\|\mathbb P(u_N\cdot\nabla u_N)\|_2^2}{H_1^2}
+\ \ge\ \frac{c_0N^3}{\big(\tfrac{256}3\|v_0\|^2N\big)^2}
+=\frac{9c_0}{65536\|v_0\|^4}\,N .
+\]
+By Lemma 11 again, \(N\ge\tfrac3{64}N_0^2(u_N)\), hence
+\(K(u_N)\ge c_0''\,N_0^2(u_N)=c_0''e^{s_N}\) with
+\(c_0''=\tfrac{27c_0}{4194304\|v_0\|^4}\).
+Take \(N_j=2^{20j}N_\sharp\) with \(N_\sharp\ge\max(N_*,32)\): by
+Lemma 11 the gaps satisfy \(s_{N_{j+1}}-s_{N_j}\in[c_-,c_+]\), so
+\(\{s_{N_j}\}\) is strictly increasing and unbounded. If
 \(K\le\Phi(\log N_0^2)\) uniformly, then
-\(\Phi(s_{N_j})\ge c_0''e^{s_{N_j}}\); for
+\(\Phi(s_{N_j})\ge K(u_{N_j})\ge c_0''e^{s_{N_j}}\); for
 \(s\in[s_{N_j},s_{N_{j+1}}]\), monotonicity gives
-\(\Phi(s)\ge\Phi(s_{N_j})\ge c_0''e^{s_{N_j}}
-\ge c_0''e^{-c_+}\,e^{s}\). Hence \(\Phi(s)\ge ce^s\) for all large
-\(s\) with \(c=c_0''e^{-c_+}\), and
+\(\Phi(s)\ge\Phi(s_{N_j})\ge c_0''e^{s_{N_j}}\ge c_0''e^{-c_+}e^{s}\).
+Hence \(\Phi(s)\ge ce^s\) for all \(s\ge s_{N_0}\) with
+\(c=c_0''e^{-c_+}\), and
 \(\int^\infty ds/\Phi\le c^{-1}\int^\infty e^{-s}ds<\infty\). ∎
 
-**Scope note (referee-mandated).** The Proposition excludes uniform
+*(No hypothesis was assumed. The argument is verbatim the one that
+formerly consumed (L\*), with the sharp family replaced by the smooth one
+and (L\*) replaced by the proven Capacity Theorem. \(c\) inherits the
+non-effectivity of \(c_0\).)*
+
+**Scope note (referee-mandated).** Theorem O excludes uniform
 pointwise **field** inequalities \(K\le\Phi(\log N_0^2)\) (the
 \(R\equiv0\) route to clause (e)). It does not by itself exclude
 solution-adapted remainders \(R(t)\) with \(\int R<\infty\); that
@@ -297,15 +421,99 @@ route is constrained separately by the dynamic analysis recorded in
 the repository's Osgood-gate note, which is not part of this paper's
 claims.
 
-**Certificates supporting (L\*)** (appendix of the LaTeX draft; not part
-of any proof): exact rational values
-\(K(u_4)=0.7884107043\ldots\) (full fraction stored),
-\(K(u_6)=1.4344718\ldots\), \(K(u_8)=2.0372430\ldots\) (float pipeline
-agreement \(\le1.3\times10^{-15}\)); the exact sweeping-pairing lower
-bound \(\|\mathbb P(u\cdot\nabla u)\|_2\ge|\langle(u\cdot\nabla)u,
+## Certificate appendix (numerics; part of no proof)
+
+Nothing in this section enters any proof. Both the Main Theorem and
+Theorem O are now unconditional (modulo F1–F3), so — unlike in earlier
+versions — these numbers no longer carry a hypothesis. They are recorded
+as corroboration.
+
+### C.1 Smooth family (the family actually used by Theorem O)
+
+Producer: `experiments/run_smooth_family_capacity.py`; data
+`outputs/lstar/smooth_family_capacity.json`
+(sha256 `527b3d0b…d4b3`); tables reproduced in
+[lstar/lstar_numerical_support.md](lstar/lstar_numerical_support.md).
+Seed \(v_0=(1,2,3)\), \(\|v_0\|^2=14\); weight
+\(\chi(r)=1-S\big(\mathrm{clamp}(\tfrac{r^2-1/4}{3/4},0,1)\big)\) with
+\(S\) the degree-9 smoothstep
+\(126s^5-420s^6+540s^7-315s^8+70s^9\).
+
+*Caveat, stated rather than hidden:* this \(\chi\) is a polynomial in
+\(r^2\) — which is exactly what makes the whole family **exactly
+rational** on the lattice — and is \(C^4\), not \(C^\infty\). Admissibility
+as defined above asks for \(C^\infty\). The proof uses smoothness of
+\(\chi\) at only one point (the constant \(c_\chi=1+\|\chi'\|_\infty\) in
+the Riemann-sum rate, Theorem 4.2 of the capacity document), so a \(C^1\)
+cutoff suffices there and this \(\chi\) is admissible for that argument;
+but as the class is currently written, the exact-rational lanes below are
+evidence for the \(C^p\) variant of the statement, not literally for the
+\(C^\infty\) one. Degree-\((2p+1)\) smoothsteps give rational \(\chi\in C^p\)
+for every \(p\).
+
+Exact moment laws (`fractions.Fraction`, no rounding): the residuals of
+\(H_0=\tfrac23\|v_0\|^2T_N^\chi\), \(H_1=\tfrac23\|v_0\|^2S_N^\chi\) and
+\(u_N(0)=\tfrac23\Sigma_N^\chi v_0\) are the **rational \(0\)** — not
+"small" — at \(N=4,6,8,10,12\), with \(u_N(0)\) exactly parallel to
+\(v_0\) (components in ratio \(1:2:3\)).
+
+Exact capacity, full \(O(|B_N|^2)\) contraction over all ordered pairs of
+active band points (no truncation, no sampling):
+
+| \(N\) | \(\|\mathbb P(u_N\cdot\nabla u_N)\|_2^2/N^3\) | \(K\) | \(N_0^2\) | \(K/N_0^2\) |
+|---:|---:|---:|---:|---:|
+| 4  |  678.284307 | 0.61657681 | 2.316030 | 0.266221 |
+| 6  | 1027.307364 | 1.13589428 | 3.455252 | 0.328744 |
+| 8  | 1241.509295 | 1.67053905 | 4.585959 | 0.364273 |
+| 10 | 1384.356255 | 2.20774755 | 5.718747 | 0.386054 |
+| 12 | 1485.779047 | 2.74636641 | 6.852077 | 0.400808 |
+| 16 | 1619.652353 | 3.82541413 | 9.119441 | 0.419479 |
+
+Dealiased FFT continuation (grid \(4N+2\); the whole product spectrum is
+represented) extends this to \(N=48\):
+\(\|\mathbb P(u_N\cdot\nabla u_N)\|_2^2/N^3\) rises
+\(1241.51\to1911.31\) and \(K/N_0^2\) rises \(0.364273\to0.457376\) over
+\(N=8\to48\), both monotonically. **Exact vs. FFT** at the two shared
+bands agrees to double-precision roundoff: relative difference
+\(5.5\times10^{-16}\) (\(N=8\)) and \(7.0\times10^{-16}\) (\(N=16\)) in
+\(\|\mathbb P(u_N\cdot\nabla u_N)\|_2^2\); \(5.3\times10^{-16}\) and
+\(8.1\times10^{-16}\) in \(K\).
+
+Two-point Richardson limits (diagnostics, not proofs, fitted on
+\(N=40,48\)): \(\|\mathbb P(u_N\cdot\nabla u_N)\|_2^2/N^3\to2064.31\),
+\(K/N_0^2\to0.47644\), \(H_1/N\to87.51\), \(N_0^2/N\to0.56708\). Both
+target sequences increase toward positive constants, i.e. the **sharp**
+exponent \(a=1\), consistent with the Capacity Theorem's \(N^3\).
+The continuum non-degeneracy behind that theorem is corroborated three
+independent ways (exact rational lattice modes; float 3-D quadrature of
+the continuum convolution; an axisymmetric radial reduction giving
+\(\mathrm{curl}(V\cdot\nabla V)=Z(r)\sin\theta\cos\theta\,e_\phi\) with
+\(Z\to-12\pi^4\|v_0\|^2/r^4\)), agreeing to \(10^{-4}\) or better.
+
+### C.2 Sharp family (corroboration only; the family is no longer used)
+
+*These are **sharp**-family numbers. They corroborate the literal
+Hypothesis (L\*), which remains **open** and which no statement in this
+paper now uses. They are retained, not deleted, because they are
+independently verified and were the original evidence for the
+obstruction; they support nothing that is claimed here.*
+
+Exact rational values \(K(u_4)=0.7884107043\ldots\) (full fraction
+stored), \(K(u_6)=1.4344718\ldots\), \(K(u_8)=2.0372430\ldots\) (float
+pipeline agreement \(\le1.3\times10^{-15}\)); the exact sweeping-pairing
+lower bound \(\|\mathbb P(u\cdot\nabla u)\|_2\ge|\langle(u\cdot\nabla)u,
 (v_0\cdot\nabla)u\rangle|/\|(v_0\cdot\nabla)u\|_2\) — valid because
 \(\mathbb P((c\cdot\nabla)u)=(c\cdot\nabla)u\) for constant \(c\) (the
 coefficient of \((c\cdot\nabla)u\) at \(k\) is \(i(c\cdot k)\hat u_k\perp
 k\)) — captures a near-constant \(91.2\%\)–\(92.1\%\) of the norm for
 \(4\le N\le32\) (measured range 91.18%–92.10%); \(K/N_0^2\) increases
-\(0.259\to0.396\) over \(N=4\ldots32\).
+\(0.259\to0.396\) over \(N=4\ldots32\). The smooth family's \(K/N_0^2\)
+runs slightly above these at every comparable band.
+
+A **proven negative result** about this family is recorded in
+[lstar/lstar_direct_route_and_weakening.md](lstar/lstar_direct_route_and_weakening.md)
+§A: no constant-vector sweeping split, in any Hölder pairing and any
+constant pairing direction, can reach the sharp family's capacity bound —
+every such estimate is capped at \(\|\mathbb P(u_N\cdot\nabla u_N)\|_2^2
+\gtrsim N\), two powers short. That is why the concentrated test field of
+the Capacity Theorem, not a constant sweep, is the right instrument.

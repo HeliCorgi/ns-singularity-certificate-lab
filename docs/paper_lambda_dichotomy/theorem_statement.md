@@ -4,7 +4,10 @@
 Navier–Stokes equations, with an exact action representation**
 
 This file states the single main theorem and the one clearly-separated
-conditional proposition. Proofs: [complete_proof.md](complete_proof.md).
+**unconditional** obstruction theorem (Theorem O; formerly a conditional
+proposition). Proofs: [complete_proof.md](complete_proof.md); the capacity
+input to Theorem O is proven in
+[lstar/lstar_proof_main.md](lstar/lstar_proof_main.md).
 Dependency and gap audit (external classical inputs, adversarial
 re-verification, novelty comparison):
 [dependency_and_gap_audit.md](dependency_and_gap_audit.md).
@@ -101,56 +104,136 @@ is therefore at least as strong as both.
 \(K D\le\Phi(z)\,D+R\) with \(\Phi>0\) nondecreasing,
 \(\int^\infty ds/\Phi=\infty\), \(R\ge0\),
 \(\int_0^{T_{\max}}R\,dt<\infty\), then case (b1) holds. *(This clause is
-a proven implication; the following proposition shows its hypothesis
-cannot hold uniformly.)*
+a proven implication; Theorem O below shows its hypothesis cannot hold
+uniformly in the \(R\equiv0\) form.)*
 
-## Proposition (conditional static no-go; separated from the Main Theorem)
+## Theorem O (unconditional static no-go; separated from the Main Theorem)
 
-Let \(v_0\in\mathbb Z^3\setminus\{0\}\) and define the coherent
-critical-spectrum family
+*This statement was a conditional Proposition in earlier versions of
+this paper, resting on a capacity hypothesis (L\*). It is now
+**unconditional**: the capacity bound is proven for a smoothly truncated
+member of the coherent family, and the no-go argument quantifies over
+**all** real zero-mean divergence-free trigonometric fields, so exhibiting
+the bound for that one family is all it ever needed. See*
+[lstar/lstar_proof_main.md](lstar/lstar_proof_main.md) *and the*
+[audit](dependency_and_gap_audit.md) *§3.*
+
+**The smoothly truncated coherent family.** Call
+\(\chi\) **admissible** if
 \[
-\widehat u_N(k)=\frac{P_kv_0}{|k|^2},\quad 1\le|k|\le N,\qquad
+\chi\in C^\infty([0,\infty);[0,1]),\qquad
+\chi\equiv1\ \text{on }[0,\tfrac12],\qquad
+\operatorname{supp}\chi\subset[0,1];
+\]
+no monotonicity is assumed. Write \(c_\chi=1+\|\chi'\|_{L^\infty}\).
+For \(v_0\in\mathbb R^3\setminus\{0\}\) (no integrality is needed), an
+admissible \(\chi\), and an integer \(N\ge2\), define
+\[
+\widehat u_N(k)=\chi\!\Big(\frac{|k|}N\Big)\frac{P_kv_0}{|k|^2}\quad(k\neq0),
+\qquad\widehat u_N(0)=0,\qquad
 P_k=I-\frac{k\otimes k}{|k|^2}.
 \]
-Then (proven, exact): \(u_N\) is real and divergence-free;
-\(H_0=\tfrac23\|v_0\|^2T_N\), \(H_1=\tfrac23\|v_0\|^2S_N\),
-\(N_0^2=S_N/T_N\asymp N\), \(u_N(0)=\tfrac23S_Nv_0\), and the
-Bernstein ratio is saturated two-sidedly:
-\(\tfrac23S_N\le\|u_N\|_\infty^2/\|\nabla u_N\|_2^2\le S_N\)
-(lower bound from the exact point value; upper bound from
-\(\|u\|_\infty\le\sum|\hat u_k|\le\sqrt{S_N}\,\|\nabla u\|_2\)),
-where \(S_N=\sum_{1\le|k|\le N}|k|^{-2}\asymp N\) (crude explicit
-constants proven; numerically \(4\pi N-8.7\pm0.9\)),
-\(T_N=\sum|k|^{-4}\nearrow T_\infty<\infty\).
+Since \(\chi\) vanishes on \([1,\infty)\), \(u_N\) is a finite
+trigonometric polynomial banded at \(|k|\le N\).
 
-**Hypothesis (L\*)** *(open; exactly certified at \(N\le8\), measured to
-\(N=32\); see the certificate appendix)*: there is \(c_0>0\) with
-\(\|\mathbb P(u_N\cdot\nabla u_N)\|_2^2\ge c_0N^3\) for all large \(N\).
+Then (proven, exact — Theorem 1.3 of the capacity document): \(u_N\) is
+real, zero-mean and exactly divergence-free, and with
+\[
+S_N^\chi=\sum_{k\neq0}\frac{\chi(|k|/N)^2}{|k|^2},\quad
+T_N^\chi=\sum_{k\neq0}\frac{\chi(|k|/N)^2}{|k|^4},\quad
+\Sigma_N^\chi=\sum_{k\neq0}\frac{\chi(|k|/N)}{|k|^2}
+\]
+(all finite sums) one has
+\[
+H_0=\tfrac23\|v_0\|^2T_N^\chi,\qquad
+H_1=\tfrac23\|v_0\|^2S_N^\chi,\qquad
+N_0^2=\frac{S_N^\chi}{T_N^\chi},\qquad
+u_N(0)=\tfrac23\Sigma_N^\chi v_0,
+\]
+with the Bernstein lower bound
+\(\|u_N\|_\infty^2/\|\nabla u_N\|_2^2\ge2(\Sigma_N^\chi)^2/(3S_N^\chi)\)
+(not used below), and the proven two-sided lattice bounds, for
+\(N\ge32\),
+\[
+\frac N{348}\le S_N^\chi\le128N,\qquad
+6\le T_N^\chi\le128,\qquad
+\frac N{44544}\le N_0^2(u_N)\le\frac{64}3N .
+\]
 
-**Proposition.** Assume (L\*). If \(\Phi\) is nondecreasing and
+**Capacity Theorem (proven; no hypothesis).** For every
+\(v_0\in\mathbb R^3\setminus\{0\}\) and every admissible \(\chi\) there
+exist \(c_0=c_0(\chi,v_0)>0\) and \(N_*=N_*(\chi,v_0)\) with
+\[
+\big\|\mathbb P(u_N\cdot\nabla u_N)\big\|_2^2\;\ge\;c_0N^3
+\qquad\text{for all }N\ge N_* .
+\]
+This is Theorem 7.1(3) of
+[lstar/lstar_proof_main.md](lstar/lstar_proof_main.md); the exponent
+\(3\) is the sharp one (Lemma 7 caps
+\(\|\mathbb P(u\cdot\nabla u)\|_2^2\le\|u\|_\infty^2H_1\asymp N^3\)).
+Its constants are **not effective** — see "Constant dependence".
+
+**Theorem O.** If \(\Phi:[0,\infty)\to(0,\infty)\) is nondecreasing and
 \(K(u)\le\Phi(\log N_0^2(u))\) for every zero-mean divergence-free real
-trigonometric field \(u\), then \(\Phi(s)\ge c\,e^{s}\) for all large
-\(s\), and hence \(\int^\infty ds/\Phi<\infty\): **no
+trigonometric field \(u\) on \(\mathbb T^3\), then \(\Phi(s)\ge c\,e^{s}\)
+for all large \(s\), and hence \(\int^\infty ds/\Phi<\infty\): **no
 Osgood-admissible \(\Phi\) satisfies a uniform pointwise bound** —
 clause (e) of the Main Theorem cannot be activated through the
 \(R\equiv0\) field-inequality route. (Solution-adapted remainders
-\(R(t)\) are not excluded by this proposition; see the audit §5.)
+\(R(t)\) are not excluded by Theorem O; see the audit §5.)
+
+**What remains open, and is no longer used.** The *sharply* truncated
+family \(\widehat u_N(k)=P_kv_0/|k|^2\) on \(1\le|k|\le N\) satisfies the
+same exact laws with \(S_N,T_N,\Sigma_N=S_N\) in place of
+\(S_N^\chi,T_N^\chi,\Sigma_N^\chi\), and saturates the Bernstein ratio
+two-sidedly, \(\tfrac23S_N\le\|u_N\|_\infty^2/\|\nabla u_N\|_2^2\le S_N\).
+The capacity bound \(\|\mathbb P(u_N\cdot\nabla u_N)\|_2^2\ge c_0N^3\)
+for *that* family — the paper's former **Hypothesis (L\*)** — is still
+**OPEN**. It is now **unused**: nothing in this paper depends on it.
+The obstruction is proven without it.
 
 ## Constant dependence
 
-All constants are explicit: (a)–(c) contain no constants beyond \(\nu\);
-(d) uses the mean-zero Sobolev constant \(C_S\) of
-\(H^1(\mathbb T^3)\hookrightarrow L^6\); the Proposition's constants are
-\(c_0\) (from L\*) and the crude proven lattice bounds
-\(N/250\le S_N\le432N\) (\(N\ge8\)) with dyadic gap bounds
-\(c_-\le s_{2N}-s_N\le c_+\) (numerically \(S_N=4\pi N-8.7\pm0.9\) and
-\(T_\infty=16.5323\ldots\); not used in proofs).
+Constants are explicit **except for \(c_0\) and \(N_*\) in Theorem O's
+Capacity Theorem, which are non-effective**. In detail:
+
+* (a)–(c) contain no constants beyond \(\nu\); (d) uses the mean-zero
+  Sobolev constant \(C_S\) of \(H^1(\mathbb T^3)\hookrightarrow L^6\).
+* Theorem O's lattice constants are explicit and proven:
+  \(N/348\le S_N^\chi\le128N\), \(6\le T_N^\chi\le128\),
+  \(N/44544\le N_0^2\le\tfrac{64}3N\) for \(N\ge32\), giving dyadic gaps
+  \(c_-\le s_{2^{20}N}-s_N\le c_+\) with \(c_-=\log(1048576/950272)
+  =0.0985\ldots\) and \(c_+=\log(2^{20}\cdot950272)=27.63\ldots\).
+  (The former sharp-family bounds \(N/250\le S_N\le432N\) for \(N\ge8\)
+  remain true but are superseded and unused.)
+* **Non-effective:** \(c_0\) and \(N_*\). The capacity proof obtains its
+  test field \(\Psi\in C^\infty_{c,\sigma}(\mathbb R^3)\) from the
+  *density* of \(C^\infty_{c,\sigma}\) in \(L^2_\sigma\) — a pure
+  existence argument — so neither \(\Psi\), nor its support radius, nor
+  \(I_\Psi=\int(V\cdot\nabla V)\cdot\Psi\), nor \(c_0\), nor \(N_*\) is
+  exhibited. Theorem O's own conclusion constant \(c\) inherits this.
+  An **effective** version would require: (i) an explicitly constructed
+  divergence-free \(\Psi\) with \(I_\Psi\neq0\) — available in principle,
+  since the non-vanishing is certified on the explicit set
+  \(\{0<|\zeta|<\pi^2/2048,\ |\zeta_3|\ge|\zeta|/2,\
+  |\zeta\times e_3|\ge|\zeta|/2\}\), but at a cost: Fourier support at
+  scale \(\approx4.8\times10^{-3}\) forces spatial radius
+  \(R\gtrsim10^3\), hence \(N_*\ge8R\gtrsim10^4\) and a \(c_0\) many
+  orders below the measured \(\approx8.4\|v_0\|^4\); and (ii) an explicit
+  lower bound on \(|I_\Psi|\) for that \(\Psi\), i.e. a quantitative form
+  of the non-degeneracy \(\mathbb P(V\cdot\nabla V)\not\equiv0\).
+  Neither is carried out.
+* Numerically (no proof claimed, used nowhere): \(S_N=4\pi N-8.7\pm0.9\)
+  and \(T_\infty=16.5323\ldots\) for the sharp family.
 
 ## What is not claimed
 
 Global regularity for all data; finite-time blow-up for some datum; any
 Clay statement. Clause (b) is a conditional criterion whose hypothesis
-is not verifiable a priori; the Proposition shows one specific
-(Osgood-type) route to verifying it is closed. Numerical values appear
-only in the certificate appendix and support only Hypothesis (L\*),
-never the Main Theorem.
+is not verifiable a priori; Theorem O shows one specific (Osgood-type)
+route to verifying it is closed. Numerical values appear only in the
+certificate appendix; they enter no proof — neither the Main Theorem nor
+Theorem O, both of which are now unconditional (modulo F1–F3).
+The honest headline is **"the static no-go is unconditional"**, *not*
+"(L\*) is proven": the paper's literal Hypothesis (L\*), for the sharply
+truncated family, remains open and is recorded as such above.

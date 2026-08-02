@@ -9,8 +9,9 @@
   (`docs/research_notes/verification_sprint_v1/spectral_front_final_theorem_and_nogo.md`
   → 査読後の正本は `docs/paper_lambda_dichotomy/`): 分類は
   THEOREM(恒等式 I.1–I.4・単調量 Λ・Osgood closure・動的恒等式・coherent
-  family 厳密法則)/ CONDITIONAL CRITERION(二分法)/ NO-GO(L* 条件付き
-  Osgood 不可能性)。「Clay proof candidate」表記は全て削除。
+  family 厳密法則)/ CONDITIONAL CRITERION(二分法)/ NO-GO(Osgood
+  不可能性 — **2026-08-02 に無条件化**、下記 capacity 項を参照)。
+  「Clay proof candidate」表記は全て削除。
 - **査読可能定理への圧縮**(`docs/paper_lambda_dichotomy/`:
   theorem_statement.md・complete_proof.md・dependency_and_gap_audit.md・
   paper_draft.tex): 主定理 1 本 — **帯域–散逸二分法+厳密作用表現**:
@@ -18,9 +19,25 @@
   \(\int KD<\infty\Rightarrow\) global、
   \(\int KD=\int\|\partial_tu\|^2/D+\nu^2\int N_1^2+\nu\log(D/D_0)\)
   (厳密恒等式)、AM–GM 片側判定
-  \(\int KD\le2\int(\|\partial_tu\|^2/D+\nu^2N_1^2)\)。条件付き命題:
-  L\*(coherent family の capacity 下界; N≤8 厳密認証・N≤32 float)を仮定
-  すると一様 pointwise Osgood majorant は指数級を強制され不可能。
+  \(\int KD\le2\int(\|\partial_tu\|^2/D+\nu^2N_1^2)\)。**無条件**の
+  静的 no-go(Theorem O): 一様 pointwise Osgood majorant は指数級を
+  強制され不可能。
+- **capacity 下界 L\* の解消(2026-08-02)**
+  (`docs/paper_lambda_dichotomy/lstar/lstar_proof_main.md`、敵対的査読
+  `lstar_referee.md` 判定 (i)): **滑らかに切断した** coherent family
+  \(\widehat u_N(k)=\chi(|k|/N)P_kv_0/|k|^2\) に対し
+  \(\|\mathbb P(u_N\cdot\nabla u_N)\|_2^2\ge c_0N^3\) を**証明**(指数は
+  鋭い \(3\)、admissible な \(\chi\) と \(v_0\in\mathbb R^3\setminus\{0\}\)
+  に一様)。no-go の仮説は**全ての**実・平均ゼロ・発散ゼロ三角多項式を
+  走るので、この一族一つで十分 — よって命題は**無条件**になった。
+  **正直な見出しは「命題が無条件になった」であって「L\* が証明された」
+  ではない**: 論文の文字通りの L\*(**鋭く**切断した族)は依然 **OPEN**
+  で、ただし**もはやどこにも使われない**。定数 \(c_0,N_*\) は
+  **非構成的**(試験場 \(\Psi\) が稠密性論法由来)。削除: 旧 Prop 3.4 /
+  式 (3.2)(Abel 正則化 Poisson 恒等式)は**偽**。ただし不活性で下流に
+  影響なし。付随して JOB A no-go(定数 sweeping split は \(N\) 止まり、
+  2 乗分不足)を証明済み負結果として、JOB B(\(N^2(\log N)^{1+\varepsilon}\)
+  への弱化)を証明済みだが moot として記録。
 - **敵対的査読 2 名 + gate 査読 1 名**(MAJOR-REVISIONS × 3、全 CRITICAL/
   MAJOR を修正適用済み): (1) 「作用と帯域作用の同値」は**偽**
   (減衰解 \(u=e^{-\nu t}(0,0,\cos x_1)\) が反例; \(\nu\log D\to-\infty\)
@@ -43,8 +60,11 @@
   対称性恒等式 \(H_0=\tfrac23\|v_0\|^2T_N\) 等は N=4,6,8 で**残差ちょうど 0**、
   K 厳密有理(0.7884…/1.4345…/2.0372…、float 一致 ≤1.3e-15)、
   **sweeping pairing 下界が \(\|\mathbb P(u\cdot\nabla u)\|\) の
-  91.18–92.10% を N 非依存に捕捉** — L\* は明示的格子三重和
-  \(Q(v_0)\ge cN^2\) 一つの評価に完全還元。
+  91.18–92.10% を N 非依存に捕捉**。これらは**鋭く**切断した族の数値で
+  あり、現在は**未使用の** L\*(sharp) を裏づける傍証にすぎない(削除せず
+  再ラベル)。当時記した還元「L\* は \(Q(v_0)\ge cN^2\) 一つの評価に帰着」
+  は**行き止まりと証明された**(定数 sweeping split の no-go, Theorem A)。
+  実際に効いたのは集中スケール \(\psi_N(x)=N^{3/2}\Psi(Nx)\) との双対性。
 
 最終更新(前回): 2026-08-02 Verification Sprint V1 (branch `fable5-mainline`)
 状態: **Clay 問題は未解決。V1 で discovery portfolio を検証・修正・棄却:
@@ -123,7 +143,10 @@ parametric Prop 1 は「forest だけでは偽・(H1)(H2)(H3) 下で全変調ク
   (coherent critical-spectrum 族 \(\widehat u=P_kv_0/|k|^2\))は
   \(K\approx0.4\,e^{z}\)(厳密有理 anchor が float と一致、Leray retention
   0.78–0.87、対照群は全て有界/減衰)で、**あらゆる** Osgood 許容 \(\Phi\) を
-  静的に殺す。動的脱出は厳密恒等式
+  静的に殺す。**(2026-08-02 更新: この静的 KILL は測定ではなく定理になった
+  — 滑らかに切断した族に対する capacity 下界 \(\ge c_0N^3\) の証明により、
+  Theorem O は無条件。上記の \(\widehat u=P_kv_0/|k|^2\) は鋭い切断の族で
+  あり、その capacity 下界は依然 OPEN だが未使用。)** 動的脱出は厳密恒等式
   \(\int KD\,dt=\int\|\partial_tu\|^2/D+\nu^2\!\int N_1^2+\nu\log(D/D_0)\)
   により \(\dot H^1\)-帯域作用 \(\int N_1^2\) の制御(=正則性問題そのもの)へ
   厳密に還元され閉鎖。moderate 振幅では大-K 配置が半 parabolic 窓で 34.6%

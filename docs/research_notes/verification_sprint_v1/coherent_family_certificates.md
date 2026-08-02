@@ -1,4 +1,18 @@
-# Coherent critical-spectrum family — exact certificates (appendix to Lemma L*)
+# Coherent critical-spectrum family — exact certificates (SHARP truncation)
+
+> **Re-label (2026-08-02).** These are certificates for the **sharply**
+> truncated family. They were the appendix to the then-open Lemma L\*.
+> The paper no longer uses that family or that hypothesis: the static
+> no-go is now **unconditional**, via a *proven* capacity bound
+> \(\|\mathbb P(u_N\cdot\nabla u_N)\|_2^2\ge c_0N^3\) for the **smoothly**
+> truncated family \(\chi(|k|/N)P_kv_0/|k|^2\)
+> (`docs/paper_lambda_dichotomy/lstar/lstar_proof_main.md`, Thm 7.1(3)).
+> The sharp family's capacity bound — the literal L\* — remains **OPEN**
+> and is **used by nothing**. Everything below is retained, unchanged and
+> still correct, as corroboration for that open statement. The smooth
+> family's own exact certificates are in
+> `docs/paper_lambda_dichotomy/lstar/lstar_numerical_support.md` and
+> `outputs/lstar/smooth_family_capacity.json`.
 
 Family (unchanged; `experiments/run_osgood_gate.py::coherent_field`):
 \(\widehat u(k)=P_kv_0/|k|^2\) on \(1\le|k|\le N\), \(v_0=(1,2,3)\),

@@ -30,8 +30,9 @@ carries a pointer to this file as its final status.**
 | T3 | Osgood closure (product form, \(D=0\) safe) | **THEOREM** (conditional statement, fully proven) |
 | T4 | dynamic identity \(\int KD=\int\|\partial_tu\|_2^2/D+\nu^2\int N_1^2+\nu\log(D(T')/D(0))\) | **THEOREM** |
 | T5 | coherent-family exact laws: \(H_0=\tfrac23c_N^2\|v_0\|^2T_N\), \(H_1=\tfrac23c_N^2\|v_0\|^2S_N\), \(N_0^2=S_N/T_N\asymp N\), \(u_N(0)=\tfrac23c_NS_Nv_0\), \(\|u_N\|_\infty\asymp N\) | **THEOREM** |
-| L\* | capacity lower bound \(\|\mathbb P(u_N\cdot\nabla u_N)\|_2^2\ge c_0N^3\) | **OPEN**, with exact finite-\(N\) certificates and float continuation (§7) |
-| T6 | impossibility of pointwise Osgood closure (\(\Phi\) must be exponential-class; \(\int ds/\Phi<\infty\)) | **NO-GO, conditional on L\*** |
+| L\* | capacity lower bound \(\|\mathbb P(u_N\cdot\nabla u_N)\|_2^2\ge c_0N^3\), **smoothly** truncated family \(\chi(\lvert k\rvert/N)P_kv_0/\lvert k\rvert^2\) | **PROVEN** (2026-08-02), sharp exponent, uniform in \(\chi\) and \(v_0\) — `docs/paper_lambda_dichotomy/lstar/lstar_proof_main.md` Thm 7.1(3). Constants \(c_0,N_*\) non-effective |
+| L\*(sharp) | the same bound for the **sharply** truncated family \(P_kv_0/\lvert k\rvert^2\) on \(1\le\lvert k\rvert\le N\) | **OPEN — and no longer used by anything.** Exact finite-\(N\) certificates and float continuation (§6) |
+| T6 | impossibility of pointwise Osgood closure (\(\Phi\) must be exponential-class; \(\int ds/\Phi<\infty\)) | **NO-GO, UNCONDITIONAL** (superseded row; was "conditional on L\*") |
 | — | "Clay proof candidate" designation for this lane | **REMOVED** |
 
 Throughout: \(\mathbb T^3\), \(u=\sum_k\hat u_ke^{ik\cdot x}\), zero mean,
@@ -242,9 +243,30 @@ All identities of Theorem 5 are additionally machine-verified as exact
 `Fraction` equalities at \(N=4,6,8\)
 (`coherent_family_certificates.md`, certificate JSON with digest).
 
-## 6. L\* — the capacity lower bound (OPEN, certified finitely)
+## 6. L\* — the capacity lower bound (SUPERSEDED: now PROVEN for the smooth family)
 
-**Lemma L\* (statement; open).** There is \(c_0>0\) with
+> **Supersession notice (2026-08-02).** This section is retained as the
+> freeze-directive record of what was open at the time. It is **out of
+> date**. The capacity bound
+> \(\|\mathbb P(u_N\cdot\nabla u_N)\|_2^2\ge c_0N^3\) is now **PROVEN**,
+> with the sharp exponent \(3\), for the *smoothly* truncated family
+> \(\widehat u_N(k)=\chi(|k|/N)P_kv_0/|k|^2\), uniformly in the admissible
+> cutoff \(\chi\) and in \(v_0\in\mathbb R^3\setminus\{0\}\)
+> (`docs/paper_lambda_dichotomy/lstar/lstar_proof_main.md`, Theorem
+> 7.1(3); adversarially refereed, verdict (i)). The constants \(c_0\) and
+> \(N_*\) are **non-effective**. The route below — a rigorous asymptotic
+> lower bound on the explicit lattice triple sum, via a *constant*
+> sweeping vector — is not the route that worked, and is in fact now a
+> **proven dead end**: Theorem A of
+> `lstar/lstar_direct_route_and_weakening.md` §A shows every
+> constant-vector sweeping split, in any Hölder pairing and any constant
+> pairing direction, is capped at \(\gtrsim N\), two powers short. The
+> proof that works pairs against a *concentrated* divergence-free test
+> field \(\psi_N(x)=N^{3/2}\Psi(Nx)\) at the concentration scale.
+> The statement below, for the **sharply** truncated family, remains
+> **OPEN** — and is used by nothing.
+
+**Lemma L\* (statement; open for the sharp family).** There is \(c_0>0\) with
 \(\|\mathbb P(u_N\cdot\nabla u_N)\|_2^2\ge c_0N^3\) for all large \(N\)
 (equivalently \(K(u_N)\ge c_0'N_0^2\)).
 
@@ -266,9 +288,27 @@ asymptotic lower bound on that explicit lattice triple sum — a
 combinatorial estimate, deliberately **not** attempted here (freeze
 directive).
 
-## 7. T6 — impossibility of pointwise Osgood closure (NO-GO, conditional on L\*)
+## 7. T6 — impossibility of pointwise Osgood closure (NO-GO, now UNCONDITIONAL)
 
-**Theorem 6.** Assume L\*. Let \(\Phi\) be nondecreasing with
+> **Supersession notice (2026-08-02).** The hypothesis "Assume L\*" below
+> has been **discharged**. Theorem 6 is now unconditional: the capacity
+> bound holds for the smoothly truncated family (§6 notice), and the
+> hypothesis of Theorem 6 quantifies over *all* divergence-free zero-mean
+> real trigonometric fields, so one admissible family suffices. The
+> authoritative statement is Theorem O of
+> `docs/paper_lambda_dichotomy/theorem_statement.md`. Its constant \(c\)
+> is non-effective. The honest headline is **"the no-go is
+> unconditional"**, *not* "L\* is proven": the literal L\*, for the
+> sharply truncated family used below, is still open.
+>
+> Two further differences from the paper's current proof: it uses
+> \(2^{20}\)-adic rather than unit steps in \(N\) (the "asymptotically
+> dense \(s_N\)" step below is replaced by an explicit two-sided bound
+> \(N/44544\le N_0^2\le\tfrac{64}3N\), giving gaps in
+> \([0.0985,\,27.63]\)), and it uses the smooth family's exact laws.
+
+**Theorem 6 (as frozen; the hypothesis is now proven, see notice).**
+Assume L\*. Let \(\Phi\) be nondecreasing with
 \(K(u)\le\Phi(\log N_0^2(u))\) for every divergence-free zero-mean real
 trigonometric field \(u\). Then there are \(c,s_0>0\) with
 \(\Phi(s)\ge c\,e^{s}\) for all \(s\ge s_0\); consequently
@@ -289,10 +329,11 @@ ratios \(\to1\); \(S_{N+1}-S_N\asymp1\ll S_N\), \(T\) convergent). For
 Together with Theorem 4 (which reduces every dynamic-depletion escape to
 the supercritical \(\dot H^1\)-bandwidth action) and the defect analysis
 of the Osgood-gate note §4, this closes the Osgood route at every level
-at which it was proposed. The remaining logical gap of the no-go is
-exactly L\*; if L\* failed, the Osgood door would reopen only for the
-specific family (the gate's KILL would need a different maximiser), not
-for the dynamic identity, which is unconditional.
+at which it was proposed. ~~The remaining logical gap of the no-go is
+exactly L\*~~ — **there is no longer a logical gap**: the capacity bound
+is proven for the smooth family (§6 notice), so the no-go is
+unconditional. What remains open is only the *sharp*-family capacity
+bound, which nothing uses.
 
 ## 8. What the lane now is
 
@@ -303,7 +344,10 @@ for the dynamic identity, which is unconditional.
   family of critical-action regularity tests in this repository,
   equivalent by T4 to an a-priori bound on
   \(\int\|\partial_tu\|^2/D+\nu^2\int N_1^2\).
-- **NO-GO**: T6 (conditional on L\*): no Osgood upgrade of T2 exists.
+- **NO-GO**: T6, **unconditional** (since 2026-08-02; was "conditional on
+  L\*"): no Osgood upgrade of T2 exists. Its constants \(c_0,N_*\) are
+  non-effective. The sharp-family capacity bound (literal L\*) is still
+  open and is used by nothing.
 - **Not claimed**: any Clay statement, in either direction. The former
   "PROOF CANDIDATE" and "Clay proof candidate" designations are
   withdrawn; the lane is frozen as a diagnostic engine.
