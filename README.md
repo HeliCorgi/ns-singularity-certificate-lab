@@ -41,7 +41,7 @@ $$\mathcal{N}=-\mathbb{P}(u\cdot\nabla u),\qquad K=\frac{\lVert\mathcal{N}\rVert
 - **(a)** $\Lambda(t)=\log N_0^2(t)-\dfrac{1}{2\nu}\displaystyle\int_0^t K D\,ds$ is non-increasing on $[0,T_{\max})$, with an explicit nonnegative two-part defect.
 - **(b)** Either $\int_0^{T_{\max}}K D\,dt<\infty$ — and then $z$ is bounded, $u\in L^\infty(0,T_{\max};H^1)$ and $T_{\max}=\infty$ — or the integral diverges. In particular $T_{\max}<\infty$ forces divergence. *(No claim that divergence forces blow-up.)*
 - **(c)** Exact identity: $\displaystyle\int_0^{T'} K D\,dt=\int_0^{T'}\frac{\lVert\partial_t u\rVert_2^2}{D}\,dt+\nu^2\int_0^{T'}N_1^2\,dt+\nu\log\frac{D(T')}{D(0)}$, whence by AM–GM finiteness of the $\dot H^1$-bandwidth action implies globality. One-sided only: an explicit decaying solution kills the converse.
-- **(d)** $K D\le\lVert u\rVert_{L^\infty}^2$ and $K D\le C_S^2\lVert\nabla u\rVert_{L^3}^2$, so the criterion in (b) is at least as strong as the Serrin $(\infty,2)$ and the critical $L^3$ gradient actions.
+- **(d)** $K D\le\lVert u\rVert_{L^\infty}^2$ and $K D\le C_S^2\lVert\nabla u\rVert_{L^3}^2$, so the criterion in (b) is implied by the Serrin $(\infty,2)$ and the critical $L^3$ gradient actions. It is **not** claimed to be new or best: the paper's bibliography records that Cheskidov–Shvydkoy already give a wavenumber criterion provably weaker than *every* Ladyzhenskaya–Prodi–Serrin condition, that $N_0$ and $N_1$ are the classical Taylor-microscale inverse lengths, and that $K$ measures the known "nonlinear depletion".
 - **(e)** Any majorant $K D\le\Phi(z)D+R$ with $\Phi$ nondecreasing, $\int^\infty ds/\Phi=\infty$ and $\int_0^{T_{\max}}R\,dt<\infty$ puts the solution in the global case of (b).
 
 **Theorem (obstruction).** Let $\Phi$ be nondecreasing with
@@ -50,10 +50,12 @@ trigonometric field $u$. Then $\Phi(s)\ge c\,e^{s}$ for all large $s$, so
 $\int^\infty ds/\Phi<\infty$: **no Osgood-admissible $\Phi$ exists**, and the
 remainder-free route into (e) is closed. The proof exhibits one explicit
 family — the coherent critical-spectrum field
-$\hat u_N(k)=\chi(|k|/N)\,P_k v_0/|k|^2$ with a smooth cutoff $\chi$ — for
-which $\lVert\mathbb{P}(u_N\cdot\nabla u_N)\rVert_2^2\gtrsim N^3$, uniformly in
-$\chi$ and $v_0$. Solution-adapted remainders $R(t)$ are **not** excluded, and
-the constant is non-effective.
+$\hat u_N(k)=\chi(|k|/N)\,P_k v_0/|k|^2$ — for which
+$\lVert\mathbb{P}(u_N\cdot\nabla u_N)\rVert_2^2\ge c_0N^3$ holds for **every**
+admissible cutoff profile $\chi$ and **every** nonzero seed vector $v_0$, with
+$c_0=c_0(\chi,v_0)$ and the threshold $N\ge N_*(\chi,v_0)$; the constants are
+not uniform in $(\chi,v_0)$, and they are non-effective. Solution-adapted
+remainders $R(t)$ are **not** excluded.
 
 ## Proven / conditional / rejected
 
@@ -208,6 +210,9 @@ Lean kernel のみで検査され、`sorry` / `admit` / project 固有 axiom を
 | 仮定放電の形 | `cond_to_uncond` | [ChainAnalysis.lean](formal/NSSingularity/ChainAnalysis.lean) | 条件付き結論と仮定から結論が従う(**公理非依存**) | 仮定の実例は Lean 側に一切ない |
 | $L^3$ 生成・純粋旋回 no-go | `pure_swirl_equality_case`, `viscous_contribution_nonpos`, `transport_eq_one_third_deriv` | [L3Generation.lean](formal/NSSingularity/L3Generation.lean) | 生成恒等式の点ごとの代数、粘性寄与の符号、等号ケース | $\mathbb{R}^3$ 上の積分論(部分積分)は含まない |
 | Green / スケーリング / 証明書層 | `greenProfile_radial_laplace_eq_zero`, `physicalTime_lt_blowupTime`, `velocity_radial_error_le` | [GreenAndCascade.lean](formal/NSSingularity/GreenAndCascade.lean), [FiniteTime.lean](formal/NSSingularity/FiniteTime.lean), [CertificateLayer.lean](formal/NSSingularity/CertificateLayer.lean) | 各層の有限不等式・恒等式 | 詳細な限界は登録簿の各項目 |
+| 主定理の front 恒等式 (I.1)–(I.4) | `log_bandwidth_derivative_identity`, `covariance_sq_le_variance_mul_action`, `log_bandwidth_derivative_le`, `spectral_front_defect_decomposition` | [SpectralFrontIdentities.lean](formal/NSSingularity/SpectralFrontIdentities.lean) | 有限和の実代数のみ: 中心化分散恒等式、モードごと Cauchy–Schwarz からの共分散上界、平方完成による $G/(2\nu H_1)$ 上界、非負2部分への欠損分解 | **時間積分を含まない。** $\Lambda$ の単調性(主定理の看板)は微分不等式の時間積分を要し、それは形式化していない。$\dot H_0,\dot H_1$ は導関数ではなく ledger 関係式で拘束された実数 |
+| Lemma K の有限核 | `sq_sum_abs_le_sum_inv_mul_sum_mul_sq`, `lemmaK_bound` | [SpectralFrontIdentities.lean](formal/NSSingularity/SpectralFrontIdentities.lean) | 重み付き Cauchy–Schwarz $(\sum\lvert c\rvert)^2\le(\sum x^{-1})(\sum xc^2)$ と、それを front 波数の上界へ包む有限代数 | sup ノルム評価と双線形評価は**名前つき仮説**として露出(公理化していない)。候補文書側の命題であり、論文の補題ではない |
+| 帯対称性補題 | `sum_offDiagonal_12_eq_zero`, `sum_sq_fst_eq_sum_sq_snd`, `three_mul_sum_sq_fst_eq_sum_normSq`, `band_symmetry` | [BandSymmetry.lean](formal/NSSingularity/BandSymmetry.lean) | 符号反転の対合で非対角和が消え、座標置換で対角和が一致し、$3\sum k_1^2w=\sum\lvert k\rvert^2w$ | 有限対称集合上の和についての言明。格子点の漸近評価は一切含まない |
 
 ### B. Certificate-verified results
 
@@ -376,9 +381,11 @@ PowerShell では仮想環境の有効化のみ次に置き換えてください
 
 テスト件数や Lean の job 数は開発とともに変動するため、本 README には固定値を
 書きません。**CI([.github/workflows/tests.yml](.github/workflows/tests.yml))が
-毎 push で再実行するのは Python 側(全テストと証明書リプレイ)のみで、
+再実行するのは Python 側(全テストと証明書リプレイ)のみで、
 Lean の build と公理監査は CI に含まれていません** — 上記のコマンドで
-手元で実行してください。
+手元で実行してください。CI は `main` とタグへの push、および全 pull request で
+走ります(作業ブランチへの push で二重に起動しないようにするためで、
+検証範囲は PR 側で確保されます)。
 
 ### Full certificate replay
 
@@ -474,9 +481,10 @@ Lean 側の監査は `lake env lean AxiomAudit.lean`(主要定理の `#print axi
 
 ### Reproducibility and audit infrastructure
 
-- 全実験が config 固定・seed 固定・sha256 付き。**CI が毎 push で再実行するのは
+- 全実験が config 固定・seed 固定・sha256 付き。**CI が再実行するのは
   全テストと 9 本のリプレイのみ**で、Track P chain / $n=3$ / 再発行(各 約 2 時間)と
-  Hou 実行は CI 対象外です。
+  Hou 実行は CI 対象外です。テストとリプレイは並列の2ジョブに分かれています
+  (最長工程は Gate 7 の約 12 分半)。
 - 数値観測と証明を混同しないための STATUS / 証明義務台帳 / 登録簿の分離。
 - README 自体の整合性を CI が検査([tests/test_readme_claims.py](tests/test_readme_claims.py))。
 

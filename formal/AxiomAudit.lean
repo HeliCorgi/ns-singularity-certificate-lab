@@ -19,6 +19,8 @@ import NSSingularity.GalerkinPicard
 import NSSingularity.KatoConstant
 import NSSingularity.ChainAnalysis
 import NSSingularity.MesoscopicDuhamelNoGo
+import NSSingularity.SpectralFrontIdentities
+import NSSingularity.BandSymmetry
 
 /-!
 # Axiom audit (P0 Lean gate)
@@ -275,3 +277,60 @@ open NSSingularity
 #print axioms NSSingularity.finiteEffectiveModeCount_nonneg
 #print axioms NSSingularity.finiteEffectiveModeCount_le_card
 #print axioms NSSingularity.emptyChild_duhamel_ratio_sq_le_card
+
+-- Spectral-front identities, S1-S2: the centred variance and covariance forms.
+-- Finite-sum algebra only; no derivative and no PDE occurs in the module.
+#print axioms NSSingularity.sum_centred_sq_eq
+#print axioms NSSingularity.centred_variance_eq_moment_ratio
+#print axioms NSSingularity.moment_gram_eq_sq_mul_variance
+#print axioms NSSingularity.variance_nonneg
+#print axioms NSSingularity.centred_covariance_eq
+
+-- S3, identity (I.1): the logarithmic bandwidth derivative identity, in the
+-- general form and in the energy-neutral (T0 = 0) form.  `Hd0` and `Hd1` are
+-- plain reals constrained by the two named ledger hypotheses.
+#print axioms NSSingularity.log_bandwidth_derivative_identity
+#print axioms NSSingularity.log_bandwidth_derivative_identity_of_energyNeutral
+
+-- S4-S5, identity (I.2): the modal Cauchy--Schwarz bound, squared and
+-- un-squared.  The modal input `alpha^2 <= eps * eta` is a hypothesis.
+#print axioms NSSingularity.sq_sum_centred_pairing_le
+#print axioms NSSingularity.covariance_sq_le_variance_mul_action
+#print axioms NSSingularity.abs_covariance_le_sqrt
+
+-- S6-S7, the square completion and identity (I.3).
+#print axioms NSSingularity.mul_sqrt_sub_mul_le
+#print axioms NSSingularity.log_bandwidth_derivative_le
+#print axioms NSSingularity.log_bandwidth_derivative_le_of_energyNeutral
+
+-- S8, identity (I.4): the exact two-part defect decomposition.
+#print axioms NSSingularity.spectral_front_gap_decomposition
+#print axioms NSSingularity.spectral_front_gapSC_nonneg
+#print axioms NSSingularity.spectral_front_gapCS_nonneg
+#print axioms NSSingularity.spectral_front_defect_decomposition
+
+-- S9, Lemma K: the finite core and the packaged bound.  `hsup` (Fourier
+-- inversion) and `hnl` (bilinear plus projection) are unformalised analytic
+-- inputs carried as hypotheses.
+#print axioms NSSingularity.sq_sum_abs_le_sum_inv_mul_sum_mul_sq
+#print axioms NSSingularity.lemmaK_bound
+
+-- S10, Lemma 9: band symmetry on a finite symmetric lattice set.  No
+-- lattice-point asymptotics are claimed.
+#print axioms NSSingularity.sum_comp_involution
+#print axioms NSSingularity.sum_eq_zero_of_neg_involution
+#print axioms NSSingularity.flipFst_flipFst
+#print axioms NSSingularity.flipSnd_flipSnd
+#print axioms NSSingularity.swapFstSnd_swapFstSnd
+#print axioms NSSingularity.swapFstThd_swapFstThd
+#print axioms NSSingularity.radial_flipFst
+#print axioms NSSingularity.radial_flipSnd
+#print axioms NSSingularity.radial_swapFstSnd
+#print axioms NSSingularity.radial_swapFstThd
+#print axioms NSSingularity.sum_offDiagonal_12_eq_zero
+#print axioms NSSingularity.sum_offDiagonal_13_eq_zero
+#print axioms NSSingularity.sum_offDiagonal_23_eq_zero
+#print axioms NSSingularity.sum_sq_fst_eq_sum_sq_snd
+#print axioms NSSingularity.sum_sq_fst_eq_sum_sq_thd
+#print axioms NSSingularity.three_mul_sum_sq_fst_eq_sum_normSq
+#print axioms NSSingularity.band_symmetry

@@ -224,9 +224,16 @@ literal Hypothesis (L\*) — remains open and is no longer used; see the*
 [audit](dependency_and_gap_audit.md) *§3 and §5.*
 
 **The family.** Call \(\chi\) **admissible** if
-\(\chi\in C^\infty([0,\infty);[0,1])\), \(\chi\equiv1\) on
+\(\chi\in C^4([0,\infty);[0,1])\), \(\chi\equiv1\) on
 \([0,\tfrac12]\) and \(\operatorname{supp}\chi\subset[0,1]\) (no
-monotonicity assumed). For \(v_0\in\mathbb R^3\setminus\{0\}\), an
+monotonicity assumed). *(The load-bearing minimum is \(C^1\), indeed
+Lipschitz: only \(\chi'\) is used quantitatively, through
+\(c_\chi=1+\|\chi'\|_{L^\infty}\) in the Riemann-sum rate. Orders
+\(2,3,4\) enter only the far-field expansion
+\(V=\pi^2W+O(|y|^{-4})\), which no proof consumes; the non-degeneracy
+uses no derivative of \(\chi\) at all. \(C^4\) is stated so that the
+exact-rational certificate cutoff below is admissible. No step
+requires \(\chi\in C^\infty\).)* For \(v_0\in\mathbb R^3\setminus\{0\}\), an
 admissible \(\chi\) and an integer \(N\ge2\), set
 \[
 \widehat u_N(k)=\chi\!\Big(\frac{|k|}N\Big)\frac{P_kv_0}{|k|^2}\ (k\neq0),
@@ -355,7 +362,13 @@ exist \(c_0=c_0(\chi,v_0)>0\) and \(N_*=N_*(\chi,v_0)\) such that
 \big\|\mathbb P(u_N\cdot\nabla u_N)\big\|_{L^2(\mathbb T^3)}^2
 \;\ge\;c_0N^3\qquad\text{for all }N\ge N_* .
 \]
-That is exactly and only what is used below. For orientation, its proof
+That is exactly and only what is used below. **Quantifiers.** The
+bound holds *for every* admissible cutoff profile \(\chi\) and *every*
+nonzero seed vector \(v_0\); the constants \(c_0=c_0(\chi,v_0)\) and
+\(N_*=N_*(\chi,v_0)\) depend on that pair and are **not uniform** in
+it (nor effective). What *is* uniform in \((\chi,v_0)\) is the
+qualitative non-degeneracy \(\mathbb P(V\cdot\nabla V)\not\equiv0\).
+For orientation, its proof
 runs: \(\widehat u_N(k)=N^{-2}F(k/N)\) exactly, with
 \(F(\xi)=\chi(|\xi|)P_\xi v_0/|\xi|^2\) (Theorem 3.2 there); an exact
 lattice-Riemann identity \(u_N(y/N)=N(V+E_N)\),
@@ -439,17 +452,15 @@ Seed \(v_0=(1,2,3)\), \(\|v_0\|^2=14\); weight
 \(S\) the degree-9 smoothstep
 \(126s^5-420s^6+540s^7-315s^8+70s^9\).
 
-*Caveat, stated rather than hidden:* this \(\chi\) is a polynomial in
-\(r^2\) — which is exactly what makes the whole family **exactly
-rational** on the lattice — and is \(C^4\), not \(C^\infty\). Admissibility
-as defined above asks for \(C^\infty\). The proof uses smoothness of
-\(\chi\) at only one point (the constant \(c_\chi=1+\|\chi'\|_\infty\) in
-the Riemann-sum rate, Theorem 4.2 of the capacity document), so a \(C^1\)
-cutoff suffices there and this \(\chi\) is admissible for that argument;
-but as the class is currently written, the exact-rational lanes below are
-evidence for the \(C^p\) variant of the statement, not literally for the
-\(C^\infty\) one. Degree-\((2p+1)\) smoothsteps give rational \(\chi\in C^p\)
-for every \(p\).
+This \(\chi\) is a polynomial in \(r^2\) — which is exactly what makes
+the whole family **exactly rational** on the lattice — and lies in
+\(C^4\setminus C^5\), with \(0\le\chi\le1\), \(\chi\equiv1\) on
+\([0,\tfrac12]\), \(\operatorname{supp}\chi=[0,1]\) and
+\(\|\chi'\|_\infty=5.2167\ldots\). It is therefore **admissible** as
+defined above, so the exact-rational lanes certify the family the
+Capacity Theorem literally covers. Degree-\((2p+1)\) smoothsteps give
+rational \(\chi\in C^p\) for every \(p\), should a stronger class ever
+be wanted.
 
 Exact moment laws (`fractions.Fraction`, no rounding): the residuals of
 \(H_0=\tfrac23\|v_0\|^2T_N^\chi\), \(H_1=\tfrac23\|v_0\|^2S_N^\chi\) and

@@ -1,15 +1,39 @@
 name: tests
 
+# Trigger policy.  A branch with an open pull request used to fire this
+# workflow twice for one commit — once for `push`, once for `pull_request` —
+# and with a two-version matrix that meant four jobs of roughly half an hour
+# each per commit, testing the same content.  Pushes are therefore restricted
+# to the branches that are not otherwise covered: `main`, which has no pull
+# request of its own, and tags.  Every other branch is verified through its
+# pull request, and `workflow_dispatch` remains for a branch without one.
 on:
   push:
+    branches: [main]
+    tags: ["v*"]
   pull_request:
   workflow_dispatch:
+
+# Superseded runs are cancelled so that a burst of commits does not leave a
+# queue of obsolete half-hour jobs competing for runners with the one that
+# matters.  Runs on `main` and on tags are never cancelled: those are the
+# records, not previews.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: >-
+    ${{ github.ref != 'refs/heads/main'
+        && !startsWith(github.ref, 'refs/tags/') }}
 
 permissions:
   contents: read
 
 jobs:
+  # The suite and the replays are independent — no replay consumes a test
+  # artifact and no test consumes a replay output — so they run as two jobs in
+  # parallel rather than as one serial job.  Wall-clock for a commit drops from
+  # about thirty-two minutes to about twenty, the length of the longer half.
   numerical-foundation:
+    name: test suite
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -38,6 +62,29 @@ jobs:
 
       - name: Run all tests
         run: python -m pytest
+
+  certificate-replays:
+    name: certificate replays
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install minimal dependencies
+        run: python -m pip install -e ".[dev]"
 
       - name: Replay manufactured audit
         run: >-
@@ -81,6 +128,8 @@ jobs:
           --config configs/whole_space_gate6.json
           --output-dir outputs/ci-whole-space-gate6
 
+      # The longest step in the workflow: about twelve and a half minutes.
+      # It is not stuck; it is the tau-continuation sweep.
       - name: Replay whole-space Gate 7
         run: >-
           python -m experiments.run_tau_continuation

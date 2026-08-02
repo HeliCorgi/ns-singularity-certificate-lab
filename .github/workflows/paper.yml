@@ -35,8 +35,20 @@ jobs:
       - name: Compile the paper
         working-directory: docs/paper_lambda_dichotomy
         run: |
+          # Three passes: the appendix moves labels between the first two, so a
+          # second pass resolves the references but still leaves a rerun
+          # advisory; the third settles page numbers and hyperref anchors.
           pdflatex -interaction=nonstopmode -halt-on-error paper_draft.tex
           pdflatex -interaction=nonstopmode -halt-on-error paper_draft.tex
+          pdflatex -interaction=nonstopmode -halt-on-error paper_draft.tex
+          if grep -q "Rerun to get cross-references right" paper_draft.log; then
+            echo "::error::cross-references still unstable after three passes"
+            exit 1
+          fi
+          if grep -qE "LaTeX Warning: (Reference|Citation) .* undefined" paper_draft.log; then
+            echo "::error::undefined reference or citation in the final pass"
+            exit 1
+          fi
 
       - name: Upload the PDF
         uses: actions/upload-artifact@v4

@@ -1,0 +1,1458 @@
+%% capacity_appendix.tex
+%% Self-contained appendix: complete proof of the capacity theorem.
+%% This is a FRAGMENT: no preamble, no document environment.
+%% Requires: amsmath, amssymb, amsthm; theorem environments
+%%   theorem, lemma, proposition, remark, definition;
+%%   the paper macros T, R, Z, PP.  (NN and Cov are not used here.)
+%% Intended use:  \input{capacity_appendix}  inside the paper's \appendix.
+
+\section{Complete proof of the capacity bound (Theorem~\ref{capacity})}
+\label{app:capacity}
+
+This appendix proves Theorem~\ref{capacity} in full. Nothing below is
+quoted from elsewhere except four classical facts, each isolated and
+labelled as such (Remarks~\ref{app:classical-riesz},
+\ref{app:classical-homog}, \ref{app:classical-density} and
+\ref{app:classical-leray}); no numerical statement is used anywhere.
+
+The chain is: the family $u_N$ has an exact scaling
+$\hat u_N(k)=N^{-2}F(k/N)$ (\S\ref{app:profile}), so that the lattice
+sums reconstructing $u_N$ near the origin are \emph{literally} Riemann
+sums, of spacing $1/N$, for the inverse Fourier transform $V$ of $F$
+(\S\ref{app:riemann}); pairing $\PP(u_N\cdot\nabla u_N)$ against a test
+field concentrated at scale $1/N$ therefore converts, with an explicit
+error, into the fixed continuum pairing
+$\int_{\R^3}(V\cdot\nabla V)\cdot\Psi$ times $N^{3/2}$
+(\S\ref{app:duality}); and that continuum pairing is nonzero for some
+$\Psi$ because $\PP_{\R^3}(V\cdot\nabla V)\not\equiv0$, which is the
+Fourier form of the elementary fact that the Oseen field is not a
+stationary Euler flow (\S\ref{app:nondeg}). The bookkeeping is assembled
+in \S\ref{app:final}.
+
+\subsection{Conventions}
+\label{app:conventions}
+
+On $\T^3=(\R/2\pi\Z)^3$ we use the normalised measure
+$d\mu=(2\pi)^{-3}dx$, so that for $u:\T^3\to\R^3$
+\[
+u(x)=\sum_{k\in\Z^3}\hat u(k)e^{ik\cdot x},\qquad
+\hat u(k)=\int_{\T^3}u(x)e^{-ik\cdot x}\,d\mu(x),
+\]
+\[
+\langle f,g\rangle=\int_{\T^3}f\cdot\bar g\,d\mu
+=\sum_{k\in\Z^3}\hat f(k)\cdot\overline{\hat g(k)},
+\qquad
+H_r(u)=\sum_{k\in\Z^3}|k|^{2r}|\hat u(k)|^2 .
+\]
+On $\R^3$ we use the forward transform and the inverse-transform
+bracket
+\[
+\mathcal F f(\zeta)=\int_{\R^3}f(y)e^{-i\zeta\cdot y}\,dy,
+\qquad
+\widetilde G(y)=\int_{\R^3}G(\xi)e^{i\xi\cdot y}\,d\xi ,
+\]
+so that $\mathcal F\widetilde G=(2\pi)^3G$ and
+$\|\widetilde G\|_{L^2(\R^3)}^2=(2\pi)^3\|G\|_{L^2(\R^3)}^2$.
+
+For $\xi\in\R^3\setminus\{0\}$ put
+$P_\xi=I-\dfrac{\xi\otimes\xi}{|\xi|^2}$. Thus $P_\xi$ is the orthogonal
+projection onto $\xi^\perp$: it is symmetric, idempotent, $P_\xi\xi=0$,
+$\|P_\xi\|\le1$, $P_{-\xi}=P_\xi$, it is homogeneous of degree $0$ and
+smooth on $\R^3\setminus\{0\}$, and consequently
+$P_{k}=P_{k/N}$ for every $k\neq0$ and every $N>0$. The Leray
+projection $\PP$ acts on $\T^3$ by
+$\widehat{\PP f}(k)=P_k\hat f(k)$ for $k\neq0$, leaving the mean
+untouched, and on $\R^3$ by the same symbol $P_\zeta$. On both
+$L^2(\T^3)$ and $L^2(\R^3)$, $\PP$ is an orthogonal projection, hence
+self-adjoint.
+
+Throughout, $\|v_0\|$ is the Euclidean norm of $v_0\in\R^3$, and
+$e_1,e_2,e_3$ is the standard basis. Repeated Latin indices are summed.
+One notational warning: in this appendix $V$ always denotes the
+continuum profile of Definition~\ref{app:Vdef}; the unrelated use of
+$V$ for the modal variance $\mathrm{Var}_p(|k|^2)$ in
+Theorem~\ref{main}(a) does not occur here.
+
+\subsection{The cutoff class, the family, and its exact laws}
+\label{app:laws}
+
+We restate the definitions of the main text for completeness.
+
+\begin{definition}[admissible cutoff; restatement of
+Definition~\ref{admissible}]\label{app:admissible}
+$\chi\in C^4([0,\infty);[0,1])$ with $\chi\equiv1$ on
+$[0,\tfrac12]$ and $\operatorname{supp}\chi\subset[0,1]$. No
+monotonicity is assumed --- it is used nowhere. Write
+$c_\chi:=1+\|\chi'\|_{L^\infty}\ (\ge1)$.
+\end{definition}
+
+Such $\chi$ exist in abundance. The standard mollifier construction
+gives a $C^\infty$ example, $\chi(t)=\Theta\big(2t-1\big)$ with
+$\Theta(s)=1$ for $s\le0$, $\Theta(s)=0$ for $s\ge1$ and
+$\Theta(s)=\frac{e^{-1/(1-s)}}{e^{-1/s}+e^{-1/(1-s)}}$ on $(0,1)$; the
+exactly rational cutoff of Appendix~\ref{app:certificates}, built from
+the degree-$9$ smoothstep, lies in $C^4\setminus C^5$ and is likewise
+admissible.
+
+\begin{remark}[what smoothness is actually used]\label{app:c1}
+Definition~\ref{app:admissible} is still stronger than the proof
+requires. The only place any derivative of $\chi$ is used
+load-bearingly is Theorem~\ref{app:rate}, and it enters solely through
+$c_\chi=1+\|\chi'\|_\infty$; Sections~\ref{app:duality} and
+\ref{app:nondeg} use only $0\le\chi\le1$, $\chi\equiv1$ on
+$[0,\tfrac12]$ and $\operatorname{supp}\chi\subset[0,1]$, and
+Sections~\ref{app:laws}, \ref{app:lattice}, \ref{app:profile} use no
+derivative of $\chi$ at all. Every statement of this appendix on which
+Theorem~\ref{app:main} depends therefore holds verbatim for
+$\chi\in C^1([0,\infty);[0,1])$ --- indeed for Lipschitz $\chi$ ---
+with those support properties. The four derivatives are demanded only
+so that Theorem~\ref{app:farfield} holds as stated with $M=4$; that
+theorem is consumed only by the inert Remark~\ref{app:noperiod}, and
+nothing in the proof of Theorem~\ref{app:main} uses it. In particular
+$V\in C^\infty$ (Theorem~\ref{app:Vprops}(3)) and the Paley--Wiener
+statement there are bought by the \emph{compact support} of $F$, not by
+smoothness of $\chi$, and are unaffected.
+\end{remark}
+
+\begin{definition}\label{app:family}
+Fix $v_0\in\R^3\setminus\{0\}$, an admissible $\chi$, and an integer
+$N\ge2$. Define $u_N=u_N^{\chi,v_0}$ on $\T^3$ by
+\begin{equation}\label{app:famdef}
+\hat u_N(k)=\chi\Big(\frac{|k|}{N}\Big)\frac{P_kv_0}{|k|^{2}}
+\quad(k\neq0),\qquad \hat u_N(0)=0 .
+\end{equation}
+\end{definition}
+
+Since $\hat u_N(k)=0$ for $|k|>N$, $u_N$ is a finite trigonometric
+polynomial banded at $|k|\le N$; its coefficients are real vectors and
+no integrality of $v_0$ is required.
+
+\begin{lemma}[basic structure]\label{app:structure}
+$u_N$ is real, zero-mean, exactly divergence-free, $C^\infty$, and
+$u_N\not\equiv0$.
+\end{lemma}
+
+\begin{proof}
+Zero mean is $\hat u_N(0)=0$. Reality: the coefficients are real
+vectors and $P_{-k}=P_k$, so
+$\hat u_N(-k)=\hat u_N(k)=\overline{\hat u_N(k)}$, which is exactly the
+reality condition $\hat u(-k)=\overline{\hat u(k)}$. Divergence-free:
+$\widehat{\nabla\cdot u_N}(k)=ik\cdot\hat u_N(k)$ and $k\cdot P_kv_0=0$
+for every $k\neq0$. Smoothness: a finite sum of exponentials. Finally,
+among $e_1,e_2,e_3$ at least two are not parallel to $v_0$; pick such a
+$k$ with $|k|=1$. Then $\chi(1/N)=1$ because $1/N\le\tfrac12$, and
+$P_kv_0\neq0$, so $\hat u_N(k)\neq0$.
+\end{proof}
+
+The exact laws rest on a band-symmetry identity which, because $\chi$ is
+not assumed monotone and the truncation is not a sharp ball, must be
+available for a \emph{general} radial weight, with no positivity
+assumption.
+
+\begin{lemma}[band symmetry, lattice, general radial weight]
+\label{app:bandsym}
+Let $f:\Z^3\setminus\{0\}\to\R$ be radial, i.e.\ $f(k)=\varphi(|k|^2)$
+for some $\varphi$, and suppose $\sum_{k\neq0}|k|^2|f(k)|<\infty$. Then
+for all $i,j$
+\[
+\sum_{k\neq0}k_ik_j\,f(k)
+=\delta_{ij}\,\frac13\sum_{k\neq0}|k|^2f(k).
+\]
+\end{lemma}
+
+\begin{proof}
+Absolute summability of $|k|^2f$ dominates every summand
+$|k_ik_jf(k)|\le|k|^2|f(k)|$, so all rearrangements below are
+legitimate. The index set $\Z^3\setminus\{0\}$ is invariant under each
+sign flip $\sigma_i:k_i\mapsto-k_i$ and under all coordinate
+permutations, and $f$, depending on $|k|^2$ only, is invariant under
+both. For $i\neq j$ the bijection $\sigma_i$ negates the summand
+$k_ik_jf(k)$, so that sum equals its own negative and vanishes. For
+$i=j$, coordinate permutations carry the three sums $\sum_kk_i^2f(k)$
+into one another, so they are equal; their sum is $\sum_k|k|^2f(k)$.
+\end{proof}
+
+\begin{lemma}[band symmetry, continuum]\label{app:bandsymcont}
+Let $g:\R^3\to\R$ be radial with $\int_{\R^3}|\xi|^2|g(\xi)|\,d\xi<\infty$.
+Then $\int\xi_i\xi_jg\,d\xi=\delta_{ij}\frac13\int|\xi|^2g\,d\xi$.
+\end{lemma}
+
+\begin{proof}
+Identical: Lebesgue measure on $\R^3$ and $g$ are both invariant under
+sign flips and permutations of the coordinates, and the hypothesis
+dominates the integrand.
+\end{proof}
+
+\begin{theorem}[exact family laws]\label{app:exactlaws}
+Set
+\[
+S_N^\chi:=\sum_{k\neq0}\frac{\chi(|k|/N)^2}{|k|^2},\qquad
+T_N^\chi:=\sum_{k\neq0}\frac{\chi(|k|/N)^2}{|k|^4},\qquad
+\Sigma_N^\chi:=\sum_{k\neq0}\frac{\chi(|k|/N)}{|k|^2},
+\]
+all three finite sums. Then
+\[
+H_0(u_N)=\tfrac23\|v_0\|^2\,T_N^\chi,\qquad
+H_1(u_N)=\tfrac23\|v_0\|^2\,S_N^\chi,\qquad
+N_0^2(u_N)=\frac{S_N^\chi}{T_N^\chi},\qquad
+u_N(0)=\tfrac23\,\Sigma_N^\chi\,v_0 ,
+\]
+and consequently
+$\|u_N\|_\infty^2/H_1(u_N)\ge 2(\Sigma_N^\chi)^2/(3S_N^\chi)$.
+\end{theorem}
+
+\begin{proof}
+Since $P_k$ is an orthogonal projection,
+$|P_kv_0|^2=\|v_0\|^2-(k\cdot v_0)^2/|k|^2$. Hence
+\[
+H_0=\sum_{k\neq0}\frac{\chi(|k|/N)^2}{|k|^4}\,|P_kv_0|^2
+=\|v_0\|^2\sum_{k\neq0}\frac{\chi^2}{|k|^4}
+-\sum_{k\neq0}\frac{\chi^2\,(k\cdot v_0)^2}{|k|^6}.
+\]
+Apply Lemma~\ref{app:bandsym} with the radial weight
+$f(k)=\chi(|k|/N)^2|k|^{-6}$ (a finite sum, so the hypothesis is
+trivially met):
+\[
+\sum_{k\neq0}\frac{\chi^2(k\cdot v_0)^2}{|k|^6}
+=v_{0i}v_{0j}\sum_{k\neq0}k_ik_jf(k)
+=\frac{\|v_0\|^2}{3}\sum_{k\neq0}\frac{\chi^2}{|k|^4}
+=\frac{\|v_0\|^2}{3}T_N^\chi .
+\]
+Therefore $H_0=\|v_0\|^2T_N^\chi-\frac13\|v_0\|^2T_N^\chi
+=\frac23\|v_0\|^2T_N^\chi$. The same computation with
+$f=\chi^2|k|^{-4}$ applied to
+$H_1=\sum_{k}|k|^2|\hat u_N(k)|^2$ gives
+$H_1=\frac23\|v_0\|^2S_N^\chi$, and $N_0^2=H_1/H_0$ follows. For the
+point value,
+\[
+u_N(0)=\sum_{k\neq0}\hat u_N(k)
+=v_0\,\Sigma_N^\chi-\sum_{k\neq0}\frac{\chi\,k\,(k\cdot v_0)}{|k|^4},
+\]
+and Lemma~\ref{app:bandsym} with $f=\chi|k|^{-4}$ turns the last sum
+into $\frac13v_0\Sigma_N^\chi$; hence
+$u_N(0)=\frac23\Sigma_N^\chi v_0$. Finally
+$\|u_N\|_\infty\ge|u_N(0)|=\frac23\Sigma_N^\chi\|v_0\|$, so
+$\|u_N\|_\infty^2/H_1\ge\frac49(\Sigma_N^\chi)^2\|v_0\|^2
+\big/\big(\frac23\|v_0\|^2S_N^\chi\big)
+=\frac23(\Sigma_N^\chi)^2/S_N^\chi$.
+\end{proof}
+
+\subsection{Two-sided lattice bounds for the bandwidth}
+\label{app:lattice}
+
+The constants below are crude and explicit; no sharpness is attempted.
+
+\begin{lemma}[dyadic shell count]\label{app:shell}
+For every integer $j\ge0$,
+$\#\{k\in\Z^3:2^j\le|k|<2^{j+1}\}\le64\cdot8^{j}$.
+\end{lemma}
+
+\begin{proof}
+Such $k$ satisfy $|k|_\infty\le|k|<2^{j+1}$, hence
+$|k_i|\le2^{j+1}-1$ for each $i$, so the count is at most
+$(2^{j+2}-1)^3<2^{3j+6}=64\cdot8^{j}$.
+\end{proof}
+
+\begin{lemma}[upper bounds]\label{app:upper}
+With $S_M:=\sum_{1\le|k|\le M}|k|^{-2}$ and
+$T_\infty:=\sum_{k\neq0}|k|^{-4}$ one has
+$S_M\le128M$ for every real $M\ge1$, and $T_\infty\le128$.
+\end{lemma}
+
+\begin{proof}
+Let $J=\lfloor\log_2M\rfloor$. Every $k$ with $1\le|k|\le M$ lies in a
+shell $2^j\le|k|<2^{j+1}$ with $0\le j\le J$, where $|k|^{-2}\le4^{-j}$.
+By Lemma~\ref{app:shell},
+$S_M\le\sum_{j=0}^{J}64\cdot8^{j}4^{-j}=64(2^{J+1}-1)<128\cdot2^{J}\le128M$.
+Similarly $T_\infty\le\sum_{j\ge0}64\cdot8^{j}16^{-j}=64\cdot2=128$.
+\end{proof}
+
+\begin{lemma}[lower bound]\label{app:lower}
+For every real $M\ge16$ one has $S_M\ge M/87$.
+\end{lemma}
+
+\begin{proof}
+Consider
+$\mathcal B:=\{k\in\Z^3:\ \tfrac{M}{2\sqrt3}<k_i\le\tfrac{M}{\sqrt3}\
+\text{for }i=1,2,3\}$. For $k\in\mathcal B$ we have
+$|k|^2\le3(M/\sqrt3)^2=M^2$ and $|k|^2>3M^2/12=M^2/4$, so every
+$k\in\mathcal B$ is counted in $S_M$ (in particular $k\neq0$) and
+contributes $|k|^{-2}\ge M^{-2}$. Each coordinate ranges over a
+half-open interval of length $M/(2\sqrt3)$, which contains at least
+$\frac{M}{2\sqrt3}-1$ integers; for $M\ge16$,
+$\frac{M}{2\sqrt3}-1\ge0.28868M-0.0625M\ge0.226M$. Hence
+$\#\mathcal B\ge(0.226M)^3>0.01154M^3$ and
+$S_M\ge0.01154M^3\cdot M^{-2}=0.01154M\ge M/87$.
+\end{proof}
+
+\begin{proposition}[two-sided bandwidth bounds]\label{app:twosided}
+For every admissible $\chi$, every $v_0\neq0$ and every integer
+$N\ge32$,
+\[
+\frac{N}{348}\ \le\ S_N^\chi\ \le\ 128N,\qquad
+6\ \le\ T_N^\chi\ \le\ 128,\qquad
+\frac{N}{44544}\ \le\ N_0^2(u_N)\ \le\ \frac{64}{3}N .
+\]
+\end{proposition}
+
+\begin{proof}
+Upper bounds: $0\le\chi\le1$ and $\chi(|k|/N)=0$ for $|k|>N$, so
+$S_N^\chi\le S_N\le128N$ and $T_N^\chi\le T_\infty\le128$ by
+Lemma~\ref{app:upper}. Lower bound for $T_N^\chi$: for $N\ge2$ one has
+$\chi(1/N)=1$, and the six lattice points with $|k|=1$ each contribute
+$1$, so $T_N^\chi\ge6$. Lower bound for $S_N^\chi$: $\chi(|k|/N)=1$
+whenever $|k|\le N/2$, hence $S_N^\chi\ge S_{N/2}$; for $N\ge32$ we have
+$N/2\ge16$, so Lemma~\ref{app:lower} gives
+$S_N^\chi\ge (N/2)/87\ge N/348$. Combining with
+$N_0^2=S_N^\chi/T_N^\chi$ (Theorem~\ref{app:exactlaws}) yields
+$N_0^2\ge\frac{N/348}{128}=\frac{N}{44544}$ and
+$N_0^2\le\frac{128N}{6}=\frac{64}{3}N$.
+\end{proof}
+
+\subsection{The profile $V$}
+\label{app:profile}
+
+\begin{definition}\label{app:Vdef}
+On $\R^3$ put
+\[
+h(\xi):=\frac{P_\xi v_0}{|\xi|^2}\quad(\xi\neq0),\qquad
+F(\xi):=\chi(|\xi|)\,h(\xi)\quad(\xi\neq0),\quad F(0):=0,
+\]
+\[
+V(y):=\widetilde F(y)=\int_{\R^3}F(\xi)e^{i\xi\cdot y}\,d\xi .
+\]
+\end{definition}
+
+Because $P_\xi$ is homogeneous of degree $0$ we have
+$P_{k/N}=P_k$ and therefore
+$F(k/N)=\chi(|k|/N)\,N^2P_kv_0/|k|^2$, i.e.\ the exact scaling identity
+\begin{equation}\label{app:scaling}
+\hat u_N(k)=N^{-2}F(k/N)\qquad\text{for every }k\in\Z^3
+\end{equation}
+(the case $k=0$ holds by the conventions $\hat u_N(0)=0=F(0)$).
+Identity~\eqref{app:scaling} is the engine of the whole argument: it
+says that the family is a single fixed continuum profile sampled on the
+lattice $N^{-1}\Z^3$.
+
+\begin{theorem}[elementary properties of $V$]\label{app:Vprops}
+\begin{enumerate}
+\item[(1)] $|F(\xi)|\le\|v_0\|\,|\xi|^{-2}\mathbf 1_{\{|\xi|\le1\}}$;
+hence $F\in L^1(\R^3)\cap L^p(\R^3)$ for every $p<3/2$, with
+$\|F\|_{L^1}\le4\pi\|v_0\|$.
+\item[(2)] $V$ is real, even, bounded and continuous, with
+$\|V\|_\infty\le4\pi\|v_0\|$.
+\item[(3)] $V\in C^\infty(\R^3)$, and for every multi-index $\beta$
+\[
+\partial^\beta V(y)=\int_{\R^3}(i\xi)^\beta F(\xi)e^{i\xi\cdot y}\,d\xi,
+\qquad
+\|\partial^\beta V\|_\infty\le\|v_0\|\int_{|\xi|\le1}|\xi|^{|\beta|-2}d\xi
+=\frac{4\pi\|v_0\|}{|\beta|+1} .
+\]
+In particular each $\|\partial_iV_j\|_\infty\le2\pi\|v_0\|$, so
+$\|\nabla V\|_\infty\le6\pi\|v_0\|$ for the Frobenius norm. Moreover $V$
+extends to an entire function on $\mathbb C^3$ of exponential type
+$\le1$.
+\item[(4)] $\nabla\cdot V\equiv0$ on $\R^3$.
+\item[(5)] $V(0)=\frac{8\pi}{3}\big(\int_0^\infty\chi(r)\,dr\big)v_0\neq0$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(1) $|P_\xi v_0|\le\|v_0\|$, $0\le\chi\le1$ and
+$\operatorname{supp}\chi\subset[0,1]$ give the pointwise bound;
+$\int_{|\xi|\le1}|\xi|^{-2}d\xi=4\pi\int_0^1dr=4\pi$, and
+$\int_{|\xi|\le1}|\xi|^{-2p}d\xi<\infty$ exactly when $2p<3$.
+
+(2) $F\in L^1$ gives, by dominated convergence, continuity of $V$ and
+$\|V\|_\infty\le\|F\|_{L^1}\le4\pi\|v_0\|$. $F$ is real-valued and even
+($P_{-\xi}=P_\xi$), so
+$V(y)=\int F(\xi)\cos(\xi\cdot y)\,d\xi$ is real and even.
+
+(3) By (1), $\xi^\beta F\in L^1$ for every $\beta$, since the exponent
+$|\beta|-2>-3$ is locally integrable in $\R^3$ and the support is
+bounded. Differentiation under the integral sign is then justified by
+dominated convergence, giving the displayed formula and, by (1) again,
+the bound
+$\|v_0\|\int_{|\xi|\le1}|\xi|^{|\beta|-2}d\xi
+=4\pi\|v_0\|\int_0^1r^{|\beta|}dr=4\pi\|v_0\|/(|\beta|+1)$. Since $F$
+is an $L^1$ function supported in $\{|\xi|\le1\}$, the integral
+$\int F(\xi)e^{i\xi\cdot y}d\xi$ converges for all complex $y$ and is
+entire in $y$, with $|V(y)|\le\|F\|_{L^1}e^{|\operatorname{Im}y|}$;
+this is exponential type $\le1$.
+
+(4) $\nabla\cdot V(y)=\int i\,\xi\cdot F(\xi)e^{i\xi\cdot y}d\xi$ and
+$\xi\cdot F(\xi)=\chi(|\xi|)\,\xi\cdot P_\xi v_0/|\xi|^2=0$ pointwise.
+
+(5) $V(0)=\int F
+=v_0\int\frac{\chi(|\xi|)}{|\xi|^2}d\xi
+-\int\frac{\chi(|\xi|)\,\xi\,(\xi\cdot v_0)}{|\xi|^4}d\xi$.
+Lemma~\ref{app:bandsymcont} with the radial
+$g(\xi)=\chi(|\xi|)|\xi|^{-4}$ (integrable against $|\xi|^2$ by (1))
+gives $\int\xi_i\xi_jg=\frac{\delta_{ij}}3\int|\xi|^2g
+=\frac{\delta_{ij}}3\int\chi(|\xi|)|\xi|^{-2}d\xi$, so the second
+integral equals $\frac13v_0\int\chi(|\xi|)|\xi|^{-2}d\xi$. Hence
+\[
+V(0)=\frac23v_0\int_{\R^3}\frac{\chi(|\xi|)}{|\xi|^2}\,d\xi
+=\frac23v_0\cdot4\pi\int_0^\infty\chi(r)\,dr
+=\frac{8\pi}{3}\Big(\int_0^\infty\chi\Big)v_0 ,
+\]
+and $\int_0^\infty\chi\ge\int_0^{1/2}1=\frac12>0$ because $\chi\ge0$ and
+$\chi\equiv1$ on $[0,\tfrac12]$.
+\end{proof}
+
+\begin{remark}[structural form]\label{app:oseenform}
+$F=P_\xi\big(v_0\chi(|\xi|)|\xi|^{-2}\big)$, so
+$V=\PP\big(v_0\,g_\chi\big)$ where $g_\chi$ is the inverse transform of
+the smoothed Newtonian symbol $\chi(|\cdot|)|\cdot|^{-2}$; solving
+$\Delta\phi=g_\chi$ with $\phi$ radial exhibits $V$ in the Oseen normal
+form $V(y)=a(r)v_0+b(r)(v_0\cdot\hat y)\hat y$ with
+$a=\phi''+\phi'/r$, $b=\phi'/r-\phi''$. This form is not used below; it
+explains why the far field of $V$ is exactly the Oseen profile
+(Theorem~\ref{app:farfield}).
+\end{remark}
+
+We record here the two classical transform facts used later.
+
+\begin{remark}[classical input: Riesz-potential transforms]
+\label{app:classical-riesz}
+For $0<\alpha<3$, and by analytic continuation for every $\alpha$ at
+which the Gamma factors have no pole, the homogeneous function
+$|y|^{-\alpha}$ on $\R^3$ is a tempered distribution whose Fourier
+transform is the homogeneous distribution
+\[
+\mathcal F\big[|y|^{-\alpha}\big](\zeta)=c_{3,\alpha}|\zeta|^{\alpha-3},
+\qquad
+c_{3,\alpha}=\frac{2^{3-\alpha}\pi^{3/2}\,\Gamma\!\big(\frac{3-\alpha}{2}\big)}
+{\Gamma\!\big(\frac{\alpha}{2}\big)} .
+\]
+See, e.g., \cite{SteinWeiss,GelfandShilov,Grafakos} (we give no section
+locators, not having verified them). We use
+$\Gamma(\tfrac12)=\sqrt\pi$, $\Gamma(-\tfrac12)=-2\sqrt\pi$,
+$\Gamma(-\tfrac32)=\tfrac43\sqrt\pi$, which give
+\[
+c_{3,-1}=-8\pi,\quad c_{3,1}=4\pi,\quad c_{3,2}=2\pi^2,\quad
+c_{3,4}=-\pi^2,\quad c_{3,6}=\tfrac{\pi^2}{12},
+\]
+together with the elementary rules
+$\mathcal F[y_ay_bf]=-\partial_a\partial_b\mathcal F[f]$ and
+$\mathcal F[y_ay_by_cy_df]=\partial_a\partial_b\partial_c\partial_d\mathcal F[f]$,
+valid for tempered $f$.
+\end{remark}
+
+\begin{remark}[classical input: products and convolutions of homogeneous
+distributions]\label{app:classical-homog}
+Let $A,B\in L^1_{\rm loc}(\R^3)$ be homogeneous of degrees $-a,-b$ with
+$0<a,b<3$ and $a+b<3$, and smooth away from the origin. Then $AB$ is
+locally integrable and homogeneous of degree $-(a+b)$, hence tempered;
+$\mathcal FA,\mathcal FB$ are locally integrable, homogeneous of degrees
+$a-3,b-3$ and smooth away from the origin; the convolution
+$\mathcal FA*\mathcal FB$ converges absolutely at every $\zeta\neq0$
+(because $(3-a)+(3-b)>3$) and defines a locally integrable homogeneous
+function of degree $3-a-b$; and the exchange formula
+\[
+\mathcal F[AB]=(2\pi)^{-3}\,\mathcal FA*\mathcal FB
+\]
+holds as tempered distributions. See, e.g.,
+\cite{GelfandShilov,Grafakos}. We use this only in
+Theorem~\ref{app:tauformula}, with $a=b=1$.
+\end{remark}
+
+\subsection{The far field, and why periodisation is unavailable}
+\label{app:farfield-sec}
+
+\begin{theorem}[far-field asymptotics]\label{app:farfield}
+Let
+\[
+W(y):=\frac{v_0}{|y|}+\frac{(v_0\cdot y)\,y}{|y|^3}\qquad(y\neq0).
+\]
+Then $\widetilde h=\pi^2W$ as tempered distributions, and
+\[
+V(y)=\pi^2W(y)+\rho(y),\qquad
+|\rho(y)|\le C_M(\chi,v_0)|y|^{-M}\quad\text{for }|y|\ge1
+\text{ and every }2\le M\le4 .
+\]
+(Four derivatives are all that Definition~\ref{app:admissible}
+supplies, and $M=4$ is all that Remark~\ref{app:noperiod} consumes; if
+$\chi\in C^m$ with $m\ge2$ the same proof gives every
+$2\le M\le m$.)
+\end{theorem}
+
+\begin{proof}
+\emph{(a) The identity $\widetilde h=\pi^2W$.} Let
+$\mathcal O_{ij}(y)=\frac1{8\pi}\big(\frac{\delta_{ij}}{|y|}
++\frac{y_iy_j}{|y|^3}\big)$ be the Oseen tensor, i.e.\ the fundamental
+solution of the steady Stokes system
+\cite{LadyzhenskayaBook,Galdi2011}, and
+$h_{ij}(\xi)=\frac{\delta_{ij}}{|\xi|^2}-\frac{\xi_i\xi_j}{|\xi|^4}$, so
+that $h_i=h_{ij}v_{0j}$. We verify $\mathcal F[\mathcal O_{ij}]=h_{ij}$
+from Remark~\ref{app:classical-riesz}. First,
+$\mathcal F[|y|^{-1}]=c_{3,1}|\zeta|^{-2}=4\pi|\zeta|^{-2}$, so
+$\mathcal F\big[\tfrac{\delta_{ij}}{8\pi|y|}\big]
+=\tfrac{\delta_{ij}}{2|\zeta|^{2}}$. Second, differentiating
+$\partial_i|y|=y_i/|y|$ once more gives the pointwise identity
+\[
+\partial_i\partial_j|y|=\frac{\delta_{ij}}{|y|}-\frac{y_iy_j}{|y|^3},
+\qquad\text{i.e.}\qquad
+\frac{y_iy_j}{|y|^3}=\frac{\delta_{ij}}{|y|}-\partial_i\partial_j|y| .
+\]
+With $\mathcal F[|y|]=c_{3,-1}|\zeta|^{-4}=-8\pi|\zeta|^{-4}$ we get
+$\mathcal F[\partial_i\partial_j|y|]
+=(i\zeta_i)(i\zeta_j)\mathcal F[|y|]=8\pi\zeta_i\zeta_j|\zeta|^{-4}$, hence
+\[
+\mathcal F\Big[\frac{y_iy_j}{|y|^3}\Big]
+=\frac{4\pi\delta_{ij}}{|\zeta|^2}-\frac{8\pi\zeta_i\zeta_j}{|\zeta|^4}.
+\]
+Therefore
+$\mathcal F[\mathcal O_{ij}]
+=\frac1{8\pi}\big(\frac{4\pi\delta_{ij}}{|\zeta|^2}
++\frac{4\pi\delta_{ij}}{|\zeta|^2}
+-\frac{8\pi\zeta_i\zeta_j}{|\zeta|^4}\big)
+=\frac{\delta_{ij}}{|\zeta|^2}-\frac{\zeta_i\zeta_j}{|\zeta|^4}=h_{ij}$.
+All these are identities between homogeneous tempered distributions;
+possible ambiguities are supported at the origin only and are excluded
+because both sides are homogeneous of degree $-2>-3$, hence locally
+integrable, with no room for a delta term. Fourier inversion
+($\mathcal F\widetilde G=(2\pi)^3G$) now gives
+$\widetilde h=(2\pi)^3\mathcal O\,v_0=\frac{(2\pi)^3}{8\pi}W=\pi^2W$,
+where we used $8\pi\,\mathcal O_{ij}v_{0j}=W_i$.
+
+\emph{(b) The remainder.} Write $G:=(1-\chi(|\cdot|))h$, so that
+$F-h=-G$ and $\rho:=-\widetilde G$. Then $G$ vanishes on
+$\{|\xi|<\tfrac12\}$ and is $C^4$ on all of $\R^3$; since $h$ is
+homogeneous of degree $-2$ and smooth off the origin, and
+$1-\chi(|\cdot|)$ is $C^4$ with its first four derivatives bounded, we
+get
+\[
+|\partial^\beta G(\xi)|\le C_\beta(\chi)\|v_0\|\,\langle\xi\rangle^{-2-|\beta|}
+\qquad(\xi\in\R^3,\ |\beta|\le4),
+\]
+which for $2\le|\beta|\le4$ places $\partial^\beta G$ in $L^1(\R^3)$
+(the exponent $2+|\beta|>3$). From
+the distributional identity
+$y^\beta\widetilde G=i^{|\beta|}\,\widetilde{\partial^\beta G}$, the
+right-hand side for $2\le|\beta|\le4$ is a bounded continuous function
+with supremum at most $\|\partial^\beta G\|_{L^1}$. Choosing
+$\beta=(M,0,0),(0,M,0),(0,0,M)$ for a given $2\le M\le4$ and using
+$|y|^M\le3^{M/2}\max_i|y_i|^M$ shows that $\widetilde G$ agrees on
+$\{|y|\ge1\}$ with a continuous function obeying
+$|\widetilde G(y)|\le C_M(\chi,v_0)|y|^{-M}$. Since
+$V=\widetilde F=\widetilde h-\widetilde G=\pi^2W+\rho$, the claim
+follows.
+\end{proof}
+
+Thus the decay of $V$ is \emph{exactly} $|y|^{-1}$, with a
+$\chi$-independent leading profile $\pi^2W$ satisfying
+\begin{equation}\label{app:Wpos}
+v_0\cdot W(y)=\frac{\|v_0\|^2}{|y|}+\frac{(v_0\cdot y)^2}{|y|^3}
+\ \ge\ \frac{\|v_0\|^2}{|y|}\ >\ 0 .
+\end{equation}
+
+\begin{remark}[the naive periodisation argument is unavailable]
+\label{app:noperiod}
+It is tempting to reconstruct $u_N$ from $V$ by Poisson summation,
+$u_N(x)\stackrel{?}{=}N\sum_{m\in\Z^3}V(N(x+2\pi m))$ with the $m\neq0$
+terms uniformly $O(1/N)$. \textbf{The naive absolutely convergent
+periodisation argument is unavailable}: the series of translates
+diverges, because $V$ decays only like $|y|^{-1}$ and its leading
+profile has a sign-definite spherical mean in the $v_0$ direction, so
+there is no cancellation to exploit and no absolute convergence to
+appeal to. Indeed, by Theorem~\ref{app:farfield} with $M=4$, for
+$m\neq0$ and $x\in[-\pi,\pi)^3$ one has $|N(x+2\pi m)|\ge N\pi\ge1$ and
+therefore, using \eqref{app:Wpos},
+\[
+v_0\cdot V\big(N(x+2\pi m)\big)
+\ \ge\ \frac{\pi^2\|v_0\|^2}{N|x+2\pi m|}
+-\frac{C_4\|v_0\|}{N^4|x+2\pi m|^4}.
+\]
+The shell $|m|_\infty=n$ contains $O(n^2)$ points with
+$|x+2\pi m|\asymp n$, so $\sum_{m\neq0}|x+2\pi m|^{-4}<\infty$ while
+$\sum_{m\neq0}|x+2\pi m|^{-1}=\infty$; hence
+$\sum_{m\neq0}v_0\cdot V(N(x+2\pi m))=+\infty$ for every $x$ and every
+$N$. The terms are moreover eventually positive, so the divergence is
+not of a kind that a regular linear summation method would remove: for
+$a_m\ge0$ with $\sum a_m=\infty$, monotone convergence gives
+$\lim_{\varepsilon\downarrow0}\sum_me^{-\varepsilon|m|}a_m=+\infty$, so
+Abel summation in particular does not converge here. We make no
+assertion beyond this, and none is needed: the point is only that the
+naive absolutely convergent periodisation argument is not available,
+because $V$ decays only like $|y|^{-1}$ with a non-oscillating leading
+profile whose spherical mean, $\tfrac43v_0/r$, is sign-definite in the
+$v_0$ direction. If a periodisation formula
+is wanted purely for orientation, the correct \emph{renormalised} one,
+\[
+u_N(x)=N\Big[V(Nx)+\sum_{m\neq0}\big(V(N(x+2\pi m))-V(2\pi Nm)\big)\Big]
++\text{const},
+\]
+does converge absolutely, the bracketed differences being $O(|m|^{-2})$
+by Theorem~\ref{app:farfield}. \textbf{Nothing in this appendix uses any
+periodisation identity}: \S\ref{app:riemann} replaces it by an exact
+lattice-Riemann-sum identity, which is elementary, quantitative, and
+additionally delivers the derivative statement. This remark, and with it
+Theorem~\ref{app:farfield}, is inert for the proof of
+Theorem~\ref{capacity}.
+\end{remark}
+
+\subsection{The inner rescaling: an exact lattice-Riemann identity with
+an explicit rate}
+\label{app:riemann}
+
+For $\Phi:\R^3\to\mathbb C^d$ put
+\[
+\mathcal R_N[\Phi]:=N^{-3}\sum_{k\in\Z^3}\Phi(k/N)
+-\int_{\R^3}\Phi(\xi)\,d\xi ,
+\]
+whenever both terms converge absolutely.
+
+\begin{lemma}[exact inner rescaling]\label{app:innerexact}
+For every $y\in\R^3$ and every integer $N\ge2$,
+\[
+u_N(y/N)=N\big(V(y)+E_N(y)\big),\qquad
+\partial_iu_{N,j}(y/N)=N^2\big(\partial_iV_j(y)+E'_{N,ij}(y)\big),
+\]
+where, with $\Phi_y(\xi):=F(\xi)e^{i\xi\cdot y}$ and
+$\Phi'_{y,ij}(\xi):=i\xi_iF_j(\xi)e^{i\xi\cdot y}$ (both set to $0$ at
+$\xi=0$),
+\[
+E_N(y)=\mathcal R_N[\Phi_y],\qquad
+E'_{N,ij}(y)=\mathcal R_N[\Phi'_{y,ij}] .
+\]
+These are identities, not approximations.
+\end{lemma}
+
+\begin{proof}
+Both series are finite (support $|k|\le N$) and both integrals converge
+absolutely by Theorem~\ref{app:Vprops}(1),(3). By \eqref{app:scaling},
+\[
+u_N(y/N)=\sum_{k\in\Z^3}\hat u_N(k)e^{i(k/N)\cdot y}
+=\sum_{k}N^{-2}F(k/N)e^{i(k/N)\cdot y}
+=N\cdot N^{-3}\sum_k\Phi_y(k/N),
+\]
+which equals $N\big(\int\Phi_y+\mathcal R_N[\Phi_y]\big)
+=N\big(V(y)+E_N(y)\big)$, using $V(y)=\int\Phi_y$
+(Definition~\ref{app:Vdef}) and $\Phi_y(0)=F(0)=0$. For the gradient,
+$\partial_iu_{N,j}(x)=\sum_kik_i\hat u_{N,j}(k)e^{ik\cdot x}$; at
+$x=y/N$ this is
+\[
+\sum_kiN^{-2}k_iF_j(k/N)e^{i(k/N)\cdot y}
+=N^{-1}\sum_ki(k_i/N)F_j(k/N)e^{i(k/N)\cdot y}
+=N^{2}\cdot N^{-3}\sum_k\Phi'_{y,ij}(k/N),
+\]
+and $\int\Phi'_{y,ij}=\partial_iV_j(y)$ by
+Theorem~\ref{app:Vprops}(3).
+\end{proof}
+
+Everything now rests on bounding a Riemann-sum defect for an explicit,
+compactly supported integrand with a single integrable algebraic
+singularity.
+
+\begin{theorem}[$C^1_{\rm loc}$ convergence with explicit rate]
+\label{app:rate}
+There is an absolute constant $A$ (the proof gives $A=3000$) such that
+for every real $R\ge1$ and every integer $N\ge8R$,
+\[
+\varepsilon_N:=\sup_{|y|\le R}|E_N(y)|
+\ \le\ A\,\|v_0\|\,\frac{c_\chi(1+\log_2N)+R}{N},
+\qquad
+\varepsilon'_N:=\sup_{|y|\le R}|E'_N(y)|
+\ \le\ A\,\|v_0\|\,\frac{c_\chi+R}{N} .
+\]
+In particular $\varepsilon_N+\varepsilon'_N=O(N^{-1}\log N)\to0$ as
+$N\to\infty$, for each fixed $R$.
+\end{theorem}
+
+\begin{proof}
+Partition $\R^3$ into the half-open cubes
+$Q_k=\frac kN+[0,\frac1N)^3$, $k\in\Z^3$, of side $1/N$, volume
+$N^{-3}$ and diameter $\sqrt3/N$. For any $\Phi$ for which both the sum
+and the integral converge absolutely,
+\begin{equation}\label{app:cellwise}
+\mathcal R_N[\Phi]=\sum_{k\in\Z^3}\int_{Q_k}
+\big[\Phi(k/N)-\Phi(\xi)\big]\,d\xi ,
+\end{equation}
+since $|Q_k|=N^{-3}$. Absolute convergence holds for
+$\Phi=\Phi_y$ and $\Phi=\Phi'_{y,ij}$: both are supported in
+$\{|\xi|\le1\}$ and dominated there by $\|v_0\||\xi|^{-2}$ respectively
+$\|v_0\||\xi|^{-1}$, which are integrable on $\R^3$; and the lattice
+sums are finite sums, bounded by
+$N^{-3}\sum_{0<|k|\le N}\|v_0\|N^{2}|k|^{-2}
+=\|v_0\|N^{-1}S_N\le128\|v_0\|$ and by
+$N^{-3}\sum_{0<|k|\le N}\|v_0\|N|k|^{-1}
+\le\|v_0\|N^{-2}\cdot N\,S_N\le128\|v_0\|$ respectively, using
+$|k|^{-1}\le N|k|^{-2}$ for $|k|\le N$ and Lemma~\ref{app:upper}.
+
+\emph{Pointwise bounds.} On $0<|\xi|\le1$ we have
+$|F(\xi)|\le\|v_0\||\xi|^{-2}$, and by the product rule applied to
+$F=\chi(|\xi|)|\xi|^{-2}P_\xi v_0$,
+\[
+|\nabla F(\xi)|\ \le\
+\underbrace{c_\chi\|v_0\||\xi|^{-2}}_{\nabla\chi(|\xi|)}
++\underbrace{2\|v_0\||\xi|^{-3}}_{\chi\,\nabla(|\xi|^{-2})}
++\underbrace{4\|v_0\||\xi|^{-3}}_{\chi|\xi|^{-2}\nabla(P_\xi v_0)}
+\ \le\ 7c_\chi\|v_0\|\,|\xi|^{-3},
+\]
+where we used $c_\chi\ge1$, $|\xi|\le1$, $|\nabla(|\xi|^{-2})|
+=2|\xi|^{-3}$, and, from
+$\partial_a\big(\xi_i\xi_j/|\xi|^2\big)
+=(\delta_{ai}\xi_j+\delta_{aj}\xi_i)/|\xi|^2
+-2\xi_i\xi_j\xi_a/|\xi|^4$, the honest bound
+$|\nabla(P_\xi v_0)|\le4\|v_0\|/|\xi|$. Consequently, for $|y|\le R$,
+\begin{equation}\label{app:phibounds}
+|\Phi_y|\le\frac{\|v_0\|}{|\xi|^{2}},\quad
+|\nabla\Phi_y|\le\frac{7c_\chi\|v_0\|}{|\xi|^{3}}+\frac{R\|v_0\|}{|\xi|^{2}},
+\qquad
+|\Phi'_y|\le\frac{\|v_0\|}{|\xi|},\quad
+|\nabla\Phi'_y|\le\frac{8c_\chi\|v_0\|}{|\xi|^{2}}+\frac{R\|v_0\|}{|\xi|} .
+\end{equation}
+(For the last one, $\nabla(i\xi_iF_je^{i\xi y})$ has the three terms
+$|F|\le\|v_0\||\xi|^{-2}$, $|\xi||\nabla F|\le7c_\chi\|v_0\||\xi|^{-2}$
+and $R|\xi||F|\le R\|v_0\||\xi|^{-1}$.)
+
+\emph{The core.} Let
+$\mathcal K_0:=\{k:\ Q_k\cap\{|\xi|\le4\sqrt3/N\}\neq\emptyset\}$. Any
+such $Q_k$ lies in $\{|\xi|\le5\sqrt3/N\}$ and has $|k|\le5\sqrt3<9$,
+i.e.\ $|k|\le8$. Note that $k=0$ is in the core, and that although
+$\Phi_y(0)=0$ by convention while $\int_{Q_0}\Phi_y\neq0$, both are
+bounded by the two terms below, so no separate treatment is needed. The
+core contributes to \eqref{app:cellwise} at most
+\[
+\int_{|\xi|\le5\sqrt3/N}|\Phi_y|\,d\xi
++N^{-3}\!\!\sum_{0<|k|\le8}\!|\Phi_y(k/N)|
+\ \le\ \|v_0\|\Big(\frac{4\pi\cdot5\sqrt3}{N}
++\frac1N\!\!\sum_{0<|k|\le8}\!\frac1{|k|^{2}}\Big)
+\ \le\ \frac{1133\,\|v_0\|}{N},
+\]
+using $\int_{|\xi|\le a}|\xi|^{-2}d\xi=4\pi a$, then
+$|\Phi_y(k/N)|\le\|v_0\|N^2|k|^{-2}$, and finally
+$\sum_{0<|k|\le8}|k|^{-2}\le S_8\le1024$ by Lemma~\ref{app:upper}
+($4\pi\cdot5\sqrt3\le109$, and $109+1024=1133$).
+
+\emph{Dyadic annuli.} Put $J:=\lfloor\log_2\big(N/(4\sqrt3)\big)\rfloor$,
+which is $\ge0$ because $N\ge8R\ge8>4\sqrt3$. Let $k\notin\mathcal K_0$
+and set $r_k:=\inf_{\xi\in \overline{Q_k}}|\xi|$, so $r_k>4\sqrt3/N>0$.
+If $r_k>1$ then $\Phi_y$ vanishes identically on $\overline{Q_k}$ and
+that cell contributes $0$; otherwise choose the unique integer $j(k)$
+with $2^{-j(k)-1}<r_k\le2^{-j(k)}$. Then $j(k)\ge0$, and
+$2^{-j(k)}\ge r_k>4\sqrt3/N$ forces $2^{j(k)}<N/(4\sqrt3)$, i.e.\
+$0\le j(k)\le J$; so the annuli
+$A_j:=\{2^{-j-1}<|\xi|\le2^{-j}\}$, $0\le j\le J$, together with the
+core, do cover $\operatorname{supp}\Phi_y$.
+
+Fix $j$ and consider the cells with $j(k)=j$. They are pairwise
+disjoint. Each satisfies $\overline{Q_k}\subset\{|\xi|\ge2^{-j-1}\}$ and
+$\overline{Q_k}\subset\{|\xi|\le r_k+\sqrt3/N\le\tfrac54 2^{-j}\}$,
+because $\sqrt3/N\le\tfrac14 2^{-j}$ (which follows from
+$2^{-j}\ge2^{-J}\ge4\sqrt3/N$). Hence all of them lie in the fixed
+annulus $B_j:=\{2^{-j-1}\le|\xi|\le\tfrac54 2^{-j}\}$, whose volume is
+$\frac{4\pi}3\big((\tfrac54)^3-(\tfrac12)^3\big)2^{-3j}\le9\cdot2^{-3j}$;
+therefore $\sum_{j(k)=j}|Q_k|\le9\cdot2^{-3j}$.
+
+Since $\overline{Q_k}$ is convex, avoids the origin, and $\Phi_y$ is
+$C^1$ there, the mean value inequality gives
+$\big|\int_{Q_k}[\Phi_y(k/N)-\Phi_y(\xi)]d\xi\big|
+\le\frac{\sqrt3}{N}\sup_{\overline{Q_k}}|\nabla\Phi_y|\cdot|Q_k|$. By
+\eqref{app:phibounds} and $|\xi|\ge2^{-j-1}$ on $\overline{Q_k}$,
+\[
+\sup_{\overline{Q_k}}|\nabla\Phi_y|
+\le 7c_\chi\|v_0\|2^{3(j+1)}+R\|v_0\|2^{2(j+1)}
+=56c_\chi\|v_0\|8^{j}+4R\|v_0\|4^{j}.
+\]
+Summing over the cells with $j(k)=j$,
+\[
+\sum_{j(k)=j}\Big|\int_{Q_k}[\Phi_y(k/N)-\Phi_y]\Big|
+\le\frac{\sqrt3}{N}\big(56c_\chi\|v_0\|8^{j}+4R\|v_0\|4^{j}\big)
+\cdot9\cdot2^{-3j}
+\le\frac{\|v_0\|}{N}\big(873\,c_\chi+63\,R\,2^{-j}\big).
+\]
+Summing over $0\le j\le J\le\log_2N$ and adding the core bound,
+\[
+|E_N(y)|\le\frac{\|v_0\|}{N}
+\Big(1133+873\,c_\chi(1+\log_2N)+126R\Big)
+\le\frac{3000\,\|v_0\|}{N}\big(c_\chi(1+\log_2N)+R\big),
+\]
+using $c_\chi\ge1$ and $1+\log_2N\ge1$. This is the first display.
+
+\emph{The gradient.} Repeat verbatim with $\Phi'_{y,ij}$. The core
+contributes at most
+\[
+\int_{|\xi|\le5\sqrt3/N}\frac{\|v_0\|}{|\xi|}\,d\xi
++N^{-3}\!\!\sum_{0<|k|\le8}\!\frac{\|v_0\|N}{|k|}
+=\|v_0\|\Big(\frac{2\pi\cdot75}{N^{2}}
++\frac1{N^{2}}\!\!\sum_{0<|k|\le8}\!\frac1{|k|}\Big)
+\le\frac{1816\,\|v_0\|}{N^{2}}\le\frac{1816\,\|v_0\|}{N},
+\]
+where $\int_{|\xi|\le a}|\xi|^{-1}d\xi=2\pi a^2$ and, by
+Lemma~\ref{app:shell},
+$\sum_{0<|k|\le8}|k|^{-1}\le\sum_{j=0}^{2}64\cdot8^{j}2^{-j}=1344$
+(and $2\pi\cdot75\le472$, $472+1344=1816$). On the annuli,
+$\sup_{\overline{Q_k}}|\nabla\Phi'_y|
+\le8c_\chi\|v_0\|2^{2(j+1)}+R\|v_0\|2^{j+1}
+=32c_\chi\|v_0\|4^{j}+2R\|v_0\|2^{j}$, so the level-$j$ contribution is
+at most
+\[
+\frac{\sqrt3}{N}\big(32c_\chi\|v_0\|4^{j}+2R\|v_0\|2^{j}\big)
+\cdot9\cdot2^{-3j}
+\le\frac{\|v_0\|}{N}\big(499\,c_\chi2^{-j}+32\,R\,4^{-j}\big),
+\]
+and now the geometric series converge \emph{without} a logarithm,
+summing over all $j\ge0$ to at most
+$\frac{\|v_0\|}{N}(998c_\chi+43R)$. Adding the core,
+$|E'_N(y)|\le\frac{\|v_0\|}{N}(1816+998c_\chi+43R)
+\le\frac{3000\|v_0\|}{N}(c_\chi+R)$. The absence of a logarithm is
+structural: the singularity of $\Phi'_y$ is only $|\xi|^{-1}$, the extra
+factor $\xi$ taming the origin. The derivative estimate is thus not a
+consequence of the $C^0$ one, but it is the easier of the two.
+\end{proof}
+
+\subsection{The concentrated test field and the duality lower bound}
+\label{app:duality}
+
+\begin{definition}\label{app:testfield}
+Let $\Psi\in C_c^\infty(\R^3;\R^3)$ be \emph{real}, with
+$\nabla\cdot\Psi=0$, $\operatorname{supp}\Psi\subset\{|y|\le R\}$ for
+some $R\ge1$, and $\Psi\not\equiv0$. For $N>R/\pi$ define on $\T^3$
+\[
+\psi_N(x):=N^{3/2}\sum_{m\in\Z^3}\Psi\big(N(x+2\pi m)\big).
+\]
+\end{definition}
+
+\begin{lemma}[properties of $\psi_N$]\label{app:psiprops}
+Let $N>R/\pi$. Then $\psi_N$ is a well-defined real $C^\infty$ vector
+field on $\T^3$; it is divergence-free and has zero mean; on the
+fundamental domain $[-\pi,\pi)^3$ exactly the term $m=0$ is nonzero, so
+$\operatorname{supp}\psi_N\subset\{|x|\le R/N\}$ there; and
+\[
+\|\psi_N\|_{L^2(\T^3)}=(2\pi)^{-3/2}\|\Psi\|_{L^2(\R^3)},
+\]
+which is independent of $N$.
+\end{lemma}
+
+\begin{proof}
+Local finiteness: $\Psi(N(x+2\pi m))\neq0$ forces
+$|x+2\pi m|\le R/N<\pi$; but for $x\in[-\pi,\pi)^3$ and $m\neq0$,
+$|x+2\pi m|\ge2\pi|m|_\infty-\pi\ge\pi$, a contradiction. Hence on a
+neighbourhood of any point the sum has at most one nonzero term, so
+$\psi_N$ is smooth, real, and $2\pi\Z^3$-periodic by construction.
+Divergence-free: locally
+$\nabla\cdot\psi_N(x)=N^{5/2}(\nabla\cdot\Psi)(N(x+2\pi m))=0$.
+Zero mean: with $d\mu=(2\pi)^{-3}dx$ and the substitution $y=Nx$,
+\[
+\int_{\T^3}\psi_N\,d\mu
+=(2\pi)^{-3}N^{3/2}\int_{\R^3}\Psi(Nx)\,dx
+=(2\pi)^{-3}N^{-3/2}\int_{\R^3}\Psi ,
+\]
+and $\int_{\R^3}\Psi_i=\int_{\R^3}\nabla\cdot(y_i\Psi)=0$ since
+$\nabla\cdot\Psi=0$ and $y_i\Psi\in C^\infty_c$. (No curl
+representation of $\Psi$ is needed: zero mean is automatic for a
+compactly supported divergence-free field.) Norm:
+\[
+\|\psi_N\|_{L^2(\T^3)}^2
+=(2\pi)^{-3}\int_{|x|\le R/N}N^{3}|\Psi(Nx)|^2dx
+=(2\pi)^{-3}N^{3}N^{-3}\|\Psi\|_{L^2(\R^3)}^2 ,
+\]
+which is the stated identity.
+\end{proof}
+
+\begin{theorem}[duality identity with controlled error]\label{app:pairing}
+Let $\Psi$ be as in Definition~\ref{app:testfield} and put
+\[
+I_\Psi:=\int_{\R^3}\big(V\cdot\nabla V\big)\cdot\Psi\,dy .
+\]
+Then for every integer $N\ge\max(8R,32)$,
+\[
+\big\langle\PP(u_N\cdot\nabla u_N),\psi_N\big\rangle_{L^2(\T^3)}
+=(2\pi)^{-3}N^{3/2}\big(I_\Psi+\mathcal E_N\big),
+\]
+where
+\[
+|\mathcal E_N|\ \le\ \|\Psi\|_{L^1(\R^3)}
+\Big[\varepsilon_N\big(6\pi\|v_0\|+\varepsilon'_N\big)
++4\pi\|v_0\|\,\varepsilon'_N\Big]
+\ =\ O\Big(\frac{\log N}{N}\Big)
+\]
+with $\varepsilon_N,\varepsilon'_N$ as in Theorem~\ref{app:rate}.
+\end{theorem}
+
+\begin{proof}
+By Lemma~\ref{app:psiprops}, $\psi_N$ is zero-mean and divergence-free,
+so $\hat\psi_N(0)=0$ and $k\cdot\hat\psi_N(k)=0$ for all $k$, whence
+$\PP\psi_N=\psi_N$. Since $\PP$ is an orthogonal projection on
+$L^2(\T^3)$, hence self-adjoint,
+\[
+\big\langle\PP(u_N\cdot\nabla u_N),\psi_N\big\rangle
+=\big\langle u_N\cdot\nabla u_N,\PP\psi_N\big\rangle
+=\big\langle u_N\cdot\nabla u_N,\psi_N\big\rangle .
+\]
+Both fields are real. Because $N\ge8R$ and $R\ge1$ we have
+$R/N\le\tfrac18<\pi$, so Lemma~\ref{app:psiprops} applies and
+$\psi_N(x)=N^{3/2}\Psi(Nx)$ on the fundamental domain, supported in
+$\{|x|\le R/N\}$. Using $d\mu=(2\pi)^{-3}dx$ and substituting $x=y/N$
+($dx=N^{-3}dy$),
+\[
+\big\langle u_N\cdot\nabla u_N,\psi_N\big\rangle
+=(2\pi)^{-3}N^{3/2}N^{-3}\int_{|y|\le R}
+(u_N\cdot\nabla u_N)(y/N)\cdot\Psi(y)\,dy .
+\]
+By Lemma~\ref{app:innerexact}, for $|y|\le R$,
+\[
+(u_N\cdot\nabla u_N)_j(y/N)
+=u_{N,i}(y/N)\,\partial_iu_{N,j}(y/N)
+=N^{3}\big(V_i(y)+E_{N,i}(y)\big)\big(\partial_iV_j(y)+E'_{N,ij}(y)\big),
+\]
+so the factor $N^{-3}N^{3}$ cancels and
+\[
+\big\langle u_N\cdot\nabla u_N,\psi_N\big\rangle
+=(2\pi)^{-3}N^{3/2}\big(I_\Psi+\mathcal E_N\big),
+\qquad
+\mathcal E_N=\int_{|y|\le R}
+\big[E_{N,i}\partial_iV_j+V_iE'_{N,ij}+E_{N,i}E'_{N,ij}\big]\Psi_j\,dy ,
+\]
+where we used $\operatorname{supp}\Psi\subset\{|y|\le R\}$ to write the
+main term as $I_\Psi$. Bounding each factor by its supremum and using
+Theorem~\ref{app:Vprops}(2),(3) --- $\|V\|_\infty\le4\pi\|v_0\|$,
+$\|\nabla V\|_\infty\le6\pi\|v_0\|$ --- gives the stated estimate;
+$\varepsilon_N,\varepsilon'_N=O(N^{-1}\log N)$ by
+Theorem~\ref{app:rate}, $R$ and $\Psi$ being fixed.
+\end{proof}
+
+\begin{proposition}[the $N^3$ lower bound, given a good test field]
+\label{app:N3}
+Suppose some $\Psi$ as in Definition~\ref{app:testfield} has
+$I_\Psi\neq0$. Then
+\[
+\big\|\PP(u_N\cdot\nabla u_N)\big\|_{L^2(\T^3)}^2
+\ \ge\ \frac{|I_\Psi+\mathcal E_N|^2}
+{(2\pi)^{3}\,\|\Psi\|_{L^2(\R^3)}^{2}}\;N^{3}
+\qquad(N\ge\max(8R,32)),
+\]
+and consequently
+$\|\PP(u_N\cdot\nabla u_N)\|_{2}^2\ge c_0N^3$ for all $N\ge N_*$, where
+\[
+c_0=\frac{|I_\Psi|^2}{2\,(2\pi)^{3}\,\|\Psi\|_{L^2(\R^3)}^{2}},
+\qquad
+N_*=\min\Big\{N_0\ge\max(8R,32):\ |\mathcal E_N|\le(1-2^{-1/2})|I_\Psi|
+\ \ \forall N\ge N_0\Big\},
+\]
+which is finite because $\mathcal E_N\to0$.
+\end{proposition}
+
+\begin{proof}
+By Cauchy--Schwarz in $L^2(\T^3)$,
+\[
+\big\|\PP(u_N\cdot\nabla u_N)\big\|_{2}
+\ \ge\ \frac{\big|\langle\PP(u_N\cdot\nabla u_N),\psi_N\rangle\big|}
+{\|\psi_N\|_{2}} .
+\]
+Insert Theorem~\ref{app:pairing} and Lemma~\ref{app:psiprops}: the
+right-hand side equals
+\[
+\frac{(2\pi)^{-3}N^{3/2}|I_\Psi+\mathcal E_N|}
+{(2\pi)^{-3/2}\|\Psi\|_{L^2(\R^3)}}
+=(2\pi)^{-3/2}N^{3/2}\frac{|I_\Psi+\mathcal E_N|}{\|\Psi\|_{L^2(\R^3)}} .
+\]
+Squaring gives the display. For $N\ge N_*$ we have
+$|I_\Psi+\mathcal E_N|\ge2^{-1/2}|I_\Psi|$, whence
+$|I_\Psi+\mathcal E_N|^2\ge\tfrac12|I_\Psi|^2$ and the constant $c_0$ as
+stated.
+\end{proof}
+
+Everything is now reduced to the single question of whether some
+admissible $\Psi$ has $I_\Psi\neq0$.
+
+\subsection{Non-degeneracy of the continuum nonlinearity}
+\label{app:nondeg}
+
+\subsubsection*{Reduction to a symbol statement}
+
+\begin{lemma}[symbol of the nonlinearity]\label{app:symbol}
+$V\cdot\nabla V=\nabla\cdot(V\otimes V)$ has the representation
+\[
+(V\cdot\nabla V)(y)=\int_{\R^3}M(\zeta)e^{i\zeta\cdot y}\,d\zeta,
+\qquad
+M_i(\zeta)=i\,\zeta_j\,T_{ij}(\zeta),\qquad T_{ij}:=F_i*F_j ,
+\]
+where $T$ is real, symmetric, supported in $\{|\zeta|\le2\}$, and
+$T,M\in L^1(\R^3)\cap L^2(\R^3)$. Consequently
+$\PP(V\cdot\nabla V)\in L^2(\R^3)$ with symbol $P_\zeta M(\zeta)$, and
+\[
+\PP(V\cdot\nabla V)\equiv0
+\quad\Longleftrightarrow\quad
+\zeta\times\big(T(\zeta)\zeta\big)=0\ \text{ for a.e. }\zeta .
+\]
+\end{lemma}
+
+\begin{proof}
+$V=\widetilde F$ with $F\in L^1$, and $\partial_jV_i=\widetilde{i\xi_jF_i}$
+with $\xi F\in L^1$ (Theorem~\ref{app:Vprops}(1),(3)). The pointwise
+product of inverse transforms of $L^1$ functions is the inverse
+transform of the convolution, so
+$V_j\partial_jV_i=\widetilde{F_j*(i\,\cdot_j F_i)}$, i.e.\ the symbol of
+$V\cdot\nabla V$ is
+$i\int F_j(\zeta-\eta)\,\eta_j\,F_i(\eta)\,d\eta$. Since
+$(\zeta-\eta)\cdot F(\zeta-\eta)=0$ identically (Definition~\ref{app:Vdef}),
+we may replace $\eta_jF_j(\zeta-\eta)$ by $\zeta_jF_j(\zeta-\eta)$
+inside the integral, obtaining
+$M_i(\zeta)=i\zeta_j(F_i*F_j)(\zeta)=i\zeta_jT_{ij}(\zeta)$.
+
+$T$ is real because $F$ is real, symmetric because convolution is
+commutative, and supported in $\{|\zeta|\le2\}$ because
+$\operatorname{supp}F\subset\{|\xi|\le1\}$. Integrability: by
+Theorem~\ref{app:Vprops}(1), $F\in L^{4/3}$; Young's inequality with
+$\frac1r=\frac2{4/3}-1=\frac12$ gives $T=F*F\in L^{2}$, and since $T$
+has compact support, $T\in L^1\cap L^2$; the same holds for
+$M=i\zeta T$, as $|\zeta|\le2$ on the support. By Plancherel,
+$V\cdot\nabla V\in L^2(\R^3)$ and, since $|P_\zeta M|\le|M|$,
+$\PP(V\cdot\nabla V)\in L^2(\R^3)$ with symbol $P_\zeta M$. Finally
+$\PP(V\cdot\nabla V)=0$ in $L^2$ iff $P_\zeta M(\zeta)=0$ for a.e.
+$\zeta$, and for a vector $w$ one has $P_\zeta w=0$ iff $w\parallel\zeta$
+iff $\zeta\times w=0$; here $w=i\,T(\zeta)\zeta$.
+\end{proof}
+
+\begin{remark}[classical input: density of smooth compactly supported
+solenoidal fields]\label{app:classical-density}
+The space $C^\infty_{c,\sigma}(\R^3;\R^3)$ of real, smooth, compactly
+supported, divergence-free vector fields is dense in
+$L^2_\sigma(\R^3;\R^3)$, the closed subspace of real $L^2$ fields that
+are distributionally divergence-free; indeed $L^2_\sigma$ is by the
+standard definition the $L^2$-closure of $C^\infty_{c,\sigma}$, and on
+$\R^3$ the two descriptions agree. See, e.g.,
+\cite{Temam,LadyzhenskayaBook,ConstantinFoias}.
+\end{remark}
+
+\begin{remark}[classical input: Helmholtz--Leray decomposition on $\R^3$]
+\label{app:classical-leray}
+For $f\in L^2(\R^3;\R^3)$ one has $f-\PP f=\nabla p$ for some
+$p\in L^2_{\rm loc}(\R^3)$ with $\nabla p\in L^2$; equivalently, the
+symbol of $f-\PP f$ is $\zeta(\zeta\cdot\hat f)/|\zeta|^2$. Same
+references.
+\end{remark}
+
+\begin{lemma}[from non-degeneracy to a test field]\label{app:testexists}
+If $\PP(V\cdot\nabla V)\not\equiv0$, then there exists a real
+$\Psi\in C^\infty_c(\R^3;\R^3)$ with $\nabla\cdot\Psi=0$ and
+$I_\Psi=\int_{\R^3}(V\cdot\nabla V)\cdot\Psi\neq0$; after enlarging $R$
+if necessary, $\Psi$ satisfies Definition~\ref{app:testfield}.
+\end{lemma}
+
+\begin{proof}
+By Lemma~\ref{app:symbol}, $\PP(V\cdot\nabla V)$ lies in $L^2(\R^3)$,
+is real (its symbol $P_\zeta M$ satisfies the reality condition because
+$F$ is real and even), is distributionally divergence-free (its symbol
+is orthogonal to $\zeta$), and is nonzero by hypothesis. Hence it is a
+nonzero element of the real Hilbert space $L^2_\sigma(\R^3)$. By
+Remark~\ref{app:classical-density} there is a real
+$\Psi\in C^\infty_{c,\sigma}(\R^3)$ with
+$\langle\PP(V\cdot\nabla V),\Psi\rangle_{L^2(\R^3)}\neq0$. By
+Remark~\ref{app:classical-leray},
+$V\cdot\nabla V-\PP(V\cdot\nabla V)=\nabla p$ with $\nabla p\in L^2$, and
+$\int\nabla p\cdot\Psi=-\int p\,\nabla\cdot\Psi=0$ because $\Psi$ is
+compactly supported and divergence-free. Therefore
+$I_\Psi=\langle\PP(V\cdot\nabla V),\Psi\rangle\neq0$. Choosing
+$R\ge\max(1,\sup\{|y|:y\in\operatorname{supp}\Psi\})$ puts $\Psi$ in
+Definition~\ref{app:testfield}.
+\end{proof}
+
+\subsubsection*{The $\chi$-independent leading singularity}
+
+By rotational equivariance we may and do assume from now on that
+$v_0=\|v_0\|e_3$: $F$ and $V$ are linear in $v_0$ and rotate with it,
+$T$ and $\tau$ are quadratic, and the conclusion
+$\PP(V\cdot\nabla V)\not\equiv0$ is rotation invariant.
+
+\begin{definition}\label{app:tau}
+$\tau_{ij}:=h_i*h_j$, with $h(\xi)=P_\xi v_0/|\xi|^2$ the uncut symbol
+of Definition~\ref{app:Vdef}.
+\end{definition}
+
+\begin{lemma}[$\tau$ is well defined and homogeneous]\label{app:tauwd}
+The integral $\tau_{ij}(\zeta)=\int_{\R^3}h_i(\eta)h_j(\zeta-\eta)\,d\eta$
+converges absolutely for every $\zeta\neq0$, and $\tau$ is homogeneous of
+degree $-1$ and smooth on $\R^3\setminus\{0\}$.
+\end{lemma}
+
+\begin{proof}
+$|h(\xi)|\le\|v_0\||\xi|^{-2}$. Near $\eta=0$ the integrand is
+$O(|\eta|^{-2})$ and near $\eta=\zeta$ it is $O(|\zeta-\eta|^{-2})$, both
+locally integrable on $\R^3$; for $|\eta|\ge2|\zeta|$ it is
+$O(|\eta|^{-4})$, integrable at infinity. Substituting
+$\eta=\lambda\eta'$ and using $h(\lambda\eta)=\lambda^{-2}h(\eta)$ gives
+$\tau(\lambda\zeta)=\lambda^{-1}\tau(\zeta)$ for $\lambda>0$. Smoothness
+away from $0$ follows from differentiating under the integral sign on
+the region where the two singularities are separated.
+\end{proof}
+
+\begin{theorem}[closed form of the leading obstruction]
+\label{app:tauformula}
+With $v_0=\|v_0\|e_3$, for every $\zeta\neq0$,
+\[
+\zeta\times\big(\tau(\zeta)\zeta\big)
+=\frac{3\pi^3}{8}\,\|v_0\|^2\,\frac{\zeta_3}{|\zeta|}\,
+\big(\zeta\times e_3\big).
+\]
+In particular $\zeta\times(\tau(\zeta)\zeta)\neq0$ whenever
+$\zeta_3\neq0$ and $\zeta\not\parallel e_3$.
+\end{theorem}
+
+\begin{proof}
+Both sides are quadratic in $\|v_0\|$, so we normalise $\|v_0\|=1$,
+$v_0=e_3$. By Theorem~\ref{app:farfield}, $\widetilde h=\pi^2W$ with
+\[
+W_i(y)=\frac{\delta_{i3}}{r}+\frac{y_3y_i}{r^3},\qquad r=|y| .
+\]
+$W_i$ is locally integrable, homogeneous of degree $-1$ and smooth away
+from the origin, so Remark~\ref{app:classical-homog} applies with
+$a=b=1$ and gives
+\[
+\tau_{ij}=h_i*h_j=(2\pi)^{-3}\,\mathcal F\big[\widetilde h_i\widetilde h_j\big]
+=(2\pi)^{-3}\pi^4\,\mathcal F\big[W_iW_j\big],
+\]
+where we used $\mathcal F\widetilde h_i=(2\pi)^3h_i$ and the evenness of
+$h$. (Both sides are homogeneous of degree $-1$ and locally integrable,
+so no distribution supported at the origin can be added.) Expanding,
+\[
+W_iW_j=\frac{\delta_{i3}\delta_{j3}}{r^{2}}
++\frac{\delta_{i3}y_3y_j+\delta_{j3}y_3y_i}{r^{4}}
++\frac{y_3^{2}y_iy_j}{r^{6}} .
+\]
+Each bracket is locally integrable and homogeneous of degree $-2$, so by
+Remark~\ref{app:classical-riesz} its transform is an honest homogeneous
+distribution of degree $-1$, given by
+\[
+\mathcal F\Big[\frac1{r^{2}}\Big]=\frac{2\pi^{2}}{s},
+\qquad
+\mathcal F\Big[\frac{y_iy_j}{r^{4}}\Big]
+=\pi^{2}\Big(\frac{\delta_{ij}}{s}-\frac{\zeta_i\zeta_j}{s^{3}}\Big),
+\qquad
+\mathcal F\Big[\frac{y_3^{2}y_iy_j}{r^{6}}\Big]
+=\frac{\pi^{2}}{12}\,\partial_3^{2}\partial_i\partial_j\,s^{3},
+\]
+where $s:=|\zeta|$. (Indeed $\mathcal F[r^{-2}]=c_{3,2}s^{-1}$;
+$\mathcal F[y_iy_jr^{-4}]=-\partial_i\partial_j(c_{3,4}s)
+=\pi^2\partial_i\partial_js=\pi^2(\delta_{ij}/s-\zeta_i\zeta_j/s^3)$;
+$\mathcal F[y_3^2y_iy_jr^{-6}]
+=\partial_3^2\partial_i\partial_j(c_{3,6}s^3)$. Trace check on the
+middle formula: $\pi^2(3/s-1/s)=2\pi^2/s=\mathcal F[r^{-2}]$, as it must
+be.) Direct differentiation of $s^3$ gives
+\[
+\partial_3^{2}\partial_i\partial_j s^{3}
+=3\Big[\frac{\delta_{ij}+2\delta_{i3}\delta_{j3}}{s}
+-\frac{\zeta_3^{2}\delta_{ij}
++2\zeta_3(\delta_{i3}\zeta_j+\delta_{j3}\zeta_i)+\zeta_i\zeta_j}{s^{3}}
++\frac{3\zeta_i\zeta_j\zeta_3^{2}}{s^{5}}\Big].
+\]
+Assembling the three pieces (the middle one contributing
+$\pi^2[2\delta_{i3}\delta_{j3}/s-\zeta_3(\delta_{i3}\zeta_j
++\delta_{j3}\zeta_i)/s^3]$) yields
+$\mathcal F[W_iW_j]=\pi^{2}G_{ij}$ with
+\[
+G_{ij}=\frac{\delta_{ij}}{4s}
++\frac{9\,\delta_{i3}\delta_{j3}}{2s}
+-\frac{\zeta_3^{2}\delta_{ij}}{4s^{3}}
+-\frac{3\zeta_3(\delta_{i3}\zeta_j+\delta_{j3}\zeta_i)}{2s^{3}}
+-\frac{\zeta_i\zeta_j}{4s^{3}}
++\frac{3\zeta_i\zeta_j\zeta_3^{2}}{4s^{5}} ,
+\]
+so that $\tau_{ij}=(2\pi)^{-3}\pi^{4}\cdot\pi^{2}G_{ij}
+=\frac{\pi^{3}}{8}G_{ij}$.
+
+Contract with $\zeta_j$, using $\zeta_j\zeta_j=s^2$. The terms
+$\frac{\delta_{ij}}{4s}\zeta_j=\frac{\zeta_i}{4s}$ and
+$-\frac{\zeta_i\zeta_j}{4s^3}\zeta_j=-\frac{\zeta_i}{4s}$ cancel. The
+$\delta_{i3}\zeta_3/s$ coefficients are $\frac92$ from the second term
+and $-\frac32$ from the fourth, total $3$. The $\zeta_i\zeta_3^2/s^3$
+coefficients are $-\frac14$ (third term), $-\frac32$ (fourth term) and
+$+\frac34$ (sixth term), total $-1$. Hence
+\[
+G(\zeta)\zeta=\frac{3\zeta_3}{s}\,e_3-\frac{\zeta_3^{2}}{s^{3}}\,\zeta ,
+\qquad\text{so}\qquad
+\zeta\times\big(G(\zeta)\zeta\big)=\frac{3\zeta_3}{s}\,(\zeta\times e_3),
+\]
+the second term being parallel to $\zeta$. Multiplying by
+$\frac{\pi^3}{8}$ and restoring $\|v_0\|^2$ gives the claim. Finally
+$\zeta\times e_3=0$ exactly when $\zeta\parallel e_3$.
+\end{proof}
+
+\begin{remark}[physical-space cross-check, free of any regularisation]
+\label{app:crosscheck}
+Theorem~\ref{app:tauformula} passes through the finite-part
+continuations of Remark~\ref{app:classical-riesz}. The following
+elementary computation confirms it independently, with no
+regularisation and no Fourier transform, and is worth recording because
+it identifies what the obstruction \emph{is}: the statement that the
+Oseen field is not a stationary Euler flow.
+
+For $W(y)=\frac{e_3}{r}+\frac{y_3y}{r^{3}}$ on $\R^3\setminus\{0\}$,
+\[
+\nabla\cdot W=0,\qquad
+\omega:=\nabla\times W=\frac{2\,(e_3\times y)}{r^{3}},\qquad
+\nabla\times\big(W\times\omega\big)
+=\frac{12\,y_3\,(e_3\times y)}{r^{6}}\ \not\equiv0 .
+\]
+\emph{Proof.} $\nabla\cdot(e_3/r)=e_3\cdot\nabla r^{-1}=-y_3/r^3$, and
+$\partial_i(y_3y_ir^{-3})=y_3r^{-3}+3y_3r^{-3}-3y_3r^{-3}=y_3/r^3$, so
+$\nabla\cdot W=0$. Next
+$\nabla\times(r^{-1}e_3)=\nabla(r^{-1})\times e_3=-r^{-3}y\times e_3
+=r^{-3}(e_3\times y)$, while
+$[\nabla\times(y_3y\,r^{-3})]_a
+=\epsilon_{abi}\partial_b(y_3y_ir^{-3})
+=\epsilon_{abi}(\delta_{b3}y_i+y_3\delta_{bi})r^{-3}
+-3\epsilon_{abi}y_3y_iy_br^{-5}
+=\epsilon_{a3i}y_ir^{-3}=(e_3\times y)_ar^{-3}$, the last two terms
+vanishing by antisymmetry. Adding gives $\omega$. Then, using
+$e_3\times(e_3\times y)=y_3e_3-y$ and $y\times(e_3\times y)=r^2e_3-y_3y$,
+\[
+W\times\omega
+=\frac{2(y_3e_3-y)}{r^{4}}+\frac{2y_3e_3}{r^{4}}-\frac{2y_3^{2}y}{r^{6}}
+=\frac{4y_3e_3}{r^{4}}-\frac{2y}{r^{4}}-\frac{2y_3^{2}y}{r^{6}} .
+\]
+Now curl each piece. For any radial $f$, $\nabla\times(f(r)y)
+=\nabla f\times y=f'(r)\hat y\times y=0$, so $-2y/r^4$ contributes
+nothing. With $g=-2y_3^{2}/r^{6}$ one has
+$\nabla g=-4y_3e_3/r^{6}+12y_3^{2}y/r^{8}$, so
+$\nabla\times(gy)=\nabla g\times y=-4y_3(e_3\times y)/r^{6}$. With
+$f=4y_3/r^{4}$ one has $\nabla f=4e_3/r^{4}-16y_3y/r^{6}$, so
+$\nabla\times(fe_3)=\nabla f\times e_3
+=-16y_3(y\times e_3)/r^{6}=16y_3(e_3\times y)/r^{6}$. The total is
+$12y_3(e_3\times y)/r^{6}$. Since
+$W\cdot\nabla W=\nabla\frac{|W|^2}{2}-W\times\omega$, it follows that
+$\nabla\times(W\cdot\nabla W)\not\equiv0$, i.e.\ $W\cdot\nabla W$ is not
+a gradient, i.e.\ $\PP(W\cdot\nabla W)\neq0$. $\square$
+
+\emph{Consistency with Theorem~\ref{app:tauformula}.} The curl of
+$\PP(\widetilde h\cdot\nabla\widetilde h)$ has symbol
+$i\zeta\times\big(iP_\zeta\tau\zeta\big)=-\zeta\times(\tau\zeta)$, using
+$\zeta\times P_\zeta A=\zeta\times A$. With $\|v_0\|=1$,
+Theorem~\ref{app:tauformula} makes this
+$-\frac{3\pi^{3}}{8}\zeta_3(\zeta\times e_3)/|\zeta|$. Writing its
+$a$-component as $-\frac{3\pi^3}{8}\epsilon_{ab3}\zeta_b\zeta_3/|\zeta|$
+and using $\widetilde{|\zeta|^{-1}}=c_{3,1}r^{-2}=4\pi r^{-2}$ together
+with $\widetilde{\zeta_b\zeta_3G}=-\partial_b\partial_3\widetilde G$,
+\[
+\widetilde{\Big[\frac{\zeta_b\zeta_3}{|\zeta|}\Big]}
+=-4\pi\,\partial_b\partial_3r^{-2}
+=\frac{8\pi\delta_{b3}}{r^{4}}-\frac{32\pi y_3y_b}{r^{6}} ;
+\]
+since $\epsilon_{ab3}\delta_{b3}=0$, only the second term survives,
+leaving $-32\pi y_3(y\times e_3)_a/r^{6}
+=+32\pi y_3(e_3\times y)_a/r^{6}$. Multiplying by
+$-\frac{3\pi^{3}}{8}$ gives $-12\pi^{4}y_3(e_3\times y)/r^{6}$. On the
+other hand $\widetilde h=\pi^2W$ gives
+$\widetilde h\cdot\nabla\widetilde h=\pi^{4}W\cdot\nabla W$ and hence
+$\nabla\times(\widetilde h\cdot\nabla\widetilde h)
+=-\pi^{4}\nabla\times(W\times\omega)
+=-12\pi^{4}y_3(e_3\times y)/r^{6}$. The two derivations agree exactly,
+constants included.
+\end{remark}
+
+\subsubsection*{Transfer to the cutoff family}
+
+\begin{lemma}[the cutoff perturbation is bounded near $\zeta=0$]
+\label{app:perturb}
+For all $|\zeta|\le\frac18$ and all $i,j$,
+\[
+\big|T_{ij}(\zeta)-\tau_{ij}(\zeta)\big|\ \le\ C_1:=64\pi\|v_0\|^{2},
+\]
+uniformly over all admissible $\chi$.
+\end{lemma}
+
+\begin{proof}
+Since $F=\chi(|\cdot|)h$,
+\[
+T_{ij}(\zeta)-\tau_{ij}(\zeta)
+=\int_{\R^3}h_i(\eta)h_j(\zeta-\eta)
+\big[\chi(|\eta|)\chi(|\zeta-\eta|)-1\big]\,d\eta .
+\]
+The bracket vanishes whenever $|\eta|\le\frac12$ \emph{and}
+$|\zeta-\eta|\le\frac12$, because $\chi\equiv1$ on $[0,\frac12]$. For
+$|\zeta|\le\frac18$, the condition $|\eta|\le\frac14$ implies
+$|\zeta-\eta|\le\frac18+\frac14=\frac38<\frac12$; hence the integrand is
+supported in $\{|\eta|\ge\frac14\}$. There
+$|\zeta-\eta|\ge|\eta|-\frac18\ge|\eta|-\frac{|\eta|}{2}
+=\frac{|\eta|}{2}$. With $|h|\le\|v_0\||\cdot|^{-2}$ and
+$|\chi\chi-1|\le1$,
+\[
+|T_{ij}-\tau_{ij}|
+\le\|v_0\|^{2}\int_{|\eta|\ge1/4}\frac{d\eta}{|\eta|^{2}|\zeta-\eta|^{2}}
+\le4\|v_0\|^{2}\int_{|\eta|\ge1/4}\frac{d\eta}{|\eta|^{4}}
+=4\|v_0\|^{2}\cdot4\pi\int_{1/4}^{\infty}\frac{dr}{r^{2}}
+=64\pi\|v_0\|^{2},
+\]
+which is $C_1$.
+\end{proof}
+
+\begin{theorem}[non-degeneracy]\label{app:vnondeg}
+For every $v_0\in\R^3\setminus\{0\}$ and every admissible $\chi$,
+\[
+\PP_{\R^3}\big(V\cdot\nabla V\big)\ \not\equiv\ 0 .
+\]
+Explicitly, with $v_0=\|v_0\|e_3$, one has
+$\zeta\times(T(\zeta)\zeta)\neq0$ --- hence $P_\zeta M(\zeta)\neq0$ ---
+at every point of the open set of positive measure
+\[
+\mathcal U:=\Big\{\zeta\in\R^3:\ 0<|\zeta|<\tfrac{\pi^{2}}{2048},\
+|\zeta_3|\ge\tfrac{|\zeta|}{2},\
+|\zeta\times e_3|\ge\tfrac{|\zeta|}{2}\Big\}.
+\]
+\end{theorem}
+
+\begin{proof}
+Let $\zeta\in\mathcal U$. By Theorem~\ref{app:tauformula},
+\[
+\big|\zeta\times(\tau(\zeta)\zeta)\big|
+=\frac{3\pi^{3}}{8}\|v_0\|^{2}\,
+\frac{|\zeta_3|\,|\zeta\times e_3|}{|\zeta|}
+\ \ge\ \frac{3\pi^{3}}{8}\|v_0\|^{2}\cdot\frac{|\zeta|}{4}
+=\frac{3\pi^{3}}{32}\|v_0\|^{2}|\zeta| .
+\]
+Since $\frac{\pi^{2}}{2048}\approx4.8\times10^{-3}<\frac18$,
+Lemma~\ref{app:perturb} applies, and the Frobenius norm of
+$T(\zeta)-\tau(\zeta)$ is at most $3C_1$ (nine entries each at most
+$C_1$). Hence
+\[
+\big|\zeta\times\big((T(\zeta)-\tau(\zeta))\zeta\big)\big|
+\le|\zeta|\cdot3C_1|\zeta|=192\pi\|v_0\|^{2}|\zeta|^{2},
+\]
+and therefore
+\[
+\big|\zeta\times(T(\zeta)\zeta)\big|
+\ \ge\ \|v_0\|^{2}|\zeta|
+\Big(\frac{3\pi^{3}}{32}-192\pi|\zeta|\Big)\ >\ 0
+\qquad\text{whenever }
+|\zeta|<\frac{3\pi^{3}}{32\cdot192\pi}=\frac{3\pi^{2}}{6144}
+=\frac{\pi^{2}}{2048},
+\]
+which holds on $\mathcal U$. The set $\mathcal U$ is open and nonempty
+(it contains, e.g., all small $\zeta$ in the direction
+$(1,0,1)/\sqrt2$), hence of positive measure. By
+Lemma~\ref{app:symbol}, $P_\zeta M\neq0$ on a set of positive measure,
+so $\PP(V\cdot\nabla V)\neq0$ in $L^2(\R^3)$.
+\end{proof}
+
+\begin{remark}[uniformity, and where the obstruction lives]
+\label{app:uniformity}
+The proof of Theorem~\ref{app:vnondeg} is uniform in $\chi$ and in
+$v_0$: the factor $\|v_0\|^2$ cancels between the main term and the
+perturbation, and the only properties of $\chi$ used are $0\le\chi\le1$
+and $\chi\equiv1$ on $[0,\frac12]$ --- no smoothness of $\chi$ enters
+\S\ref{app:nondeg} at all. Neither a specific $\chi$ nor any numerically
+evaluated convolution integral is required: the obstruction is carried
+entirely by the $\chi$-independent leading singularity of $F*F$ at
+$\zeta=0$, which is the same for every admissible cutoff. Moreover
+Theorem~\ref{app:tauformula} shows the obstruction degenerates exactly
+on the two directions $\zeta\parallel v_0$ and $\zeta\perp v_0$, so the
+two cone conditions in $\mathcal U$ are essentially optimal.
+
+This uniformity does \textbf{not} propagate to the constants of
+Theorem~\ref{app:main}. It is the \emph{qualitative} conclusion
+$\PP(V\cdot\nabla V)\not\equiv0$ that holds uniformly in $(\chi,v_0)$,
+and that is what licenses the quantifier ``for every admissible $\chi$
+and every $v_0\neq0$'' there. The quantitative constants $c_0$ and
+$N_*$ are extracted only after a test field $\Psi$ has been chosen for
+the particular profile $V=V^{\chi,v_0}$
+(Lemma~\ref{app:testexists}), and they depend on $(\chi,v_0)$; no
+$(\chi,v_0)$-independent value of either is claimed, and neither is
+effective (Remark~\ref{app:noneffective}).
+\end{remark}
+
+\subsection{Proof of Theorem~\ref{capacity}}
+\label{app:final}
+
+\begin{theorem}[capacity bound; restatement of Theorem~\ref{capacity}]
+\label{app:main}
+Let $v_0\in\R^3\setminus\{0\}$, let $\chi$ be admissible
+(Definition~\ref{app:admissible}), and let $u_N=u_N^{\chi,v_0}$ be the
+family \eqref{app:famdef}. Then:
+\begin{enumerate}
+\item[(1)] $u_N$ is a real, zero-mean, exactly divergence-free
+trigonometric polynomial banded at $|k|\le N$, and the exact laws of
+Theorem~\ref{app:exactlaws} hold;
+\item[(2)] $\dfrac{N}{44544}\le N_0^2(u_N)\le\dfrac{64}{3}N$ for every
+$N\ge32$;
+\item[(3)] there exist $c_0=c_0(\chi,v_0)>0$ and
+$N_*=N_*(\chi,v_0)<\infty$ such that
+\[
+\big\|\PP(u_N\cdot\nabla u_N)\big\|_{L^2(\T^3)}^{2}\ \ge\ c_0\,N^{3}
+\qquad\text{for all }N\ge N_* .
+\]
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(1) is Lemma~\ref{app:structure} together with
+Theorem~\ref{app:exactlaws}. (2) is Proposition~\ref{app:twosided}.
+
+(3) By Theorem~\ref{app:vnondeg}, $\PP_{\R^3}(V\cdot\nabla V)\not\equiv0$,
+where $V$ is the profile of Definition~\ref{app:Vdef} attached to the
+given $(\chi,v_0)$. By Lemma~\ref{app:testexists} there is a real
+$\Psi\in C^\infty_c(\R^3;\R^3)$, divergence-free, supported in
+$\{|y|\le R\}$ for some $R\ge1$, with $I_\Psi\neq0$. Fix such a $\Psi$.
+Lemma~\ref{app:innerexact} and Theorem~\ref{app:rate} give the exact
+inner rescaling with $\varepsilon_N+\varepsilon'_N=O(N^{-1}\log N)$;
+Lemma~\ref{app:psiprops} and Theorem~\ref{app:pairing} convert the
+pairing of $\PP(u_N\cdot\nabla u_N)$ against the concentrated field
+$\psi_N$ into $(2\pi)^{-3}N^{3/2}(I_\Psi+\mathcal E_N)$ with
+$\mathcal E_N\to0$; and Proposition~\ref{app:N3} then yields the stated
+bound with
+\[
+c_0=c_0(\chi,v_0)=\frac{|I_\Psi|^{2}}
+{2\,(2\pi)^{3}\,\|\Psi\|_{L^2(\R^3)}^{2}},
+\qquad
+N_*=N_*(\chi,v_0)
+=\min\Big\{N_0\ge\max(8R,32):|\mathcal E_N|\le(1-2^{-1/2})|I_\Psi|
+\ \forall N\ge N_0\Big\}.
+\]
+Both depend on $(\chi,v_0)$ alone, through $V=V^{\chi,v_0}$ and through
+the test field $\Psi$ selected for it.
+\end{proof}
+
+\begin{remark}[what the constants depend on, and that they are
+non-effective]\label{app:noneffective}
+The constants $c_0$ and $N_*$ produced above depend on the pair
+$(\chi,v_0)$ only, through the profile $V=V^{\chi,v_0}$ and through the
+test field $\Psi$ selected in Lemma~\ref{app:testexists}. They are
+\textbf{not effective}. The reason is localised precisely at
+Lemma~\ref{app:testexists}: $\Psi$ is obtained from the \emph{density}
+of $C^\infty_{c,\sigma}(\R^3)$ in $L^2_\sigma(\R^3)$
+(Remark~\ref{app:classical-density}), a pure existence argument, so
+neither $\Psi$, nor its support radius $R$, nor $I_\Psi$, nor
+$\|\Psi\|_{L^2}$, nor $c_0$, nor $N_*$ is exhibited. Every other
+constant in this appendix is explicit, namely those of
+Lemmas~\ref{app:shell}--\ref{app:lower},
+Proposition~\ref{app:twosided}, Theorems~\ref{app:exactlaws},
+\ref{app:Vprops}, \ref{app:farfield}, \ref{app:rate},
+\ref{app:pairing}, \ref{app:tauformula}, \ref{app:vnondeg},
+Lemmas~\ref{app:innerexact}, \ref{app:psiprops}, \ref{app:symbol},
+\ref{app:tauwd}, \ref{app:perturb}, and Proposition~\ref{app:N3}
+\emph{as a function of} $(\Psi,R,I_\Psi)$.
+
+An effective variant is available in principle --- take $\Psi$ with
+$\widehat\Psi$ a smooth bump supported in the explicit set $\mathcal U$
+of Theorem~\ref{app:vnondeg}, mollified to compact support in $y$ ---
+but it is expensive: non-vanishing is certified only for
+$|\zeta|<\pi^2/2048\approx4.8\times10^{-3}$, so such a $\Psi$ has
+Fourier support at that scale, hence spatial radius $R\gtrsim10^{3}$,
+hence $N_*\ge8R\gtrsim10^{4}$, with a correspondingly small $c_0$. This
+is the sole source of non-effectivity in the paper.
+\end{remark}
+
+\begin{remark}[the exponent $3$ is sharp, and the sharp cutoff is not
+covered]\label{app:sharpness}
+The exponent cannot be improved: by Theorem~\ref{main}(d) and
+Theorem~\ref{app:exactlaws},
+$\|\PP(u_N\cdot\nabla u_N)\|_2^2\le\|u_N\|_\infty^2H_1(u_N)$, and both
+$\|u_N\|_\infty$ and $H_1(u_N)$ are $O(N)$ by
+Proposition~\ref{app:twosided} and
+$\|u_N\|_\infty\le\sum_{k\neq0}|\hat u_N(k)|\le\|v_0\|\Sigma_N^\chi
+\le\|v_0\|S_N\le128\|v_0\|N$; so the left-hand side is $O(N^3)$.
+
+Smoothness of $\chi$ is used in exactly one place, namely
+Theorem~\ref{app:rate}, through $|\nabla F|\lesssim c_\chi|\xi|^{-3}$.
+For the sharply truncated family $\chi=\mathbf 1_{[0,1]}$ this bound
+fails, $F$ jumping across $|\xi|=1$; the Riemann-sum defect then carries
+a lattice-point (Gauss-circle) term, and $V$ loses the rapidly decaying
+tail correction of Theorem~\ref{app:farfield}, acquiring instead an
+oscillatory $|y|^{-2}$ tail. Nothing in \S\ref{app:duality} or
+\S\ref{app:nondeg} would change, both being insensitive to $\chi$; the
+sharp-cutoff case is thus a technical gap in the inner-rescaling step,
+not a structural one. It is left open because no statement in this paper
+requires it (see Remark~\ref{lstarremark}).
+\end{remark}

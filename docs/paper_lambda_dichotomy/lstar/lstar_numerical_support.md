@@ -9,13 +9,11 @@ Run: 752.7 s wall (pre-registered cap 35 min, not binding).
 Content digest `sha256:527b3d0b084cdfa2ac516fd0a8ecdd1c1fefb8f19466bc554e8f536a72e7d4b3`.
 
 Companion analytic document: [`lstar_proof_main.md`](lstar_proof_main.md).
-Compatibility: that document's Definition 0.1 asks for `chi in C^inf`; the
-`chi` used here is `C^4` (and a rational `chi in C^p` is available for every
-`p`, see section 0). Everything measured below is therefore evidence for the
-`C^p` version of the statement; if the analytic route genuinely needs
-`C^inf`, a non-polynomial `chi` must be used and the exact-rational lane
-(tables A, B, D) is lost, while the float lanes (C, E, F) carry over
-unchanged.
+Compatibility: the `chi` used here is `C^4` and is **admissible** in the
+sense of that document's Definition 0.1 (which asks for `C^4`), so every
+lane below is evidence for the theorem exactly as proven. A rational
+`chi in C^p` is available for every `p` (degree-`(2p+1)` smoothstep, see
+section 0) but is not needed.
 
 **No PDE theorem is asserted here.** Every row is labelled `exact`
 (`fractions.Fraction`, no rounding) or `float` (IEEE double). Tables only;
@@ -23,8 +21,10 @@ the accompanying claims are labelled PROVEN / NUMERICAL / OPEN.
 
 > **Status (2026-08-02).** The capacity bound these tables corroborate is
 > now **PROVEN** analytically, with the sharp exponent \(N^3\), for the
-> smoothly truncated family, uniformly in the admissible cutoff and in
-> \(v_0\) ([`lstar_proof_main.md`](lstar_proof_main.md) Thm 7.1(3);
+> smoothly truncated family, for **every** admissible cutoff and
+> **every** \(v_0\neq0\) — with constants \(c_0(\chi,v_0)\),
+> \(N_*(\chi,v_0)\) that are **not uniform** in that pair
+> ([`lstar_proof_main.md`](lstar_proof_main.md) Thm 7.1(3);
 > adversarially refereed, [`lstar_referee.md`](lstar_referee.md), verdict
 > (i)). Nothing below is load-bearing for that proof — in particular the
 > (V-NONDEG) rows corroborate but do not carry Theorem 6.7, which is
@@ -270,11 +270,11 @@ derivation above), `V.grad V` and its curl taken by central differences:
 | `K = \|\|N\|\|^2/H1^2`, `H1 ≍ N`, `N0^2 ≍ N`; so `\|\|N\|\|^2 >= cN^{2+a}` gives `K >= c' e^{as}` and `int ds/Phi < inf` | **PROVEN** | re-derived independently. Table C gives `H1/N -> 87.51` and `N0^2/N -> 0.567`, so along the dyadic sequence `N_j = 2^j N_0` the gaps `s_{j+1} - s_j` tend to `log 2` -- bounded above and below, which is exactly what the Proposition's monotonicity step needs; no crude Lemma-11-style lattice bound is required |
 | moment laws survive the smooth radial weight | **PROVEN** + exactly verified | Lemma 9 needs only that the band is sign-flip/permutation invariant and the weight radial. Table A: every residual is the rational `0` |
 | `u_hat_N(k) = N^{-2} F(k/N)` | **PROVEN** (elementary; `P_k = P_{k/N}`) | this, not Poisson summation, is what the argument needs |
-| Poisson-summation periodization `u_N(x) = N sum_m V(N(x+2pi m))` with `m != 0` terms `O(1/N)` uniformly on `\|x\| <= pi` | **FALSE**, in the naive form and in every regularised form | `V(y) ~ pi^2(v0 + yhat(yhat.v0))/\|y\|` decays only like `\|y\|^{-1}` with a sign-definite spherical mean in the `v0` direction, and `sum_{m in Z^3} \|m\|^{-1} = inf`: the periodization diverges. Because the divergent terms are *eventually positive*, no summation method (Abel included) rescues it — see `lstar_proof_main.md` Remark 3.4. The route avoids the identity entirely (next row); nothing here or there depends on it |
+| Poisson-summation periodization `u_N(x) = N sum_m V(N(x+2pi m))` with `m != 0` terms `O(1/N)` uniformly on `\|x\| <= pi` | **FALSE**: the naive absolutely convergent periodisation argument is unavailable, and Abel regularisation does not repair it | `V(y) ~ pi^2(v0 + yhat(yhat.v0))/\|y\|` decays only like `\|y\|^{-1}` with a sign-definite spherical mean in the `v0` direction, and `sum_{m in Z^3} \|m\|^{-1} = inf`: the periodization diverges. Because the divergent terms are *eventually positive*, Abel summation in particular does not converge either — see `lstar_proof_main.md` Remark 3.4. No broader claim about summation methods is made or needed. The route avoids the identity entirely (next row); nothing here or there depends on it |
 | duality lower bound, Fourier-side | **PROVEN** | with `psi_N(x) = N^{3/2} Psi(Nx)`, `Psi` divergence-free `C_c^inf`: `psi_hat_N(k) = N^{-3/2} tilde-Psi(k/N)`, `\|psi_N\|_{L^2(T^3)}^2 = (2pi)^{-3}\|Psi\|_{L^2(R^3)}^2`, and the pairing is `N^{3/2}(2pi)^{-3}<V.grad V, Psi> (1+o(1))` by a Riemann sum. Hence `\|P(u_N.grad u_N)\|_2^2 >= c N^3`: **exponent `a = 1`, the sharp one** |
 | Riemann-sum convergence of that pairing | **PROVEN modulo standard** | the integrand `C(zeta) conj(tilde-Psi(zeta))` is bounded, compactly supported in `\|zeta\| <= 2`, and continuous off `{0}` (`C` is degree-0 homogeneous near `0`), hence Riemann integrable; the lattice sum omits only the singular cells, contributing `O(N^{-2})` |
 | `V_inf = pi^2(v0 + yhat(yhat.v0))/\|y\|` | **PROVEN modulo standard** | needs only `FT[\|xi\|^{-2}] = 2pi^2/\|y\|`; the tensor `T_ij` is fixed by its trace (`= g`) and its `yhat yhat` contraction (`= 0`, from `int_0^inf [sin s/s + 2cos s/s^2 - 2 sin s/s^3] ds = 0`). Table F confirms `rA, rB -> pi^2` |
-| `V = V_inf + O(\|y\|^{-p})`, `p` large | **PROVEN modulo standard** | `(1-chi)F_inf` is a `C^p` symbol of order `-2` vanishing near `0`; its transform is `O(\|y\|^{-p})` away from the origin. `chi in C^p` for any `p` is available inside the rational family |
+| `V = V_inf + O(\|y\|^{-4})` | **PROVEN modulo standard** | `(1-chi)F_inf` is a `C^4` symbol of order `-2` vanishing near `0`; its transform is `O(\|y\|^{-M})`, `2 <= M <= 4`, away from the origin. Four derivatives are what Definition 0.1 supplies and `M = 4` is what the (inert) §3.4 consumes; **this row is consumed by nothing**. A rational `chi in C^p` for any `p` is available inside the rational family if a stronger class is ever wanted |
 | **(V-NONDEG): `P(V.grad V) != 0`** | **PROVEN** (given the two rows above) + verified 3 independent ways | `ker P` = curl-free, and curl is **local**, so one point suffices. `curl(V.grad V) = Z(r) sin cos e_phi` with `Z -> -12 pi^4\|\|v0\|\|^2/r^4 != 0`. Numerics: lane F (`\|Z(4)\| = 33.3`), lane E (`\|P_zeta C(zeta)\| = 7.223`), lane D (exact rational, same number) |
 | an `N`-uniform lower bound proved *from the exact lattice lane alone* | **OPEN** | lane D certifies exact nonzero values at finitely many `N`; upgrading it to a proof needs a quantitative Riemann-sum error bound, which is not attempted here. The analytic route above does not need it |
 | (L\*) for the **sharp** family | **OPEN, and untouched** | this note changes the family; it does not prove the paper's stated (L\*) |
