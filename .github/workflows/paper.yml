@@ -1,0 +1,54 @@
+name: paper
+
+# Builds the typeset paper from docs/paper_lambda_dichotomy/paper_draft.tex.
+# The committed PDF in that directory is produced by this workflow, so the
+# repository needs no local TeX installation and the PDF is reproducible from
+# source by anyone. Releases attach the same PDF as an asset.
+
+on:
+  push:
+    paths:
+      - "docs/paper_lambda_dichotomy/paper_draft.tex"
+      - ".github/workflows/paper.yml"
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install a minimal TeX Live
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            texlive-latex-base \
+            texlive-latex-recommended \
+            texlive-fonts-recommended \
+            texlive-science
+
+      - name: Compile the paper
+        working-directory: docs/paper_lambda_dichotomy
+        run: |
+          pdflatex -interaction=nonstopmode -halt-on-error paper_draft.tex
+          pdflatex -interaction=nonstopmode -halt-on-error paper_draft.tex
+
+      - name: Upload the PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper_draft_pdf
+          path: docs/paper_lambda_dichotomy/paper_draft.pdf
+          if-no-files-found: error
+
+      - name: Attach the PDF to the release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" \
+            docs/paper_lambda_dichotomy/paper_draft.pdf --clobber
