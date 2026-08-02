@@ -5,11 +5,16 @@
 # been executed in this repository, so this file is not represented as a
 # verified Linux lockfile.  The pinned base-image digest supplies its own
 # Debian and CPython runtime.
+#
+# Security revision 2026-08-02: Pygments 2.19.2 -> 2.20.0 and
+# setuptools 80.10.2 -> 83.0.0, matching the Windows reference file.  Because
+# the Linux image has still never been built here, this remains an intended
+# target rather than a verified lockfile.
 numpy==1.26.4
 pytest==9.0.3
 iniconfig==2.3.0
 packaging==26.0
 pluggy==1.6.0
-Pygments==2.19.2
-setuptools==80.10.2
+Pygments==2.20.0
+setuptools==83.0.0
 pip==26.1.2
