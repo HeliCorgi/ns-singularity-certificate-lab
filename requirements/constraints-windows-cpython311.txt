@@ -4,6 +4,15 @@
 #   CPython 3.11.9 (64-bit), Windows 10.0.26200, NumPy wheel with
 #   OpenBLAS64 0.3.23.dev, ILP64, OpenMP, MAX_THREADS=2.
 #
+# Security revision 2026-08-02: Pygments 2.19.2 -> 2.20.0 (ReDoS in the GUID
+# regex) and setuptools 80.10.2 -> 83.0.0 (MANIFEST.in exclusion bypass in
+# sdist via Unicode normalization collision).  Neither package participates in
+# any numerical result: Pygments is a pytest display dependency and setuptools
+# is build tooling.  The revised set was reinstalled from scratch on the same
+# CPython 3.11.9 reference interpreter and the full suite was rerun before this
+# change was committed; the non-Python observations above are unchanged because
+# the NumPy pin is unchanged.
+#
 # These are exact Python-package constraints, not a cross-platform lockfile.
 # NumPy wheel build metadata, CPU features, thread variables, and BLAS/LAPACK
 # details are recorded independently in runtime-provenance/v2.
@@ -12,7 +21,7 @@ pytest==9.0.3
 iniconfig==2.3.0
 packaging==26.0
 pluggy==1.6.0
-Pygments==2.19.2
+Pygments==2.20.0
 colorama==0.4.6; sys_platform == "win32"
-setuptools==80.10.2
+setuptools==83.0.0
 pip==26.1.2

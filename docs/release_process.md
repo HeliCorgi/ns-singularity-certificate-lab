@@ -67,8 +67,18 @@ Python-package versions measured on 2026-07-28:
 - CPython 3.11.9, 64-bit;
 - NumPy 1.26.4;
 - pytest 9.0.3;
-- pip 26.1.2 and setuptools 80.10.2;
+- pip 26.1.2 and setuptools 83.0.0;
 - the exact pytest dependency versions listed in the constraints file.
+
+Two of those pins were raised on 2026-08-02 for published security advisories:
+Pygments 2.19.2 → 2.20.0 (ReDoS in the GUID regex) and setuptools 80.10.2 →
+83.0.0 (MANIFEST.in exclusion bypass in sdist through a Unicode normalization
+collision). Neither package enters a numerical result — Pygments is a pytest
+display dependency and setuptools is build tooling — and the NumPy pin is
+untouched, so the wheel observations below still describe the recorded
+environment. The revised set was reinstalled from scratch on the same CPython
+3.11.9 interpreter and the full suite was rerun before the change was
+committed.
 
 The installed NumPy wheel reported OpenBLAS64 0.3.23.dev, ILP64
 (`USE_64BITINT=1`), OpenMP, `MAX_THREADS=2`, x86-64 little-endian, MSVC
