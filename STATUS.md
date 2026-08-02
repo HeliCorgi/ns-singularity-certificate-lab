@@ -1,14 +1,91 @@
 # Project status
 
-最終更新: 2026-08-01 discovery lane 第二便 (branch `fable5-mainline`)
-状態: **Clay 問題は未解決。第二便で (1) 固定相対幅 cloud の連続極限を
-carrier-frame front flow として定式化し、敵対的監査で定常解が Tsai 1998 に
-殺されること(生存は離散自己相似軌道のみ)を確定、(2) 14 方向の discovery
-portfolio を生成・審査し、正則性側の新候補 Λ(spectral front monotone /
-bandwidth–dissipation dichotomy)を PROOF CANDIDATE として登録、(3) 二つの
-pilot を実行 — 倍化写像の前進積分は走査箱内で吸引軌道なし(negative)、
-exact front-gap 台帳は恒等式全通過かつ固定相対幅 family が独立の
-非局在化 kill test を生存。**
+最終更新: 2026-08-02 Verification Sprint V1 (branch `fable5-mainline`)
+状態: **Clay 問題は未解決。V1 で discovery portfolio を検証・修正・棄却:
+定常 front profile は二重に KILLED(Tsai 1998 + Chae–Wolf weak-L³
+Liouville)、ℝ³ の厳密 DSS には log 成長 L³ 枝が存在しない(torus の log
+成長は IR-cutoff 由来と分離)、Λ の恒等式+二分法は厳密検証 PASS だが一様
+deficit 床(旧 O-8)は厳密族で REFUTED(生存は O-8′ 単一シェル崩壊構造)、
+parametric Prop 1 は「forest だけでは偽・(H1)(H2)(H3) 下で全変調クラス同時に
+証明」へ修正、shadowing 証明経路は写像が拡大的(L≈1.7–15)で KILLED。**
+
+## 2026-08-02 Verification Sprint V1 の結果
+
+新規アイデア生成は停止し、5 workstream(A–E)で既存主張の検証のみを実施。
+成果物・判定は `docs/research_notes/verification_sprint_v1/`(判定表は
+[VERDICTS.md](docs/research_notes/verification_sprint_v1/VERDICTS.md))。
+
+- **A. front flow 時刻/率の修正**(`corrected_front_flow_theorem.md`、
+  orchestrator 自身の厳密初等計算): 厳密積分式
+  \(T-t(s)=N(s)^{-2}\int_s^{S_{\max}}e^{-2(A(\sigma)-A(s))}d\sigma\) を導出。
+  片側 \(a\ge a_-\) は上界のみ(rate 主張撤回)、両側で Type-I 窓
+  \([1/2a_+,1/2a_-]\)、係数漸近 \(N=(2a_\infty(T-t))^{-1/2}(1+o(1))\) は
+  \(a\to a_\infty\) の場合のみ。周期 a では \(N^2(T-t)\) が**厳密に** S-周期
+  (log-periodic 署名は誤差項なし)。scaling 群の gauge(c_E・絶対 rate)と
+  残存障害(格子適合・実性・DSS gate・軌道安定性・χ>0・非粘性一様性・
+  seed)を台帳化。
+- **B. DSS 文献/適合性 gate**(`dss_admissibility_matrix.csv` +
+  `dss_admissibility_notes.md`、一次資料は arXiv/ar5iv 逐語、捏造 PDF 要約は
+  2 回棄却): 定常自己相似は **Tsai 1998 と Chae–Wolf ARMA 2017 Cor 1.4
+  (weak-L³ Liouville)の二重 KILL**。backward λ-DSS の正しい符号
+  \(u=\lambda u(\lambda x,\lambda^2t-(\lambda^2-1)T)\) を修正。
+  **CORRECTION 3**: 厳密 DSS では \(\|u(t)\|_{L^3}\) が
+  \(T-t\mapsto\lambda^2(T-t)\) 不変 ⇒ log-周期 ⇒ ≡∞ か有界の二択で、
+  有界枝は全 λ>1 で既知定理により死 — **ℝ³ に log 成長 L³ 枝は存在しない**。
+  torus の \(\log(1/(T-t))\) 成長は IR-cutoff の産物として別記が必須。
+  super-period 比 2 の multi-type cycle は 2-DSS と同一対象。torus cloud と
+  Zeno relay は SS/DSS 文献の適用外(保護でも棄却でもない)。UNKNOWN 5 件
+  (λ₊ 定数、weak-L³ profile への Liouville 拡張ほか)を登録。
+- **C. Λ O-9 defect 分解**(`lambda_O9_defect_decomposition.md`、
+  `run_lambda_o9_defect_search.py`、`spectral_front_monotone.py` 拡張
+  (`front_defect_decomposition`/`full_nonlinear_power`)+新テスト):
+  (I.1)→(I.3) を defect 恒等式に分解し、有理 half を relay triad
+  s=1,2,3・P1/P2/P3・r∈{0,1,2}・ν 3 値で**厳密 Fraction telescoping 検証**。
+  deficit の ν 最小化は \(\nu_*=\mathrm{Cov}/2V_r\)、粘性非依存値
+  \(\mathfrak d_*=1-\mathrm{Cov}^2H_r/(V_rG_r)\)(pilot の 0.865/0.740 は
+  ν-artefact; triad の真値は **3/4** と **6/11**)。**旧 O-8(一様床)は
+  REFUTED**: 厳密族 \(\mathfrak d_*=15D^2/(2+18D^2)\to0\)(認証点
+  15/524306 まで)。energy-neutrality 経路は r=0 で空虚
+  (\(a_k=\gamma(x_k-\mu)e_k\Rightarrow T_0=0\) 自動)。生存構造 **O-8′**:
+  飽和近傍は単一シェル崩壊を強制、\(\mathfrak d_*/(V_0/\mu^2)\) の極限比は
+  5/4(full)・1/2(in-support)、最小観測 0.126(未収束最適化、未解決と
+  記録)。ε-正則化恒等式は劣化係数がちょうど \(1+\varepsilon H_0/H_1\)。
+  → Λ 候補は「恒等式+二分法」へ降格(候補文書に訂正ブロック)。
+- **D. parametric Prop 1 監査**(`parametric_common_lyapunov_audit.md`、
+  `run_parametric_lyapunov_audit.py`): 対角 Lyapunov の零対角補題から
+  edge 条件 \(w_i/w_j=-K_{ji}/K_{ij}\) を導出。**Prop 1 は forest の定理では
+  ない**: (H1) 相互変調共有・(H2) \(\beta_{ij}\beta_{ji}<0\)・(H3) cycle
+  balance \(\prod\rho_e=1\) の下で**全 3 変調クラス同時に証明**(Lean 化
+  可能)。forest+独立変調は成長する(対照 +534)。balanced cycle
+  (\(\mathcal C=-1\))は tree と同等に死(+4.6e-13)。網羅 3.60M+乱択
+  4.32M 点で最大 margin +6.8e-10(丸め)。\(\mathcal C=-1239/128\) は厳密・
+  gauge 不変で escape は実在するが、§B.6 の \(\sqrt2\) 錯誤、staggered gain
+  の ≈92% が Trotter 平均由来、\(\det M=1\) による \(\rho(M)\ge1\) の構造性を
+  訂正。**(H1) の NS convolution からの導出は未放電** — lane は CONDITIONAL。
+- **E. continuum-to-lattice shadowing**(`poincare_shadowing_notes.md`、
+  `poincare_shadowing_scaling.csv`、`run_poincare_shadowing.py`+テスト):
+  \(R_N/I_N\) を定義(\(R_NI_N=\mathrm{id}\)、\(I_N\) は発散自由性を
+  \(O(1/N)\) で破る)。convolution 整合性 err = 5.1e-2→4.1e-3
+  (N=16→64、σ=1.825、R²=0.999、null control 正常発火)。写像レベル整合性は
+  **O(1)**(0.65–0.84)、一段写像は**拡大的**(L=14.6–15.0 @c_E=1、
+  1.73–1.81 @c_E=100)。事前登録規則(収縮余裕>整合性誤差)を 1 桁以上
+  下回り **KILLED**(走査箱内)。
+- Orchestrator による独立検算: C の \(\nu_*\)・\(\mathfrak d_*\) 公式と r=0
+  空虚性、D の零対角補題、B の DSS L³ log-周期性を手計算で確認済み。
+- **Osgood gate(単一判定、`verification_sprint_v1/spectral_front_osgood_gate.md`): KILL。**
+  一様 Osgood bridge \(K\le\Phi(z)+R/D\) は棄却: 静的最大化子
+  (coherent critical-spectrum 族 \(\widehat u=P_kv_0/|k|^2\))は
+  \(K\approx0.4\,e^{z}\)(厳密有理 anchor が float と一致、Leray retention
+  0.78–0.87、対照群は全て有界/減衰)で、**あらゆる** Osgood 許容 \(\Phi\) を
+  静的に殺す。動的脱出は厳密恒等式
+  \(\int KD\,dt=\int\|\partial_tu\|^2/D+\nu^2\!\int N_1^2+\nu\log(D/D_0)\)
+  により \(\dot H^1\)-帯域作用 \(\int N_1^2\) の制御(=正則性問題そのもの)へ
+  厳密に還元され閉鎖。moderate 振幅では大-K 配置が半 parabolic 窓で 34.6%
+  保持(瞬間 transient ではない)。Osgood closure 補題自体は条件付き定理
+  として証明・保存。**Λ は診断的 criterion に降格**(二分法
+  \(\int KD<\infty\Rightarrow\) 正則は従来どおり有効かつ既知判定より真に強い)。
+
+## 2026-08-01 第二便 — front-flow portfolio の結果
 
 ## 2026-08-01 第二便 — front-flow portfolio の結果
 

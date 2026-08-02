@@ -189,11 +189,17 @@ expanded-carrier field: the modal Cauchy–Schwarz certificates
 bound (I.3), and Lemma K \(K\le S_N=\sum_{0<|k|^2\le N^2}|k|^{-2}\) all hold
 exactly (no kill condition K1/K2 fired). Measured saturation deficits
 \(\mathfrak d\) at \(\nu=1/40\), \(r=0\): triad \(s=1\): **0.865**, triad
-\(s=2\): **0.740** (decreasing in scale — the K3 question, whether
-\(\mathfrak d\to0\) along a genuine \(N\)-sweep, is open and pre-registered);
-four-parent field: \(\mathfrak d=1\) exactly (all its transfer targets empty
-modes, so its own-mode ledger is trivial — a useful sanity case). Lemma-K
-slack is \(\sim10^3\) on these far-from-Bernstein-saturated fields.
+\(s=2\): **0.740**; four-parent field: \(\mathfrak d=1\) exactly (all its
+transfer targets empty modes, so its own-mode ledger is trivial — a useful
+sanity case). Lemma-K slack is \(\sim10^3\) on these
+far-from-Bernstein-saturated fields.
+**[Superseded 2026-08-02, Verification Sprint V1 workstream C]** these
+\(\nu\)-fixed deficits are artefacts: minimising over \(\nu\) gives the
+viscosity-free \(\mathfrak d_*=1-\mathrm{Cov}^2H_r/(V_rG_r)\) (exact triad
+values \(3/4\) and \(6/11\)), the K3/O-8 uniform floor is **refuted** by an
+exact \(D\to0\) relay family, and the surviving conjecture is O-8′
+(\(\mathfrak d_*\gtrsim c\,V_0/\mu^2\)) — see
+[`verification_sprint_v1/lambda_O9_defect_decomposition.md`](verification_sprint_v1/lambda_O9_defect_decomposition.md).
 
 **Float lane (the K4 kill test for the cloud lane).** Delocalization ratio
 \(\mu_N=M^{\rm eff}/N^3\) of the fixed-relative sparse parents:
