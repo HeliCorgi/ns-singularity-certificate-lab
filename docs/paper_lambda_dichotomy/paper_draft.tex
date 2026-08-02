@@ -1,0 +1,295 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{hyperref}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+\theoremstyle{definition}
+\newtheorem{hypothesis}{Hypothesis}
+
+\newcommand{\T}{\mathbb T}
+\newcommand{\R}{\mathbb R}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\PP}{\mathbb P}
+\newcommand{\NN}{\mathcal N}
+\newcommand{\Cov}{\mathrm{Cov}}
+
+\title{A bandwidth--dissipation dichotomy for the three-dimensional
+periodic Navier--Stokes equations, with an exact action representation}
+\author{ns-singularity-certificate-lab\thanks{Machine-assisted
+research repository; all exact-arithmetic certificates cited below are
+reproducible from the repository at the commit recorded in the
+appendix. This draft claims no resolution of any Clay Millennium
+problem, in either direction.}}
+\date{August 2026 --- draft}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For strong solutions of the unforced incompressible Navier--Stokes
+equations on $\T^3$ we prove that the spectral bandwidth
+$N_0^2=\|\nabla u\|_2^2/\|u\|_2^2$ obeys the differential inequality
+$\frac{d}{dt}\log N_0^2\le K D/(2\nu)$, where
+$D=\|\nabla u\|_2^2$ and
+$K=\|\PP(u\cdot\nabla u)\|_2^2/\|\nabla u\|_2^4$, with an explicit
+nonnegative defect; consequently if
+$\int_0^{T_{\max}}KD\,dt<\infty$ the solution is global, and in
+particular any finite-time breakdown forces the action to diverge. The
+action admits the exact representation
+$\int_0^{T'}KD\,dt=\int_0^{T'}\|\partial_tu\|_2^2/D\,dt
++\nu^2\int_0^{T'}\|{-}\Delta u\|_2^2/D\,dt+\nu\log(D(T')/D(0))$; by
+AM--GM this yields the one-sided criterion
+$\int KD\le2\int(\|\partial_tu\|_2^2/D+\nu^2\|\Delta u\|_2^2/D)$
+(the converse comparison fails for explicit decaying solutions), and
+$KD$ is dominated pointwise by both the Serrin $(\infty,2)$ and the
+critical $\|\nabla u\|_{L^3}^2$ actions. On the obstruction side we construct an
+explicit family of divergence-free trigonometric fields with exact
+closed-form spectral laws which, conditionally on a single lattice-sum
+lower bound (open; verified in exact rational arithmetic at small band
+sizes and numerically to $N=32$), shows that no Osgood-admissible
+pointwise field inequality $K\le\Phi(\log N_0^2)$ can hold uniformly:
+the dichotomy cannot be upgraded to unconditional regularity through
+that route. Proofs are elementary and self-contained modulo classical local
+theory; all numerical statements are confined to a certificate
+appendix and support only the conditional hypothesis.
+\end{abstract}
+
+\section{Introduction}
+
+The regularity theory of the three-dimensional Navier--Stokes
+equations is governed by critical quantities whose a-priori control is
+unknown. We isolate a scalar action, $\int K D\,dt$, that (i) bounds
+the growth of the spectral bandwidth through an exact modal identity
+with computable defects, (ii) is dominated by the classical critical
+actions, so its finiteness is a weaker hypothesis than theirs, and
+(iii) possesses an exact dynamic representation splitting it into a
+supercritical part (the $\dot H^1$-bandwidth action) and a harmless
+logarithm. We then show, conditionally on one lattice estimate that is
+finitely certified in exact arithmetic and asymptotically open, that
+the hypothesis cannot be verified by any pointwise Osgood-type field
+inequality: an explicit coherent critical-spectrum family saturates
+the Bernstein ratio two-sidedly and forces any uniform majorant
+$\Phi(\log N_0^2)$ of $K$ to be of exponential class. The pair of
+results freezes this lane: the dichotomy is at least as strong as the
+classical criteria it refines, and the pointwise-Osgood route to
+making it unconditional is closed modulo that one estimate.
+
+We emphasise what is \emph{not} claimed: no global regularity for all
+data, no blow-up, no Clay statement. Numerics never enter any proof;
+they appear only as reproducible exact-arithmetic certificates for the
+one conditional hypothesis.
+
+\section{Setting and main results}
+
+Let $\T^3=(\R/2\pi\Z)^3$ with normalised measure,
+$u(x,t)=\sum_{k\in\Z^3\setminus\{0\}}\hat u_k(t)e^{ik\cdot x}$ real,
+zero-mean, divergence-free ($k\cdot\hat u_k=0$), solving
+$\partial_tu+\PP(u\cdot\nabla u)=\nu\Delta u$ with $\nu>0$ and
+$u_0\in H^m_\sigma$, $m>5/2$, $u_0\neq0$; let $u$ be the maximal
+strong solution on $[0,T_{\max})$. Write
+$H_r=\sum_k|k|^{2r}|\hat u_k|^2$, $D=H_1$, $N_0^2=H_1/H_0$,
+$N_1^2=H_2/H_1$, $z=\log N_0^2\ (\ge0)$,
+$\NN=-\PP(u\cdot\nabla u)$, and
+$K=\|\NN\|_2^2/D^2$.
+
+\begin{theorem}\label{main}
+With the notation above:
+\begin{itemize}
+\item[(a)] $\displaystyle
+\Lambda(t)=\log N_0^2(t)-\frac1{2\nu}\int_0^tKD\,ds$ is
+non-increasing on $[0,T_{\max})$; quantitatively
+$\frac{d}{dt}\log N_0^2=\frac{2\Cov}{N_0^2}-\frac{2\nu V}{N_0^2}
+\le\frac{KD}{2\nu}$ with
+$\Cov=T_1/H_0$, $V=\mathrm{Var}_p(|k|^2)$,
+$p(k)=|\hat u_k|^2/H_0$, and an explicit nonnegative two-part defect.
+\item[(b)] Exactly one of: $\int_0^{T_{\max}}KD\,dt<\infty$, and then
+$z$ is bounded, $u\in L^\infty(0,T_{\max};H^1)$ and $T_{\max}=\infty$;
+or $\int_0^{T_{\max}}KD\,dt=\infty$. In particular
+$T_{\max}<\infty\Rightarrow\int_0^{T_{\max}}KD\,dt=\infty$; no claim
+is made that a global solution has finite action.
+\item[(c)] For every $T'<T_{\max}$,
+\[
+\int_0^{T'}KD\,dt=\int_0^{T'}\frac{\|\partial_tu\|_2^2}{D}\,dt
++\nu^2\int_0^{T'}N_1^2\,dt+\nu\log\frac{D(T')}{D(0)} ,
+\]
+and by AM--GM
+$\int_0^{T'}KD\,dt\le2\int_0^{T'}(\|\partial_tu\|_2^2/D+\nu^2N_1^2)dt$;
+the reverse comparison fails ($u=e^{-\nu t}(0,0,\cos x_1)$ has
+$\int KD=0$ with divergent bandwidth action).
+\item[(d)] Pointwise, $KD\le\|u\|_{L^\infty}^2$ and
+$KD\le C_S^2\|\nabla u\|_{L^3}^2$.
+\item[(e)] If moreover $KD\le\Phi(z)D+R$ a.e.\ with $\Phi>0$
+nondecreasing, $\int^\infty ds/\Phi=\infty$, $R\ge0$,
+$\int_0^{T_{\max}}R\,dt<\infty$, then the first alternative of (b)
+holds.
+\end{itemize}
+\end{theorem}
+
+The proof (Section~\ref{proofs}) is a chain of eight elementary lemmas;
+the only external inputs are the classical local theory, the
+subcritical Serrin class $L^\infty L^6$, and the mean-zero Sobolev
+embedding.
+
+On the obstruction side, fix $v_0\in\Z^3\setminus\{0\}$ and let
+\begin{equation}\label{family}
+\hat u_N(k)=\frac{P_kv_0}{|k|^2},\qquad 1\le|k|\le N,\qquad
+P_k=I-\frac{k\otimes k}{|k|^2}.
+\end{equation}
+
+\begin{lemma}[exact family laws]\label{familylaws}
+$u_N$ is real and divergence-free, and with
+$S_N=\sum_{1\le|k|\le N}|k|^{-2}$, $T_N=\sum_{1\le|k|\le N}|k|^{-4}$:
+$H_0=\tfrac23\|v_0\|^2T_N$, $H_1=\tfrac23\|v_0\|^2S_N$,
+$N_0^2=S_N/T_N$, $u_N(0)=\tfrac23S_Nv_0$, and
+$\tfrac23S_N\le\|u_N\|_\infty^2/\|\nabla u_N\|_2^2\le S_N$. Moreover
+$N/250\le S_N\le432N$ for $N\ge8$ (crude explicit constants, proven;
+numerically $S_N=4\pi N-8.7\pm0.9$) and
+$T_N\nearrow T_\infty<\infty$, so $N_0^2\asymp N$.
+\end{lemma}
+
+\begin{hypothesis}[capacity; open, certified finitely]\label{Lstar}
+There is $c_0>0$ with
+$\|\PP(u_N\cdot\nabla u_N)\|_2^2\ge c_0N^3$ for all large $N$.
+\end{hypothesis}
+
+\begin{proposition}[no Osgood-admissible uniform majorant]\label{nogo}
+Assume Hypothesis~\ref{Lstar}. If $\Phi$ is nondecreasing and
+$K(u)\le\Phi(\log N_0^2(u))$ for every zero-mean divergence-free real
+trigonometric field $u$, then $\Phi(s)\ge ce^{s}$ for all large $s$;
+in particular $\int^\infty ds/\Phi<\infty$, so clause (e) of
+Theorem~\ref{main} cannot be activated by any uniform pointwise field
+inequality.
+\end{proposition}
+
+\begin{remark}
+Hypothesis~\ref{Lstar} reduces, via the proven projection identity
+$\PP((c\cdot\nabla)u)=(c\cdot\nabla)u$ (constant $c$) and the exact
+bound $\|(v_0\cdot\nabla)u_N\|_2^2\le\tfrac23\|v_0\|^4S_N$, to the
+single lattice-sum estimate
+$Q(v_0):=\langle(u_N\cdot\nabla)u_N,(v_0\cdot\nabla)u_N\rangle\ge cN^2$.
+The appendix certifies: exact rational $K(u_N)$ at $N=4,6,8$
+($0.7884\ldots$, $1.4345\ldots$, $2.0372\ldots$; float agreement
+$\le1.3\times10^{-15}$); $Q(v_0)>0$ exactly at those $N$; and that the
+pairing bound captures $91.2$--$92.1\%$ of $\|\PP(u\cdot\nabla u)\|_2$
+for $4\le N\le32$, essentially $N$-independently.
+\end{remark}
+
+\section{Proofs}\label{proofs}
+
+The full lemma chain L0--L11 with complete proofs is reproduced from
+the repository file \texttt{complete\_proof.md}; we give it here in
+compressed form.
+
+\paragraph{L0a (regularity of moments).}
+$H_0,H_1,H_2$ are continuous; $H_0,H_1\in C^1$ with
+$\dot H_0=2\langle u,\partial_tu\rangle$,
+$\dot H_1=2\langle-\Delta u,\partial_tu\rangle$ (difference quotients
+in $C^1H^{m-2}$ paired against $C(L^2)$);
+$\partial_tu=\NN-\nu(-\Delta)u$ in $L^2$. Positivity of $H_0$ on all
+of $[0,T_{\max})$ is \emph{not} elementary and is proven as L0b
+\emph{after} L7, by bootstrap: if $t_1$ is the first vanishing time,
+then on $[0,t_1)$ Lemmas 1--4 and 7 apply, $KD\le\|u\|_\infty^2\le
+C_mM^2$ with $M=\sup_{[0,t_1]}\|u\|_{H^m}$, so $N_0^2$ is bounded
+there, $\int_0^{t_1}N_0^2<\infty$, and the integrated energy identity
+gives $H_0(t_1)>0$, a contradiction.
+
+\paragraph{L1 (ledger; energy neutrality).}
+$\tfrac12\dot H_r=T_r-\nu H_{r+1}$ ($r=0,1$) with
+$T_r=\sum|k|^{2r}\mathrm{Re}\langle\hat u_k,\hat\NN_k\rangle$;
+$T_0=-\langle u,(u\cdot\nabla)u\rangle=0$; hence
+$\int_0^{T_{\max}}D\,dt\le H_0(0)/(2\nu)$.
+
+\paragraph{L2 (identity).}
+$\frac{d}{dt}\log N_0^2=2\Cov/\mu-2\nu V/\mu$ with $\mu=N_0^2$:
+subtract the logarithmic derivatives and use
+$H_0H_2-H_1^2=H_0^2V$.
+
+\paragraph{L3 (closable covariance bound).}
+$|\Cov|\le\sqrt{V\|\NN\|_2^2/H_0}$: modal Cauchy--Schwarz
+$|\mathrm{Re}\langle\hat u_k,\hat\NN_k\rangle|\le
+|\hat u_k||\hat\NN_k|$, then vector Cauchy--Schwarz.
+
+\paragraph{L4 (square completion; (a)).}
+$\sup_{V\ge0}[\alpha\sqrt V-\nu V]=\alpha^2/(4\nu)$ with
+$\alpha=\sqrt{\|\NN\|^2/H_0}$ gives
+$\frac{d}{dt}\log N_0^2\le\|\NN\|_2^2/(2\nu H_1)=KD/(2\nu)$; the
+defect is $\Gamma^{\rm CS}+\Gamma^{\rm SC}\ge0$ as displayed in the
+repository file, with rational total.
+
+\paragraph{L5 (dichotomy; (b)).}
+$\int KD<\infty\Rightarrow z\le z_*\Rightarrow
+H_1\le e^{z_*}H_0(0)\Rightarrow u\in L^\infty L^6$ (mean-zero Sobolev),
+a subcritical Serrin class $\Rightarrow$ regularity and extension.
+
+\paragraph{L6 (action representation; (c)).}
+Expand $\|\NN\|_2^2=\|\partial_tu+\nu(-\Delta)u\|_2^2$, use
+$2\nu\langle\partial_tu,-\Delta u\rangle=\nu\dot D$, divide by $D>0$,
+integrate; $\int\dot D/D=\log(D(T')/D(0))$.
+
+\paragraph{L7 (dominations; (d)).}
+$\|\NN\|_2\le\|u\|_\infty\|\nabla u\|_2$ and
+$\|\NN\|_2\le\|u\|_{L^6}\|\nabla u\|_{L^3}
+\le C_S\|\nabla u\|_2\|\nabla u\|_{L^3}$.
+
+\paragraph{L8 (Osgood closure; (e)).}
+$\Omega(z)=\int_0^zds/\Phi$;
+$\frac{d}{dt}\Omega(z)\le D/(2\nu)+R/(2\nu\Phi(0))$, both integrable;
+$z$ bounded; apply L5.
+
+\paragraph{L9--L11 and the Proposition.}
+Band symmetry $\sum_{B_N}k_ik_jf=\delta_{ij}\tfrac13\sum|k|^2f$ (sign
+flips kill $i\neq j$; permutations equalise the diagonal); the family
+laws of Lemma~\ref{familylaws} follow by applying it to
+$|P_kv_0|^2=\|v_0\|^2-(k\cdot v_0)^2/|k|^2$ and to
+$u_N(0)=\sum\hat u_N(k)$; the crude lattice-sum bounds by dyadic-shell
+cube counting (upper) and an all-positive sub-box count (lower), with
+bounded dyadic gaps $c_-\le s_{2N}-s_N\le c_+$ for large $N$. Given
+Hypothesis~\ref{Lstar}, $K(u_{N_j})\ge c_0''e^{s_{N_j}}$ along
+$N_j=2^jN_0$; monotonicity of $\Phi$ interpolates across the bounded
+gaps, so $\Phi(s)\ge c_0''e^{-c_+}e^{s}$ for all large $s$ and
+$\int^\infty ds/\Phi<\infty$.
+\qed
+
+\section{Position among known criteria; limitations}
+
+By (d), the finiteness of $\int KD$ is implied by the classical Serrin
+$(\infty,2)$ action and by $\int\|\nabla u\|_{L^3}^2dt$; the criterion
+(b) is therefore at least as strong as both (we do not claim strictly
+stronger). By (c) and its AM--GM corollary, the criterion is implied
+by the a-priori control of
+$\int(\|\partial_tu\|_2^2/D+\nu^2N_1^2)\,dt$ --- the
+half-derivative-supercritical $\dot H^1$-bandwidth action --- while
+the exact identity shows the two differ only by $\nu\log D$, which can
+diverge to $-\infty$ on decaying solutions; this makes precise both
+why the criterion is strong and why its unconditional verification is
+out of reach of the present methods.
+Proposition~\ref{nogo} closes the pointwise-Osgood route conditionally
+on one certified lattice estimate. All statements are elementary; the
+contribution is the exact packaging, the certified obstruction family,
+and the machine-verifiable defect ledger accompanying (a).
+
+\appendix
+\section{Certificate appendix (numerics, separated from all proofs)}
+
+Reproducible from the repository (\texttt{experiments/%
+run\_coherent\_family\_certificates.py},
+\texttt{run\_osgood\_gate.py}; JSON with SHA-256 sidecars under
+\texttt{outputs/verification\_sprint\_v1/osgood\_gate/}):
+exact-\texttt{Fraction} verification of the family laws at $N=4,6,8$
+(residual $0$); exact
+$K(u_4)=0.78841070\ldots$ (full fraction stored),
+$K(u_6)=1.43447181\ldots$, $K(u_8)=2.03724301\ldots$; float pipeline
+agreement $0.0$, $4.6\times10^{-16}$, $1.3\times10^{-15}$;
+$Q(v_0)>0$ exact at $N=4,6,8$ with float continuation
+$Q/N^2=850.7\to1029.5$ over $N=8\to32$; captured fraction of
+$\|\PP(u\cdot\nabla u)\|_2$ by the sweeping pairing:
+$0.921/0.917/0.915$ (exact, $N=4,6,8$) and
+$0.915\to0.912$ (float, $N=8\to32$); $K/N_0^2=0.259\to0.396$
+($N=4\to32$); Leray retention $0.780\to0.867$. These numbers support
+Hypothesis~\ref{Lstar} only and enter no proof.
+
+\end{document}

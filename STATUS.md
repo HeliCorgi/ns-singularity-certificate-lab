@@ -1,6 +1,52 @@
 # Project status
 
-最終更新: 2026-08-02 Verification Sprint V1 (branch `fable5-mainline`)
+最終更新: 2026-08-02 freeze フェーズ(Λ lane 凍結 + exact Leray cycle gate)
+(branch `fable5-mainline`)
+
+## 2026-08-02 freeze フェーズの結果
+
+- **PART I — Λ lane の最終定理化**
+  (`docs/research_notes/verification_sprint_v1/spectral_front_final_theorem_and_nogo.md`
+  → 査読後の正本は `docs/paper_lambda_dichotomy/`): 分類は
+  THEOREM(恒等式 I.1–I.4・単調量 Λ・Osgood closure・動的恒等式・coherent
+  family 厳密法則)/ CONDITIONAL CRITERION(二分法)/ NO-GO(L* 条件付き
+  Osgood 不可能性)。「Clay proof candidate」表記は全て削除。
+- **査読可能定理への圧縮**(`docs/paper_lambda_dichotomy/`:
+  theorem_statement.md・complete_proof.md・dependency_and_gap_audit.md・
+  paper_draft.tex): 主定理 1 本 — **帯域–散逸二分法+厳密作用表現**:
+  \(\Lambda=\log N_0^2-\frac1{2\nu}\int KD\) 非増加、
+  \(\int KD<\infty\Rightarrow\) global、
+  \(\int KD=\int\|\partial_tu\|^2/D+\nu^2\int N_1^2+\nu\log(D/D_0)\)
+  (厳密恒等式)、AM–GM 片側判定
+  \(\int KD\le2\int(\|\partial_tu\|^2/D+\nu^2N_1^2)\)。条件付き命題:
+  L\*(coherent family の capacity 下界; N≤8 厳密認証・N≤32 float)を仮定
+  すると一様 pointwise Osgood majorant は指数級を強制され不可能。
+- **敵対的査読 2 名 + gate 査読 1 名**(MAJOR-REVISIONS × 3、全 CRITICAL/
+  MAJOR を修正適用済み): (1) 「作用と帯域作用の同値」は**偽**
+  (減衰解 \(u=e^{-\nu t}(0,0,\cos x_1)\) が反例; \(\nu\log D\to-\infty\)
+  が均衡)→ 片側比較のみ保持; (2) \(H_0>0\) の旧証明は循環 → Lemma 7 経由
+  bootstrap(L0b)で修復(新外部入力なし); (3) 二分法から網羅性主張を除去;
+  (4) 格子和補題を粗い明示定数で書き直し(数値 \(4\pi N-8.7\) は無主張の
+  remark); (5) 独立再導出 referee は (I.1)〜族法則まで**全て符号・定数誤り
+  なしで再現**を確認。
+- **PART II — exact Leray cycle gate: KILL**
+  (`verification_sprint_v1/exact_leray_cycle_gate.md`、査読修正適用):
+  真の Leray tensor(厳密 Fraction、エネルギー保存残差 0、895k blocks)で
+  巡回成長は**実在し interval 認証済み**(ρ(M) ≥ 1.01632…、全瞬間 margin
+  −0.225 < 0)。しかし (1) **単一 tree edge でも同等の成長**((H2) 楕円性が
+  真の結合で厳密に破れる — forest no-go は実 NS 結合には適用されない)、
+  (2) 単一 shell 剛性より viscous-time gain は \(\propto N^{-3/2}\) で
+  N 一様 gain 不可能。fattened cloud test(step 6)は未実装、自律性未検証
+  (正直に記録)。relay blow-up lane は停止。
+- **coherent family 証明書拡張**
+  (`verification_sprint_v1/coherent_family_certificates.md`):
+  対称性恒等式 \(H_0=\tfrac23\|v_0\|^2T_N\) 等は N=4,6,8 で**残差ちょうど 0**、
+  K 厳密有理(0.7884…/1.4345…/2.0372…、float 一致 ≤1.3e-15)、
+  **sweeping pairing 下界が \(\|\mathbb P(u\cdot\nabla u)\|\) の
+  91.18–92.10% を N 非依存に捕捉** — L\* は明示的格子三重和
+  \(Q(v_0)\ge cN^2\) 一つの評価に完全還元。
+
+最終更新(前回): 2026-08-02 Verification Sprint V1 (branch `fable5-mainline`)
 状態: **Clay 問題は未解決。V1 で discovery portfolio を検証・修正・棄却:
 定常 front profile は二重に KILLED(Tsai 1998 + Chae–Wolf weak-L³
 Liouville)、ℝ³ の厳密 DSS には log 成長 L³ 枝が存在しない(torus の log

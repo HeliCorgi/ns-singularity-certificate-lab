@@ -1,0 +1,3551 @@
+{
+  "schema": "ns-certificate-lab/exact-leray-cycle-gate/v1",
+  "registry": {
+    "parent_shell_max_sq": 6,
+    "child_shell_max_sq": 50,
+    "cycle_classes": [
+      "3-cycle",
+      "4-cycle",
+      "double-triad"
+    ],
+    "geometry_cap": 200,
+    "geometry_order_R1": "(max |k|^2, sum |k|^2, lexicographic child tuple)",
+    "geometry_list_R2_stratified": "PRE-REGISTERED SUPPLEMENT, declared before any dynamics was run, because R1's cap binds degenerately (all 200 sit at max|k|^2 <= 2).  R2 = round-robin over the strata (cycle kind) x (max|k|^2 shell), taking geometries in R1 order within each stratum, 200 total, with the note's own B.5 reference geometry ({(2,2,1),(2,1,2),(1,2,2)}; parents |p|^2=2) forced in.",
+    "per_shell_bucket_cap": 24,
+    "parent_orientations_per_parent": 8,
+    "polarization_generators": "v1 = k x e, v2 = k x v1, and v1+v2, v1-v2 (primitive)",
+    "child_block_dim": 4,
+    "orientations_for_dynamics_per_geometry": 64,
+    "orientation_ranking_for_dynamics": "exact imbalance score: (#non-proportional edge blocks, #hyperbolic edges, |log holonomy| when defined); ties by generator index.  Declared before any dynamics.",
+    "nu_values": [
+      "0 (structural, coupling only)",
+      "1/40",
+      "1/10"
+    ],
+    "amplitude_grid": [
+      "-1",
+      "-1/2",
+      "0",
+      "1/2",
+      "1"
+    ],
+    "switching_intervals": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "schedule_families": [
+      "staggered (one parent per interval, all sign patterns)",
+      "constant (all parents on, all sign patterns)",
+      "two-interval sign flip",
+      "random piecewise-constant on the amplitude grid"
+    ],
+    "period_scales": "delta in {1/16, 1/4, 1, 4} / coupling_inf_norm, plus 1/(nu max|k|^2)",
+    "random_schedules_per_candidate_screen": 8,
+    "random_schedules_per_candidate_refine": 4000,
+    "rho_margin_for_growth": 1e-09,
+    "compute_caps_minutes": {
+      "stage_A_exact_enumeration_and_blocks": 15,
+      "stage_B_monodromy_screen": 20,
+      "stage_C_refine_and_interval_certificate": 15,
+      "total": 50
+    },
+    "GO_conditions_step7": [
+      "inf_N E_next/E_current > 0 with no decreasing trend",
+      "off-chain/main ratio non-increasing in N",
+      "second-stage normalized gain non-degenerate",
+      "output shape returns to the same cycle class"
+    ]
+  },
+  "environment": {
+    "python": "3.11.9",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "numpy": "2.4.6",
+    "scipy": "NOT INSTALLED (hand-rolled expm)"
+  },
+  "correctness_checks": {
+    "divergence_free": {
+      "fields_checked": 36,
+      "max_divergence_defect_exact": "0",
+      "all_exactly_divergence_free": true
+    },
+    "full_system_energy_parents_dynamical": {
+      "basis_fields": [
+        "c(2, 2, 1):v1cos",
+        "c(2, 2, 1):v2cos",
+        "c(2, 2, 1):v1sin",
+        "c(2, 2, 1):v2sin",
+        "c(2, 1, 2):v1cos",
+        "c(2, 1, 2):v2cos",
+        "c(2, 1, 2):v1sin",
+        "c(2, 1, 2):v2sin",
+        "c(1, 2, 2):v1cos",
+        "c(1, 2, 2):v2cos",
+        "c(1, 2, 2):v1sin",
+        "c(1, 2, 2):v2sin",
+        "p(0, 1, -1):pol0_cos",
+        "p(0, 1, -1):pol0_sin",
+        "p(1, -1, 0):pol0_cos",
+        "p(1, -1, 0):pol0_sin",
+        "p(1, 0, -1):pol0_cos",
+        "p(1, 0, -1):pol0_sin"
+      ],
+      "n_fields": 18,
+      "ordered_triples_checked": 5832,
+      "max_six_permutation_sum_exact": "0",
+      "max_divfree_antisymmetry_defect_exact": "0",
+      "energy_conserved_exactly": true,
+      "antisymmetry_exact": true
+    }
+  },
+  "enumeration": {
+    "raw_paths_examined": {
+      "3-cycle": 1094958,
+      "4-cycle": 20973928,
+      "double-triad": 2343120
+    },
+    "bucket_cap_per_kind_and_shell": 24,
+    "buckets_that_overflowed": {
+      "3-cycle": 777378,
+      "4-cycle": 11950156,
+      "double-triad": 1412724
+    },
+    "distinct_geometries_retained": 3025,
+    "shells_populated": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      24,
+      25,
+      26,
+      27,
+      29,
+      30,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      48,
+      49,
+      50
+    ],
+    "wall_seconds": 67.19,
+    "selection": {
+      "R1_cap_binds": true,
+      "R1_max_k_sq_range": [
+        1,
+        4
+      ],
+      "R1_by_kind": {
+        "3-cycle": 73,
+        "4-cycle": 62,
+        "double-triad": 65
+      },
+      "R1_DEGENERATE": false,
+      "R2_max_k_sq_range": [
+        1,
+        50
+      ],
+      "R2_shells_covered": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        24,
+        25,
+        26,
+        27,
+        29,
+        30,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        48,
+        49,
+        50
+      ],
+      "R2_by_kind": {
+        "3-cycle": 86,
+        "4-cycle": 72,
+        "double-triad": 42
+      },
+      "B5_reference_forced_in": true
+    }
+  },
+  "analysed_geometry_count": 382,
+  "stage_A": {
+    "wall_seconds": 97.5,
+    "cap_seconds": 900,
+    "cap_bound": false,
+    "geometries_processed": 382,
+    "reality_check": {
+      "entries_checked": 895488,
+      "all_entries_exact_rational_real": true
+    },
+    "orientation_class_counts": {
+      "a_dead_common_metric": 8,
+      "b_candidate_for_growth": 216184
+    },
+    "class_a_fraction": 3.7004144464179985e-05
+  },
+  "crosstalk_table_rows": 34688,
+  "stage_B": {
+    "wall_seconds": 829.8,
+    "cap_seconds": 1200,
+    "cap_bound": false,
+    "candidate_systems_screened": 24000,
+    "monodromy_evaluations": 72000,
+    "top_by_chi": [
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          6,
+          5
+        ],
+        "nu": 0.0,
+        "coupling_inf_norm": 15.0,
+        "rho": 22163.655038775032,
+        "chi": 2.998115075905088,
+        "period": 3.3375,
+        "schedule": [
+          [
+            0.004166666666666667,
+            [
+              0.5,
+              0.5,
+              -0.5
+            ]
+          ],
+          [
+            3.333333333333333,
+            [
+              -1.0,
+              0.0,
+              -1.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          0.0,
+          3.608224830031759e-16,
+          3.0000000000000027
+        ],
+        "max_single_parent_margin": 3.0000000000000027,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          5,
+          5
+        ],
+        "nu": 0.0,
+        "coupling_inf_norm": 9.0,
+        "rho": 5.285923921692653,
+        "chi": 2.997085362593782,
+        "period": 0.5555555555555556,
+        "schedule": [
+          [
+            0.1111111111111111,
+            [
+              1.0,
+              0.5,
+              1.0
+            ]
+          ],
+          [
+            0.4444444444444444,
+            [
+              1.0,
+              0.0,
+              1.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          0.0,
+          5.828670879282072e-16,
+          3.0000000000000027
+        ],
+        "max_single_parent_margin": 3.0000000000000027,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          4,
+          5
+        ],
+        "nu": 0.0,
+        "coupling_inf_norm": 9.0,
+        "rho": 22257.004803093587,
+        "chi": 2.9968801179519953,
+        "period": 3.3402777777777777,
+        "schedule": [
+          [
+            0.006944444444444444,
+            [
+              -0.5,
+              0.5,
+              -0.5
+            ]
+          ],
+          [
+            3.333333333333333,
+            [
+              -1.0,
+              0.0,
+              -1.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          0.0,
+          7.771561172376096e-16,
+          3.0000000000000027
+        ],
+        "max_single_parent_margin": 3.0000000000000027,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 53,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            -3
+          ],
+          [
+            1,
+            0,
+            -2
+          ],
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            2,
+            -2,
+            -2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          4,
+          6
+        ],
+        "nu": 0.0,
+        "coupling_inf_norm": 15.0,
+        "rho": 26597.76211822317,
+        "chi": 2.9783919201958753,
+        "period": 3.420833333333333,
+        "schedule": [
+          [
+            0.004166666666666667,
+            [
+              0.5,
+              -0.5,
+              1.0
+            ]
+          ],
+          [
+            0.06666666666666667,
+            [
+              -0.5,
+              1.0,
+              1.0
+            ]
+          ],
+          [
+            3.333333333333333,
+            [
+              0.0,
+              1.0,
+              0.0
+            ]
+          ],
+          [
+            0.016666666666666666,
+            [
+              1.0,
+              1.0,
+              0.5
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          0.0,
+          3.0000000000000027,
+          3.608224830031759e-16
+        ],
+        "max_single_parent_margin": 3.0000000000000027,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 53,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            -3
+          ],
+          [
+            1,
+            0,
+            -2
+          ],
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            2,
+            -2,
+            -2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          4,
+          1
+        ],
+        "nu": 0.0,
+        "coupling_inf_norm": 9.0,
+        "rho": 3.873417288962455,
+        "chi": 2.9544810279540252,
+        "period": 0.45833333333333326,
+        "schedule": [
+          [
+            0.4444444444444444,
+            [
+              -0.5,
+              1.0,
+              0.0
+            ]
+          ],
+          [
+            0.006944444444444444,
+            [
+              -0.5,
+              1.0,
+              -0.5
+            ]
+          ],
+          [
+            0.006944444444444444,
+            [
+              -1.0,
+              0.0,
+              0.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          0.0,
+          3.0000000000000027,
+          2.498001805406602e-16
+        ],
+        "max_single_parent_margin": 3.0000000000000027,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          3,
+          4
+        ],
+        "nu": 0.0,
+        "coupling_inf_norm": 10.0,
+        "rho": 23290.99932835341,
+        "chi": 2.9077076443379957,
+        "period": 3.458333333333333,
+        "schedule": [
+          [
+            0.025,
+            [
+              -0.5,
+              1.0,
+              -1.0
+            ]
+          ],
+          [
+            3.333333333333333,
+            [
+              0.0,
+              0.0,
+              -1.0
+            ]
+          ],
+          [
+            0.1,
+            [
+              0.5,
+              0.5,
+              0.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          0.0,
+          1.3322676295501878e-15,
+          3.0000000000000027
+        ],
+        "max_single_parent_margin": 3.0000000000000027,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 53,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            -3
+          ],
+          [
+            1,
+            0,
+            -2
+          ],
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            2,
+            -2,
+            -2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          5,
+          4
+        ],
+        "nu": 0.0,
+        "coupling_inf_norm": 9.0,
+        "rho": 3.6431470519021256,
+        "chi": 2.864155309626709,
+        "period": 0.45138888888888884,
+        "schedule": [
+          [
+            0.006944444444444444,
+            [
+              0.0,
+              -0.5,
+              0.5
+            ]
+          ],
+          [
+            0.4444444444444444,
+            [
+              1.0,
+              1.0,
+              0.5
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          0.0,
+          3.0000000000000027,
+          7.771561172376096e-16
+        ],
+        "max_single_parent_margin": 3.0000000000000027,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          6,
+          5
+        ],
+        "nu": 0.025,
+        "coupling_inf_norm": 15.0,
+        "rho": 12467.011706817524,
+        "chi": 2.8257202610843324,
+        "period": 3.3375,
+        "schedule": [
+          [
+            0.004166666666666667,
+            [
+              0.5,
+              0.5,
+              -0.5
+            ]
+          ],
+          [
+            3.333333333333333,
+            [
+              -1.0,
+              0.0,
+              -1.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          -0.05,
+          -0.05,
+          2.8276030373660777
+        ],
+        "max_single_parent_margin": 2.8276030373660777,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          5,
+          5
+        ],
+        "nu": 0.025,
+        "coupling_inf_norm": 9.0,
+        "rho": 4.803615649803307,
+        "chi": 2.8248640105163827,
+        "period": 0.5555555555555556,
+        "schedule": [
+          [
+            0.1111111111111111,
+            [
+              1.0,
+              0.5,
+              1.0
+            ]
+          ],
+          [
+            0.4444444444444444,
+            [
+              1.0,
+              0.0,
+              1.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          -0.05,
+          -0.05,
+          2.8276030373660777
+        ],
+        "max_single_parent_margin": 2.8276030373660777,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          4,
+          5
+        ],
+        "nu": 0.025,
+        "coupling_inf_norm": 9.0,
+        "rho": 12513.553742371072,
+        "chi": 2.8244859448571744,
+        "period": 3.3402777777777777,
+        "schedule": [
+          [
+            0.006944444444444444,
+            [
+              -0.5,
+              0.5,
+              -0.5
+            ]
+          ],
+          [
+            3.333333333333333,
+            [
+              -1.0,
+              0.0,
+              -1.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          -0.05,
+          -0.05,
+          2.8276030373660777
+        ],
+        "max_single_parent_margin": 2.8276030373660777,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 53,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            -3
+          ],
+          [
+            1,
+            0,
+            -2
+          ],
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            2,
+            -2,
+            -2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          4,
+          3
+        ],
+        "nu": 0.0,
+        "coupling_inf_norm": 10.0,
+        "rho": 1.3495518161038855,
+        "chi": 2.8213886989073185,
+        "period": 0.10625000000000001,
+        "schedule": [
+          [
+            0.1,
+            [
+              0.5,
+              -1.0,
+              0.0
+            ]
+          ],
+          [
+            0.00625,
+            [
+              -0.5,
+              0.0,
+              0.5
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          0.0,
+          3.0000000000000027,
+          1.3322676295501878e-15
+        ],
+        "max_single_parent_margin": 3.0000000000000027,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 53,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            -3
+          ],
+          [
+            1,
+            0,
+            -2
+          ],
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            2,
+            -2,
+            -2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          5,
+          2
+        ],
+        "nu": 0.0,
+        "coupling_inf_norm": 10.0,
+        "rho": 35733.49553914676,
+        "chi": 2.808172440611309,
+        "period": 3.733333333333333,
+        "schedule": [
+          [
+            3.333333333333333,
+            [
+              -1.0,
+              1.0,
+              0.0
+            ]
+          ],
+          [
+            0.4,
+            [
+              -1.0,
+              0.5,
+              -0.5
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          0.0,
+          3.0000000000000027,
+          8.673617379884035e-16
+        ],
+        "max_single_parent_margin": 3.0000000000000027,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 53,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            -3
+          ],
+          [
+            1,
+            0,
+            -2
+          ],
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            2,
+            -2,
+            -2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          4,
+          6
+        ],
+        "nu": 0.025,
+        "coupling_inf_norm": 15.0,
+        "rho": 14784.79906020024,
+        "chi": 2.8067297952953796,
+        "period": 3.420833333333333,
+        "schedule": [
+          [
+            0.004166666666666667,
+            [
+              0.5,
+              -0.5,
+              1.0
+            ]
+          ],
+          [
+            0.06666666666666667,
+            [
+              -0.5,
+              1.0,
+              1.0
+            ]
+          ],
+          [
+            3.333333333333333,
+            [
+              0.0,
+              1.0,
+              0.0
+            ]
+          ],
+          [
+            0.016666666666666666,
+            [
+              1.0,
+              1.0,
+              0.5
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          -0.05,
+          2.8276030373660785,
+          -0.05
+        ],
+        "max_single_parent_margin": 2.8276030373660785,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          3,
+          5
+        ],
+        "nu": 0.0,
+        "coupling_inf_norm": 10.0,
+        "rho": 19977.726441205792,
+        "chi": 2.782868361778829,
+        "period": 3.558333333333333,
+        "schedule": [
+          [
+            3.333333333333333,
+            [
+              -0.5,
+              0.0,
+              1.0
+            ]
+          ],
+          [
+            0.025,
+            [
+              0.0,
+              1.0,
+              -1.0
+            ]
+          ],
+          [
+            0.1,
+            [
+              0.5,
+              1.0,
+              0.0
+            ]
+          ],
+          [
+            0.1,
+            [
+              -1.0,
+              1.0,
+              0.5
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          0.0,
+          1.3322676295501878e-15,
+          3.0000000000000027
+        ],
+        "max_single_parent_margin": 3.0000000000000027,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 53,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            -3
+          ],
+          [
+            1,
+            0,
+            -2
+          ],
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            2,
+            -2,
+            -2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          4,
+          1
+        ],
+        "nu": 0.025,
+        "coupling_inf_norm": 9.0,
+        "rho": 3.579210185339967,
+        "chi": 2.78212834353299,
+        "period": 0.45833333333333326,
+        "schedule": [
+          [
+            0.4444444444444444,
+            [
+              -0.5,
+              1.0,
+              0.0
+            ]
+          ],
+          [
+            0.006944444444444444,
+            [
+              -0.5,
+              1.0,
+              -0.5
+            ]
+          ],
+          [
+            0.006944444444444444,
+            [
+              -1.0,
+              0.0,
+              0.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          -0.05,
+          2.8276030373660785,
+          -0.05
+        ],
+        "max_single_parent_margin": 2.8276030373660785,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 53,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            -3
+          ],
+          [
+            1,
+            0,
+            -2
+          ],
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            2,
+            -2,
+            -2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          4,
+          7
+        ],
+        "nu": 0.0,
+        "coupling_inf_norm": 15.0,
+        "rho": 17351.246810915458,
+        "chi": 2.7626659372906524,
+        "period": 3.533333333333333,
+        "schedule": [
+          [
+            0.06666666666666667,
+            [
+              0.5,
+              0.5,
+              1.0
+            ]
+          ],
+          [
+            0.06666666666666667,
+            [
+              -0.5,
+              -0.5,
+              0.5
+            ]
+          ],
+          [
+            3.333333333333333,
+            [
+              -1.0,
+              1.0,
+              0.0
+            ]
+          ],
+          [
+            0.06666666666666667,
+            [
+              1.0,
+              -1.0,
+              -0.5
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          0.0,
+          3.0000000000000027,
+          1.4224732503009818e-16
+        ],
+        "max_single_parent_margin": 3.0000000000000027,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          0,
+          5
+        ],
+        "nu": 0.0,
+        "coupling_inf_norm": 9.0,
+        "rho": 10051.71498829054,
+        "chi": 2.7589018511690546,
+        "period": 3.3402777777777777,
+        "schedule": [
+          [
+            3.333333333333333,
+            [
+              -0.5,
+              0.5,
+              -1.0
+            ]
+          ],
+          [
+            0.006944444444444444,
+            [
+              -0.5,
+              -1.0,
+              -1.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          0.0,
+          4.996003610813204e-16,
+          3.0000000000000027
+        ],
+        "max_single_parent_margin": 3.0000000000000027,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          0,
+          4
+        ],
+        "nu": 0.0,
+        "coupling_inf_norm": 9.0,
+        "rho": 9728.305664793712,
+        "chi": 2.7434076422778033,
+        "period": 3.3472222222222223,
+        "schedule": [
+          [
+            3.333333333333333,
+            [
+              -0.5,
+              0.5,
+              1.0
+            ]
+          ],
+          [
+            0.006944444444444444,
+            [
+              0.0,
+              0.0,
+              0.0
+            ]
+          ],
+          [
+            0.006944444444444444,
+            [
+              0.5,
+              0.5,
+              0.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          0.0,
+          4.996003610813204e-16,
+          3.0000000000000027
+        ],
+        "max_single_parent_margin": 3.0000000000000027,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          3,
+          4
+        ],
+        "nu": 0.025,
+        "coupling_inf_norm": 10.0,
+        "rho": 12848.409601178697,
+        "chi": 2.735703705894486,
+        "period": 3.458333333333333,
+        "schedule": [
+          [
+            0.025,
+            [
+              -0.5,
+              1.0,
+              -1.0
+            ]
+          ],
+          [
+            3.333333333333333,
+            [
+              0.0,
+              0.0,
+              -1.0
+            ]
+          ],
+          [
+            0.1,
+            [
+              0.5,
+              0.5,
+              0.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          -0.05,
+          -0.05,
+          2.8276030373660785
+        ],
+        "max_single_parent_margin": 2.8276030373660785,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          7,
+          4
+        ],
+        "nu": 0.0,
+        "coupling_inf_norm": 15.0,
+        "rho": 1.2137927968228408,
+        "chi": 2.735294117647052,
+        "period": 0.07083333333333333,
+        "schedule": [
+          [
+            0.004166666666666667,
+            [
+              -0.5,
+              0.0,
+              -0.5
+            ]
+          ],
+          [
+            0.06666666666666667,
+            [
+              0.5,
+              0.0,
+              1.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          0.0,
+          1.4224732503009818e-16,
+          3.0000000000000027
+        ],
+        "max_single_parent_margin": 3.0000000000000027,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 53,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            -3
+          ],
+          [
+            1,
+            0,
+            -2
+          ],
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            2,
+            -2,
+            -2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          4,
+          4
+        ],
+        "nu": 0.0,
+        "coupling_inf_norm": 9.0,
+        "rho": 1.0584004571252428,
+        "chi": 2.7244207545922765,
+        "period": 0.020833333333333332,
+        "schedule": [
+          [
+            0.020833333333333332,
+            [
+              1.0,
+              1.0,
+              1.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          0.0,
+          3.0000000000000027,
+          7.771561172376096e-16
+        ],
+        "max_single_parent_margin": 3.0000000000000027,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          4,
+          4
+        ],
+        "nu": 0.0,
+        "coupling_inf_norm": 9.0,
+        "rho": 1.0584004571252426,
+        "chi": 2.7244207545922667,
+        "period": 0.020833333333333332,
+        "schedule": [
+          [
+            0.020833333333333332,
+            [
+              1.0,
+              1.0,
+              -1.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          0.0,
+          7.771561172376096e-16,
+          3.0000000000000027
+        ],
+        "max_single_parent_margin": 3.0000000000000027,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          5,
+          4
+        ],
+        "nu": 0.0,
+        "coupling_inf_norm": 9.0,
+        "rho": 1.0584004571252426,
+        "chi": 2.7244207545922667,
+        "period": 0.020833333333333332,
+        "schedule": [
+          [
+            0.020833333333333332,
+            [
+              1.0,
+              1.0,
+              1.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          0.0,
+          5.828670879282072e-16,
+          3.0000000000000027
+        ],
+        "max_single_parent_margin": 3.0000000000000027,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 53,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            -3
+          ],
+          [
+            1,
+            0,
+            -2
+          ],
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            2,
+            -2,
+            -2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          5,
+          5
+        ],
+        "nu": 0.0,
+        "coupling_inf_norm": 9.0,
+        "rho": 1.0584004571252417,
+        "chi": 2.7244207545922263,
+        "period": 0.020833333333333332,
+        "schedule": [
+          [
+            0.020833333333333332,
+            [
+              1.0,
+              1.0,
+              1.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          0.0,
+          3.0000000000000027,
+          5.828670879282072e-16
+        ],
+        "max_single_parent_margin": 3.0000000000000027,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 53,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            -3
+          ],
+          [
+            1,
+            0,
+            -2
+          ],
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            2,
+            -2,
+            -2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          4,
+          5
+        ],
+        "nu": 0.0,
+        "coupling_inf_norm": 9.0,
+        "rho": 1.0584004571252412,
+        "chi": 2.724420754592206,
+        "period": 0.020833333333333332,
+        "schedule": [
+          [
+            0.020833333333333332,
+            [
+              1.0,
+              1.0,
+              1.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          0.0,
+          3.0000000000000027,
+          5.828670879282072e-16
+        ],
+        "max_single_parent_margin": 3.0000000000000027,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          1,
+          4
+        ],
+        "nu": 0.0,
+        "coupling_inf_norm": 9.0,
+        "rho": 1.378053797804272,
+        "chi": 2.7162822691141444,
+        "period": 0.11805555555555555,
+        "schedule": [
+          [
+            0.1111111111111111,
+            [
+              -0.5,
+              -0.5,
+              -1.0
+            ]
+          ],
+          [
+            0.006944444444444444,
+            [
+              -0.5,
+              0.5,
+              -0.5
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          0.0,
+          2.498001805406602e-16,
+          3.0000000000000027
+        ],
+        "max_single_parent_margin": 3.0000000000000027,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 53,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            -3
+          ],
+          [
+            1,
+            0,
+            -2
+          ],
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            2,
+            -2,
+            -2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          5,
+          4
+        ],
+        "nu": 0.025,
+        "coupling_inf_norm": 9.0,
+        "rho": 3.3775842659046456,
+        "chi": 2.6964791772603105,
+        "period": 0.45138888888888884,
+        "schedule": [
+          [
+            0.006944444444444444,
+            [
+              0.0,
+              -0.5,
+              0.5
+            ]
+          ],
+          [
+            0.4444444444444444,
+            [
+              1.0,
+              1.0,
+              0.5
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          -0.05,
+          2.8276030373660777,
+          -0.05
+        ],
+        "max_single_parent_margin": 2.8276030373660777,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 53,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            -3
+          ],
+          [
+            1,
+            0,
+            -2
+          ],
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            2,
+            -2,
+            -2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          4,
+          3
+        ],
+        "nu": 0.025,
+        "coupling_inf_norm": 10.0,
+        "rho": 1.3251007567279194,
+        "chi": 2.6493035233938955,
+        "period": 0.10625000000000001,
+        "schedule": [
+          [
+            0.1,
+            [
+              0.5,
+              -1.0,
+              0.0
+            ]
+          ],
+          [
+            0.00625,
+            [
+              -0.5,
+              0.0,
+              0.5
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          -0.05,
+          2.8276030373660785,
+          -0.05
+        ],
+        "max_single_parent_margin": 2.8276030373660785,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 53,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            -3
+          ],
+          [
+            1,
+            0,
+            -2
+          ],
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            2,
+            -2,
+            -2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          5,
+          2
+        ],
+        "nu": 0.025,
+        "coupling_inf_norm": 10.0,
+        "rho": 18934.757439193694,
+        "chi": 2.638059249126244,
+        "period": 3.733333333333333,
+        "schedule": [
+          [
+            3.333333333333333,
+            [
+              -1.0,
+              1.0,
+              0.0
+            ]
+          ],
+          [
+            0.4,
+            [
+              -1.0,
+              0.5,
+              -0.5
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          -0.05,
+          2.8276030373660777,
+          -0.05
+        ],
+        "max_single_parent_margin": 2.8276030373660777,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          3,
+          5
+        ],
+        "nu": 0.025,
+        "coupling_inf_norm": 10.0,
+        "rho": 10957.297343667258,
+        "chi": 2.6140780151836807,
+        "period": 3.558333333333333,
+        "schedule": [
+          [
+            3.333333333333333,
+            [
+              -0.5,
+              0.0,
+              1.0
+            ]
+          ],
+          [
+            0.025,
+            [
+              0.0,
+              1.0,
+              -1.0
+            ]
+          ],
+          [
+            0.1,
+            [
+              0.5,
+              1.0,
+              0.0
+            ]
+          ],
+          [
+            0.1,
+            [
+              -1.0,
+              1.0,
+              0.5
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          -0.05,
+          -0.05,
+          2.8276030373660777
+        ],
+        "max_single_parent_margin": 2.8276030373660777,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          0,
+          5
+        ],
+        "nu": 0.025,
+        "coupling_inf_norm": 9.0,
+        "rho": 5986.949084336785,
+        "chi": 2.603776633303041,
+        "period": 3.3402777777777777,
+        "schedule": [
+          [
+            3.333333333333333,
+            [
+              -0.5,
+              0.5,
+              -1.0
+            ]
+          ],
+          [
+            0.006944444444444444,
+            [
+              -0.5,
+              -1.0,
+              -1.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          -0.05,
+          -0.05,
+          2.8276030373660777
+        ],
+        "max_single_parent_margin": 2.8276030373660777,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 53,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            -3
+          ],
+          [
+            1,
+            0,
+            -2
+          ],
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            2,
+            -2,
+            -2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          4,
+          7
+        ],
+        "nu": 0.025,
+        "coupling_inf_norm": 15.0,
+        "rho": 9479.73527517966,
+        "chi": 2.5915787746132253,
+        "period": 3.533333333333333,
+        "schedule": [
+          [
+            0.06666666666666667,
+            [
+              0.5,
+              0.5,
+              1.0
+            ]
+          ],
+          [
+            0.06666666666666667,
+            [
+              -0.5,
+              -0.5,
+              0.5
+            ]
+          ],
+          [
+            3.333333333333333,
+            [
+              -1.0,
+              1.0,
+              0.0
+            ]
+          ],
+          [
+            0.06666666666666667,
+            [
+              1.0,
+              -1.0,
+              -0.5
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          -0.05,
+          2.8276030373660785,
+          -0.05
+        ],
+        "max_single_parent_margin": 2.8276030373660785,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          0,
+          4
+        ],
+        "nu": 0.025,
+        "coupling_inf_norm": 9.0,
+        "rho": 5794.459961123247,
+        "chi": 2.5886113875018095,
+        "period": 3.3472222222222223,
+        "schedule": [
+          [
+            3.333333333333333,
+            [
+              -0.5,
+              0.5,
+              1.0
+            ]
+          ],
+          [
+            0.006944444444444444,
+            [
+              0.0,
+              0.0,
+              0.0
+            ]
+          ],
+          [
+            0.006944444444444444,
+            [
+              0.5,
+              0.5,
+              0.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          -0.05,
+          -0.05,
+          2.8276030373660785
+        ],
+        "max_single_parent_margin": 2.8276030373660785,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          4,
+          4
+        ],
+        "nu": 0.025,
+        "coupling_inf_norm": 9.0,
+        "rho": 1.0550731913708253,
+        "chi": 2.5732867309723297,
+        "period": 0.020833333333333332,
+        "schedule": [
+          [
+            0.020833333333333332,
+            [
+              1.0,
+              1.0,
+              -1.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          -0.05,
+          -0.05,
+          2.8276030373660785
+        ],
+        "max_single_parent_margin": 2.8276030373660785,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 53,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            -3
+          ],
+          [
+            1,
+            0,
+            -2
+          ],
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            2,
+            -2,
+            -2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          4,
+          4
+        ],
+        "nu": 0.025,
+        "coupling_inf_norm": 9.0,
+        "rho": 1.0550731913708251,
+        "chi": 2.57328673097232,
+        "period": 0.020833333333333332,
+        "schedule": [
+          [
+            0.020833333333333332,
+            [
+              1.0,
+              1.0,
+              1.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          -0.05,
+          2.8276030373660785,
+          -0.05
+        ],
+        "max_single_parent_margin": 2.8276030373660785,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          5,
+          4
+        ],
+        "nu": 0.025,
+        "coupling_inf_norm": 9.0,
+        "rho": 1.0550731913708251,
+        "chi": 2.57328673097232,
+        "period": 0.020833333333333332,
+        "schedule": [
+          [
+            0.020833333333333332,
+            [
+              1.0,
+              1.0,
+              -1.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          -0.05,
+          -0.05,
+          2.8276030373660785
+        ],
+        "max_single_parent_margin": 2.8276030373660785,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 53,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            -3
+          ],
+          [
+            1,
+            0,
+            -2
+          ],
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            2,
+            -2,
+            -2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          4,
+          5
+        ],
+        "nu": 0.025,
+        "coupling_inf_norm": 9.0,
+        "rho": 1.0550731913708242,
+        "chi": 2.573286730972279,
+        "period": 0.020833333333333332,
+        "schedule": [
+          [
+            0.020833333333333332,
+            [
+              1.0,
+              1.0,
+              1.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          -0.05,
+          2.8276030373660785,
+          -0.05
+        ],
+        "max_single_parent_margin": 2.8276030373660785,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 53,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            -3
+          ],
+          [
+            1,
+            0,
+            -2
+          ],
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            2,
+            -2,
+            -2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          5,
+          5
+        ],
+        "nu": 0.025,
+        "coupling_inf_norm": 9.0,
+        "rho": 1.0550731913708242,
+        "chi": 2.573286730972279,
+        "period": 0.020833333333333332,
+        "schedule": [
+          [
+            0.020833333333333332,
+            [
+              1.0,
+              1.0,
+              1.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          -0.05,
+          2.8276030373660777,
+          -0.05
+        ],
+        "max_single_parent_margin": 2.8276030373660777,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          7,
+          4
+        ],
+        "nu": 0.025,
+        "coupling_inf_norm": 15.0,
+        "rho": 1.1990821570749977,
+        "chi": 2.563149106280066,
+        "period": 0.07083333333333333,
+        "schedule": [
+          [
+            0.004166666666666667,
+            [
+              -0.5,
+              0.0,
+              -0.5
+            ]
+          ],
+          [
+            0.06666666666666667,
+            [
+              0.5,
+              0.0,
+              1.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          -0.05,
+          -0.05,
+          2.8276030373660785
+        ],
+        "max_single_parent_margin": 2.8276030373660785,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      },
+      {
+        "geometry": 179,
+        "kind": "4-cycle",
+        "children": [
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            2,
+            -2,
+            2
+          ]
+        ],
+        "max_k_sq": 12,
+        "orientation": [
+          0,
+          2,
+          4
+        ],
+        "nu": 0.0,
+        "coupling_inf_norm": 10.0,
+        "rho": 3.1680879365631682,
+        "chi": 2.5625071807121453,
+        "period": 0.45,
+        "schedule": [
+          [
+            0.025,
+            [
+              0.5,
+              -0.5,
+              -1.0
+            ]
+          ],
+          [
+            0.025,
+            [
+              -1.0,
+              -1.0,
+              0.5
+            ]
+          ],
+          [
+            0.4,
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        ],
+        "holonomy_exact": null,
+        "non_proportional_edges": 4,
+        "hyperbolic_edges": 0,
+        "single_parent_margins": [
+          0.0,
+          8.673617379884035e-16,
+          3.0000000000000027
+        ],
+        "max_single_parent_margin": 3.0000000000000027,
+        "zero_instantaneous_margin_class": false,
+        "cycle_beats_frozen_parent": false
+      }
+    ],
+    "max_chi_by_nu": {
+      "0.0": 2.998115075905088,
+      "0.025": 2.8257202610843324,
+      "0.1": 2.3395240084877553
+    },
+    "max_rho_by_nu": {
+      "0.0": 1.8617325805948085e+23,
+      "0.025": 3.6590874574276656e+27,
+      "0.1": 1.5929294568113116e+25
+    },
+    "count_rho_gt_1_by_nu": {
+      "0.0": 19118,
+      "0.025": 11334,
+      "0.1": 8112
+    },
+    "zero_instantaneous_margin_premise": {
+      "description": "The idea note's mechanism requires EVERY single-parent generator to be elliptic (max Re lambda <= 0), so that any Floquet gain is pure cycle holonomy.  Measured here in the FULL 4-dim-per-mode polarization space.",
+      "candidates_by_nu": {
+        "0.0": 24000,
+        "0.025": 24000,
+        "0.1": 24000
+      },
+      "in_zero_margin_class_by_nu": {
+        "0.0": 15647,
+        "0.025": 20402,
+        "0.1": 21236
+      },
+      "cycle_beats_frozen_parent_by_nu": {
+        "0.0": 16590,
+        "0.025": 12778,
+        "0.1": 11200
+      },
+      "growth_inside_zero_margin_class_by_nu": {
+        "0.0": 11281,
+        "0.025": 7770,
+        "0.1": 5567
+      },
+      "max_single_parent_margin_over_all_candidates_by_nu": {
+        "0.0": 3.0000000000000027,
+        "0.025": 2.8276030373660785,
+        "0.1": 2.341381265149113
+      },
+      "min_single_parent_margin_over_all_candidates_by_nu": {
+        "0.0": 0.0,
+        "0.025": -0.9500000000000001,
+        "0.1": -3.8000000000000003
+      }
+    }
+  },
+  "geometries_summary": {
+    "count": 382,
+    "full_per_geometry_tables_in": "cycle_gate_stage_a.json"
+  },
+  "stage_D_tree_control": {
+    "results": {
+      "0.0": {
+        "single_edge_systems_tested": 28480,
+        "with_positive_growth": 5438,
+        "fraction_violating_prop1": 0.19094101123595505,
+        "largest_single_edge_growth_rate": 3.577708763999665,
+        "worst_example": {
+          "child_a": [
+            0,
+            1,
+            3
+          ],
+          "child_b": [
+            1,
+            0,
+            1
+          ],
+          "parent": [
+            1,
+            -1,
+            -2
+          ],
+          "generator": "pol3_sin",
+          "polarization": [
+            5,
+            -1,
+            3
+          ],
+          "max_Re_lambda": 3.577708763999665,
+          "prop1_bound_minus_nu_min_k_sq": -0.0
+        }
+      },
+      "0.025": {
+        "single_edge_systems_tested": 28480,
+        "with_positive_growth": 3750,
+        "fraction_violating_prop1": 0.13167134831460675,
+        "largest_single_edge_growth_rate": 3.4291060336346573,
+        "worst_example": {
+          "child_a": [
+            0,
+            1,
+            3
+          ],
+          "child_b": [
+            1,
+            0,
+            1
+          ],
+          "parent": [
+            1,
+            -1,
+            -2
+          ],
+          "generator": "pol3_cos",
+          "polarization": [
+            5,
+            -1,
+            3
+          ],
+          "max_Re_lambda": 3.4291060336346573,
+          "prop1_bound_minus_nu_min_k_sq": -0.05
+        }
+      },
+      "0.1": {
+        "single_edge_systems_tested": 28480,
+        "with_positive_growth": 2256,
+        "fraction_violating_prop1": 0.07921348314606741,
+        "largest_single_edge_growth_rate": 3.000000000000002,
+        "worst_example": {
+          "child_a": [
+            0,
+            3,
+            1
+          ],
+          "child_b": [
+            1,
+            1,
+            0
+          ],
+          "parent": [
+            1,
+            -2,
+            -1
+          ],
+          "generator": "pol2_cos",
+          "polarization": [
+            5,
+            3,
+            -1
+          ],
+          "max_Re_lambda": 3.000000000000002,
+          "prop1_bound_minus_nu_min_k_sq": -0.2
+        }
+      }
+    },
+    "wall_seconds": 128.4
+  },
+  "stage_E_critical_normalization": {
+    "rows": [
+      {
+        "scale_s": 1,
+        "N_equals_max_k": 3.0,
+        "c_E": 1.0,
+        "parent_amplitude_critical": 0.5773502691896257,
+        "nu_N_sq": 0.22500000000000003,
+        "best_net_floquet_chi": 0.12498766194973675,
+        "stage_gain_q_star": 0.5555007197766076,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 1,
+        "N_equals_max_k": 3.0,
+        "c_E": 10.0,
+        "parent_amplitude_critical": 1.8257418583505538,
+        "nu_N_sq": 0.22500000000000003,
+        "best_net_floquet_chi": 0.8817581647181554,
+        "stage_gain_q_star": 3.9189251765251343,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 1,
+        "N_equals_max_k": 3.0,
+        "c_E": 100.0,
+        "parent_amplitude_critical": 5.773502691896258,
+        "nu_N_sq": 0.22500000000000003,
+        "best_net_floquet_chi": 3.2748766194972063,
+        "stage_gain_q_star": 14.55500719776536,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 1,
+        "N_equals_max_k": 3.0,
+        "c_E": 228.0,
+        "parent_amplitude_critical": 8.717797887081348,
+        "nu_N_sq": 0.22500000000000003,
+        "best_net_floquet_chi": 5.059697804215862,
+        "stage_gain_q_star": 22.487545796514937,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 2,
+        "N_equals_max_k": 6.0,
+        "c_E": 1.0,
+        "parent_amplitude_critical": 0.408248290463863,
+        "nu_N_sq": 0.9000000000000001,
+        "best_net_floquet_chi": -0.40504270180746876,
+        "stage_gain_q_star": -0.450047446452743,
+        "positive_net_growth": false
+      },
+      {
+        "scale_s": 2,
+        "N_equals_max_k": 6.0,
+        "c_E": 10.0,
+        "parent_amplitude_critical": 1.2909944487358056,
+        "nu_N_sq": 0.9000000000000001,
+        "best_net_floquet_chi": 0.6651924068115038,
+        "stage_gain_q_star": 0.7391026742350041,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 2,
+        "N_equals_max_k": 6.0,
+        "c_E": 100.0,
+        "parent_amplitude_critical": 4.08248290463863,
+        "nu_N_sq": 0.9000000000000001,
+        "best_net_floquet_chi": 4.049572981925505,
+        "stage_gain_q_star": 4.499525535472783,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 2,
+        "N_equals_max_k": 6.0,
+        "c_E": 228.0,
+        "parent_amplitude_critical": 6.164414002968976,
+        "nu_N_sq": 0.9000000000000001,
+        "best_net_floquet_chi": 6.573691307765025,
+        "stage_gain_q_star": 7.304101453072249,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 3,
+        "N_equals_max_k": 9.0,
+        "c_E": 1.0,
+        "parent_amplitude_critical": 0.3333333333333333,
+        "nu_N_sq": 2.025,
+        "best_net_floquet_chi": -1.418803587480868,
+        "stage_gain_q_star": -0.7006437469041323,
+        "positive_net_growth": false
+      },
+      {
+        "scale_s": 3,
+        "N_equals_max_k": 9.0,
+        "c_E": 10.0,
+        "parent_amplitude_critical": 1.0540925533894598,
+        "nu_N_sq": 2.025,
+        "best_net_floquet_chi": -0.10803862701651923,
+        "stage_gain_q_star": -0.05335240840321937,
+        "positive_net_growth": false
+      },
+      {
+        "scale_s": 3,
+        "N_equals_max_k": 9.0,
+        "c_E": 100.0,
+        "parent_amplitude_critical": 3.3333333333333335,
+        "nu_N_sq": 2.025,
+        "best_net_floquet_chi": 4.036964125191364,
+        "stage_gain_q_star": 1.9935625309586984,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 3,
+        "N_equals_max_k": 9.0,
+        "c_E": 228.0,
+        "parent_amplitude_critical": 5.033222956847166,
+        "nu_N_sq": 2.025,
+        "best_net_floquet_chi": 7.128365099549485,
+        "stage_gain_q_star": 3.5201802960738195,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 4,
+        "N_equals_max_k": 12.0,
+        "c_E": 1.0,
+        "parent_amplitude_critical": 0.28867513459481287,
+        "nu_N_sq": 3.6000000000000005,
+        "best_net_floquet_chi": -2.9000246761005384,
+        "stage_gain_q_star": -0.8055624100279272,
+        "positive_net_growth": false
+      },
+      {
+        "scale_s": 4,
+        "N_equals_max_k": 12.0,
+        "c_E": 10.0,
+        "parent_amplitude_critical": 0.9128709291752769,
+        "nu_N_sq": 3.6000000000000005,
+        "best_net_floquet_chi": -1.3864836705636958,
+        "stage_gain_q_star": -0.3851343529343599,
+        "positive_net_growth": false
+      },
+      {
+        "scale_s": 4,
+        "N_equals_max_k": 12.0,
+        "c_E": 100.0,
+        "parent_amplitude_critical": 2.886751345948129,
+        "nu_N_sq": 3.6000000000000005,
+        "best_net_floquet_chi": 3.3997532389945326,
+        "stage_gain_q_star": 0.9443758997207033,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 4,
+        "N_equals_max_k": 12.0,
+        "c_E": 228.0,
+        "parent_amplitude_critical": 4.358898943540674,
+        "nu_N_sq": 3.6000000000000005,
+        "best_net_floquet_chi": 6.969395608431867,
+        "stage_gain_q_star": 1.9359432245644073,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 6,
+        "N_equals_max_k": 18.0,
+        "c_E": 1.0,
+        "parent_amplitude_critical": 0.23570226039551584,
+        "nu_N_sq": 8.1,
+        "best_net_floquet_chi": -7.242708811953521,
+        "stage_gain_q_star": -0.8941615817226569,
+        "positive_net_growth": false
+      },
+      {
+        "scale_s": 6,
+        "N_equals_max_k": 18.0,
+        "c_E": 10.0,
+        "parent_amplitude_critical": 0.7453559924999299,
+        "nu_N_sq": 8.1,
+        "best_net_floquet_chi": -5.389007227781406,
+        "stage_gain_q_star": -0.6653095342940007,
+        "positive_net_growth": false
+      },
+      {
+        "scale_s": 6,
+        "N_equals_max_k": 18.0,
+        "c_E": 100.0,
+        "parent_amplitude_critical": 2.3570226039551585,
+        "nu_N_sq": 8.1,
+        "best_net_floquet_chi": 0.47291188046493443,
+        "stage_gain_q_star": 0.0583841827734487,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 6,
+        "N_equals_max_k": 18.0,
+        "c_E": 228.0,
+        "parent_amplitude_critical": 3.559026084010437,
+        "nu_N_sq": 8.1,
+        "best_net_floquet_chi": 4.844813065135544,
+        "stage_gain_q_star": 0.5981250697698203,
+        "positive_net_growth": true
+      }
+    ],
+    "wall_seconds": 85.7
+  },
+  "stage_C_interval_certificate": {
+    "precision_bits": 100,
+    "exact_schedule_used": [
+      [
+        "1",
+        [
+          "1",
+          "0",
+          "0"
+        ]
+      ],
+      [
+        "1",
+        [
+          "0",
+          "1",
+          "0"
+        ]
+      ],
+      [
+        "1",
+        [
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    ],
+    "nu_exact": "1/40",
+    "expm_pieces": [
+      {
+        "scaling_squarings": 4,
+        "taylor_order": 26,
+        "scaled_inf_norm": "176282661594238151145635289499/1267650600228229401496703205376",
+        "remainder_bound": "90470289/100433627766186892221372630771322662657637687111424552206336"
+      },
+      {
+        "scaling_squarings": 5,
+        "taylor_order": 26,
+        "scaled_inf_norm": "197080054254232539763940576461/1267650600228229401496703205376",
+        "remainder_bound": "1837379973/100433627766186892221372630771322662657637687111424552206336"
+      },
+      {
+        "scaling_squarings": 4,
+        "taylor_order": 26,
+        "scaled_inf_norm": "157465972997100370967168601293/633825300114114700748351602688",
+        "remainder_bound": "9221851777231911/1606938044258990275541962092341162602522202993782792835301376"
+      }
+    ],
+    "det_analytic": 0.00030353913807886623,
+    "det_note": "det M = exp(-nu tr D T) <= 1 exactly (every K_a is traceless), so the determinant route CANNOT certify rho > 1; not computed (Laplace is O(n!))",
+    "trace_power_bounds": [
+      {
+        "q": 1,
+        "trace_enclosure": [
+          4.207838691653044,
+          4.207838691653044
+        ],
+        "trace_enclosure_width": 7.431069727181931e-26,
+        "abs_trace_lower_bound": 4.207838691653044,
+        "rho_lower_bound": 0.35065322430442036
+      },
+      {
+        "q": 2,
+        "trace_enclosure": [
+          0.337050712854798,
+          0.337050712854798
+        ],
+        "trace_enclosure_width": 2.3257670524269003e-25,
+        "abs_trace_lower_bound": 0.337050712854798,
+        "rho_lower_bound": 0.16759343484924014
+      },
+      {
+        "q": 4,
+        "trace_enclosure": [
+          2.146798586414822,
+          2.146798586414822
+        ],
+        "trace_enclosure_width": 5.85464164862447e-25,
+        "abs_trace_lower_bound": 2.146798586414822,
+        "rho_lower_bound": 0.6503580401577158
+      },
+      {
+        "q": 8,
+        "trace_enclosure": [
+          1.9683854238903664,
+          1.9683854238903664
+        ],
+        "trace_enclosure_width": 1.2911523094023867e-24,
+        "abs_trace_lower_bound": 1.9683854238903664,
+        "rho_lower_bound": 0.797748712206164
+      },
+      {
+        "q": 16,
+        "trace_enclosure": [
+          2.654348706854601,
+          2.654348706854601
+        ],
+        "trace_enclosure_width": 3.0069689544687797e-24,
+        "abs_trace_lower_bound": 2.654348706854601,
+        "rho_lower_bound": 0.9100149888585723
+      },
+      {
+        "q": 32,
+        "trace_enclosure": [
+          3.453923660018008,
+          3.453923660018008
+        ],
+        "trace_enclosure_width": 8.236073881967386e-24,
+        "abs_trace_lower_bound": 3.453923660018008,
+        "rho_lower_bound": 0.9618289816413318
+      },
+      {
+        "q": 64,
+        "trace_enclosure": [
+          5.964204613487675,
+          5.964204613487675
+        ],
+        "trace_enclosure_width": 2.972886219058706e-23,
+        "abs_trace_lower_bound": 5.964204613487675,
+        "rho_lower_bound": 0.9891355283334482
+      },
+      {
+        "q": 128,
+        "trace_enclosure": [
+          17.78586829232224,
+          17.78586829232224
+        ],
+        "trace_enclosure_width": 1.8529164894310072e-22,
+        "abs_trace_lower_bound": 17.78586829232224,
+        "rho_lower_bound": 1.0030789300109284
+      },
+      {
+        "q": 256,
+        "trace_enclosure": [
+          158.16855545591687,
+          158.16855545591687
+        ],
+        "trace_enclosure_width": 3.443934103935259e-21,
+        "abs_trace_lower_bound": 158.16855545591687,
+        "rho_lower_bound": 1.0101241663117888
+      },
+      {
+        "q": 512,
+        "trace_enclosure": [
+          12508.645967505727,
+          12508.645967505727
+        ],
+        "trace_enclosure_width": 5.692443880199179e-19,
+        "abs_trace_lower_bound": 12508.645967505727,
+        "rho_lower_bound": 1.0136653189223377
+      },
+      {
+        "q": 1024,
+        "trace_enclosure": [
+          78233111.97019863,
+          78233111.97019863
+        ],
+        "trace_enclosure_width": 7.441026087304036e-15,
+        "abs_trace_lower_bound": 78233111.97019863,
+        "rho_lower_bound": 1.0154405477910613
+      },
+      {
+        "q": 2048,
+        "trace_enclosure": [
+          3060209904270818.0,
+          3060209904270818.0
+        ],
+        "trace_enclosure_width": 6.083411601010254e-07,
+        "abs_trace_lower_bound": 3060209904270818.0,
+        "rho_lower_bound": 1.0163293277426175
+      }
+    ],
+    "best_rho_lower_bound": 1.0163293277426175,
+    "best_q": 2048,
+    "certifies_rho_gt_1": true,
+    "claimed_bound": "rho(M) >= (|tr M^q| / n)^(1/q), rigorous for every q",
+    "float_reference": {
+      "chi": 0.005690773555361031,
+      "rho": 1.0172188856124955,
+      "orientation": [
+        2,
+        6,
+        1
+      ],
+      "single_parent_margins": [
+        -0.22499999999999987,
+        -0.22499999999999998,
+        -0.22499999999999976
+      ]
+    }
+  },
+  "stage_E_verdict": {
+    "q_star_strictly_decreasing_in_N_for_every_c_E": true,
+    "inf_N_stage_gain_positive": false,
+    "branch_tested": "FIXED CARDINALITY (3 modes dilated). The fixed-relative-width cloud (step 6) was NOT run."
+  },
+  "verdict": {
+    "gate": "KILL",
+    "step_5_kill": false,
+    "step_5_note": "growth exists and is interval-certified: rho(M) >= 1.016329328",
+    "interval_certified_growth": true,
+    "certified_rho_lower_bound": 1.0163293277426175,
+    "certified_candidate_in_zero_instantaneous_margin_class": true,
+    "ground_1_tree_control_fires": {
+      "statement": "a SINGLE EDGE {k,k+p} (a FOREST) already grows, so Proposition 1 does not apply to the exact Leray coupling; hypothesis (H2) fails exactly (blocks not proportional).",
+      "nu_0": "5438/28480 grow, max +3.577709",
+      "nu_1_40": "3750/28480 grow, max +3.429106",
+      "nu_1_10": "2256/28480 grow, max +3.000000",
+      "consequence": "the note's \"impossible at any amplitude for every tree -> finite threshold for a cycle\" factor-infinity-to-finite jump is FALSE; both are finite."
+    },
+    "ground_2_no_uniformity_in_N": {
+      "statement": "q_*(N) = chi_net/(nu N^2) = C(c_E) N^{-3/2} - 1, an identity (single shell => -nu D scalar; K linear in amplitude and in s).",
+      "strictly_decreasing_for_every_c_E": true,
+      "zero_crossing_at_c_E_228": "N ~ 24.6",
+      "equivalent_to": "judge_rigor c_E >~ nu^2 N^3/chi^2 -> infinity; exponent matches the repo's own fixed_cardinality_scaling rejection."
+    },
+    "honest_gaps": {
+      "step_6_galerkin_cloud_test": "NOT RUN - compute cap reached. The fixed-relative-width branch (obligation 4 / K2) is therefore NOT settled by this gate.",
+      "step_7_conditions_unmeasured": [
+        "second-stage normalized gain",
+        "output shape returns to same cycle class",
+        "off-chain/main ratio TREND in N"
+      ],
+      "autonomy": "NOT discharged and never tested: parent amplitudes are PRESCRIBED, not dynamical."
+    },
+    "mechanism_specific_verdict": "The cyclic-carrier phenomenon is real and certified, but it is neither novel (trees do it too) nor uniform in N (fixed-cardinality branch dies as N^{-3/2})."
+  }
+}
