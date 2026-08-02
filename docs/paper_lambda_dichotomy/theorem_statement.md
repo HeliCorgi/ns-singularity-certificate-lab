@@ -121,11 +121,20 @@ the bound for that one family is all it ever needed. See*
 **The smoothly truncated coherent family.** Call
 \(\chi\) **admissible** if
 \[
-\chi\in C^\infty([0,\infty);[0,1]),\qquad
+\chi\in C^4([0,\infty);[0,1]),\qquad
 \chi\equiv1\ \text{on }[0,\tfrac12],\qquad
 \operatorname{supp}\chi\subset[0,1];
 \]
 no monotonicity is assumed. Write \(c_\chi=1+\|\chi'\|_{L^\infty}\).
+*(The load-bearing minimum is \(\chi\in C^1\), indeed Lipschitz: only
+\(\chi'\) is ever used quantitatively, through \(c_\chi\) in the
+Riemann-sum rate. Derivatives of order \(2,3,4\) enter only the
+far-field expansion \(V=\pi^2W+O(|y|^{-4})\), which no proof consumes;
+the non-degeneracy uses no derivative of \(\chi\) at all. The class is
+stated as \(C^4\) so that the exact-rational certificate cutoff — a
+degree-9 smoothstep in \(r^2\), lying in \(C^4\setminus C^5\) — is
+admissible and every line of the capacity document is true verbatim.
+No step requires \(\chi\in C^\infty\).)*
 For \(v_0\in\mathbb R^3\setminus\{0\}\) (no integrality is needed), an
 admissible \(\chi\), and an integer \(N\ge2\), define
 \[
@@ -168,10 +177,17 @@ exist \(c_0=c_0(\chi,v_0)>0\) and \(N_*=N_*(\chi,v_0)\) with
 \qquad\text{for all }N\ge N_* .
 \]
 This is Theorem 7.1(3) of
-[lstar/lstar_proof_main.md](lstar/lstar_proof_main.md); the exponent
+[lstar/lstar_proof_main.md](lstar/lstar_proof_main.md), reproduced in
+full as the capacity appendix of `paper_draft.tex`; the exponent
 \(3\) is the sharp one (Lemma 7 caps
 \(\|\mathbb P(u\cdot\nabla u)\|_2^2\le\|u\|_\infty^2H_1\asymp N^3\)).
-Its constants are **not effective** — see "Constant dependence".
+**Quantifiers.** The bound holds *for every* admissible cutoff profile
+\(\chi\) and *every* nonzero seed vector \(v_0\), but \(c_0\) and
+\(N_*\) depend on the pair \((\chi,v_0)\) and are **not uniform** in
+it; they are also **not effective** — see "Constant dependence". What
+*is* uniform in \((\chi,v_0)\) is the qualitative non-degeneracy
+\(\mathbb P(V\cdot\nabla V)\not\equiv0\), which is what makes the
+"for every" quantifier legitimate.
 
 **Theorem O.** If \(\Phi:[0,\infty)\to(0,\infty)\) is nondecreasing and
 \(K(u)\le\Phi(\log N_0^2(u))\) for every zero-mean divergence-free real

@@ -83,8 +83,13 @@ bound \(\|\mathbb P(u_N\cdot\nabla u_N)\|_2^2\ge c_0N^3\) for the
 *sharply* truncated coherent family — is replaced by the **Capacity
 Theorem**: the same bound, with the same sharp exponent \(3\), **proven**
 for the *smoothly* truncated family
-\(\widehat u_N(k)=\chi(|k|/N)P_kv_0/|k|^2\), uniformly in the admissible
-cutoff \(\chi\) and in \(v_0\in\mathbb R^3\setminus\{0\}\). This is
+\(\widehat u_N(k)=\chi(|k|/N)P_kv_0/|k|^2\), **for every** admissible
+cutoff \(\chi\) and **every** \(v_0\in\mathbb R^3\setminus\{0\}\). The
+constants \(c_0=c_0(\chi,v_0)\) and \(N_*=N_*(\chi,v_0)\) are **not
+uniform** in \((\chi,v_0)\) — and are non-effective; what is uniform in
+\((\chi,v_0)\) is the qualitative non-degeneracy
+\(\mathbb P(V\cdot\nabla V)\not\equiv0\), which is what licenses the
+"for every" quantifier. This is
 Theorem 7.1(3) of
 [lstar/lstar_proof_main.md](lstar/lstar_proof_main.md).
 
@@ -108,16 +113,20 @@ introduces no external results; the substantive content is its own
 author as **"PROVEN modulo standard"**; both were examined by the
 adversarial referee and **both were accepted**:
 
-1. **The symbol estimate \(V=V_\infty+O(|y|^{-p})\)** — i.e.
-   \((1-\chi)h\) is a \(C^p\) symbol of order \(-2\) vanishing near the
-   origin, so its transform decays like \(|y|^{-p}\) away from the
+1. **The symbol estimate \(V=V_\infty+O(|y|^{-4})\)** — i.e.
+   \((1-\chi)h\) is a \(C^4\) symbol of order \(-2\) vanishing near the
+   origin, so its transform decays like \(|y|^{-M}\), \(2\le M\le4\),
+   away from the
    origin. **Accepted.** In the main document this is Theorem 3.3(b),
    where it is not a gesture but a complete proof: \(|\partial^\beta G|
    \lesssim\langle\xi\rangle^{-2-|\beta|}\) is in \(L^1\) for
-   \(|\beta|\ge2\), and \(y^\beta\widetilde G=i^{|\beta|}
+   \(2\le|\beta|\le4\), and \(y^\beta\widetilde G=i^{|\beta|}
    \widetilde{\partial^\beta G}\) is then bounded by
    \(\|\partial^\beta G\|_{L^1}\). Referee verdict: *"correct
-   (\(|\beta|\ge2\Rightarrow\partial^\beta G\in L^1\))"*.
+   (\(|\beta|\ge2\Rightarrow\partial^\beta G\in L^1\))"*. (Under the
+   amended Definition 0.1, \(\chi\in C^4\), four derivatives are what is
+   available and \(M=4\) is what §3.4 consumes; **this input is
+   consumed by nothing** — it feeds only the inert §3.4.)
 2. **Riemann integrability of \(C(\zeta)\overline{\widetilde\Psi(\zeta)}\)**
    — the Fourier-side route to the duality limit. **Accepted, and
    moreover not consumed:** the main document does *not* take that route.
@@ -250,8 +259,10 @@ From
    difference attributable to the different \(\chi\) — counted as a real
    cross-validation. Defects found: one **false** proposition
    (the Abel-regularised Poisson identity — see §5, now deleted; the
-   referee proved that no summation method can rescue it, because the
-   divergent terms are eventually positive), the paper-level integration
+   naive absolutely convergent periodisation argument is unavailable,
+   because the profile decays only like \(|y|^{-1}\) with a
+   sign-definite spherical mean, so the series of translates diverges
+   with eventually-positive terms), the paper-level integration
    burden (discharged by the present revision), the "all constants are
    explicit" claim (corrected; see §5), and cosmetics. The false
    statement was **inert**: §§4–7 never cited it.
@@ -260,10 +271,10 @@ From
 
 | item | consumed by | status |
 |---|---|---|
-| capacity bound for the **smooth** family, \(\ge c_0N^3\) | Theorem O | **PROVEN** — Thm 7.1(3) of the capacity document; sharp exponent; uniform in \(\chi\) and \(v_0\). Referee could not break it and confirmed the pivotal identity (Thm 6.5) to 14 digits by an independent method |
+| capacity bound for the **smooth** family, \(\ge c_0N^3\) | Theorem O | **PROVEN** — Thm 7.1(3) of the capacity document; sharp exponent; holds **for every** admissible \(\chi\) and **every** \(v_0\neq0\), with \(c_0(\chi,v_0)\), \(N_*(\chi,v_0)\) **not uniform** in that pair (the *qualitative* non-degeneracy, not the constants, is what is \((\chi,v_0)\)-uniform). Referee could not break it and confirmed the pivotal identity (Thm 6.5) to 14 digits by an independent method |
 | effectivity of \(c_0\) and \(N_*\) | Theorem O's constant \(c\) | **NON-EFFECTIVE**, and this is now stated in the paper. The test field \(\Psi\) comes from density of \(C^\infty_{c,\sigma}\) in \(L^2_\sigma\) (E3), a pure existence argument: neither \(\Psi\), nor its radius \(R\), nor \(I_\Psi\), nor \(c_0\), nor \(N_*\) is produced. Not a gap in the proof; it *was* a false advertisement in the old "all constants are explicit" claim, now corrected. An effective version needs an explicit \(\Psi\) plus a quantitative lower bound on \(I_\Psi\); the certified non-vanishing region \(\{|\zeta|<\pi^2/2048\}\) forces \(R\gtrsim10^3\), \(N_*\gtrsim10^4\), and a \(c_0\) far below the measured \(\approx8.4\|v_0\|^4\) |
 | (L\*) for the **sharply** truncated family | — | **OPEN, and no longer used.** Untouched by the capacity proof: the smoothness of \(\chi\) is needed at exactly one point (\(|\nabla F|\lesssim|\xi|^{-3}\) in Thm 4.2, which fails for \(\chi=\mathbb 1_{[0,1]}\); \(V\) then acquires an oscillatory \(|y|^{-2}\) tail and the Riemann defect a Gauss-circle term). §§5–6 are insensitive to \(\chi\), so the gap is technical, not structural. Certified finitely (N ≤ 8 exact, N ≤ 32 float). Additionally constrained by the JOB A no-go (§3a) |
-| Abel-regularised Poisson identity (former Prop 3.4 / eq. (3.2) of the capacity document) | — | **FALSE and DELETED** (referee MAJOR-1). \(V\) decays only like \(|y|^{-1}\) with a sign-definite spherical mean, so the periodisation diverges; the terms being eventually positive, *no* summation method — Abel included — rescues it, and the offered proof was independently unsound twice over. **Impact: none** — the statement was inert, cited nowhere in §§4–7; §4's exact lattice-Riemann identity does the work. Replaced by a remark recording the no-go |
+| Abel-regularised Poisson identity (former Prop 3.4 / eq. (3.2) of the capacity document) | — | **FALSE and DELETED** (referee MAJOR-1). The **naive absolutely convergent periodisation argument is unavailable**: \(V\) decays only like \(|y|^{-1}\) with a sign-definite spherical mean, so the series of translates diverges, and its terms are eventually positive (so Abel summation in particular does not converge either); the offered proof was independently unsound twice over. No broader claim about summation methods is made or needed. **Impact: none** — the statement was inert, cited nowhere in §§4–7; §4's exact lattice-Riemann identity does the work. Replaced by a remark recording the no-go |
 | Riemann-sum rate \(O(N^{-1}\log N)\) (Thm 4.2) | capacity proof | **PROVEN but not tight**: independent lattice evaluation gives \(E_N=\Theta(1/N)\), no logarithm. Four constant corrections (referee MINOR-3) do not change the rate, and the rate is used only qualitatively (\(\mathcal E_N\to0\)) |
 | exhaustiveness of a two-case blow-up/global split | — | **not claimed** (referee A M2): (b) is stated as the proven pair {action finite ⇒ global} / {action infinite}, with \(T_{\max}<\infty\Rightarrow\) action infinite; a global solution with infinite action is not excluded |
 | equivalence of \(\int KD<\infty\) with the bandwidth action | — | **false and withdrawn** (referee A C1 / B critical 2): only the one-sided comparison \(\int KD\le2\int(\|\partial_tu\|^2/D+\nu^2N_1^2)\) holds (Cor 6′); explicit decaying counterexample recorded |

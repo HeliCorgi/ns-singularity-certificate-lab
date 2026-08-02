@@ -21,3 +21,5 @@ import NSSingularity.GalerkinPicard
 import NSSingularity.KatoConstant
 import NSSingularity.ChainAnalysis
 import NSSingularity.MesoscopicDuhamelNoGo
+import NSSingularity.SpectralFrontIdentities
+import NSSingularity.BandSymmetry

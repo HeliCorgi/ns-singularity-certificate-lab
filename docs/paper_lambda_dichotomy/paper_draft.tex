@@ -1,7 +1,7 @@
 \documentclass[11pt]{article}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage[margin=1.1in]{geometry}
-\usepackage{hyperref}
+\usepackage[hidelinks]{hyperref}
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}{Lemma}
@@ -21,9 +21,10 @@
 \title{Spectral-front identities for periodic Navier--Stokes\\
 and an obstruction to uniform pointwise Osgood closure}
 \author{ns-singularity-certificate-lab\thanks{Machine-assisted
-research repository; all exact-arithmetic certificates cited below are
-reproducible from the repository at the commit recorded in the
-appendix. This draft claims no resolution of any Clay Millennium
+research repository. All mathematics is contained in this paper; the
+exact-arithmetic certificates reported in the certificate appendix are
+reproducible from the repository scripts named there, and are not used
+in any proof. This draft claims no resolution of any Clay Millennium
 problem, in either direction.}}
 \date{August 2026 --- draft}
 
@@ -45,26 +46,38 @@ $\int_0^{T'}KD\,dt=\int_0^{T'}\|\partial_tu\|_2^2/D\,dt
 +\nu^2\int_0^{T'}\|{-}\Delta u\|_2^2/D\,dt+\nu\log(D(T')/D(0))$; by
 AM--GM this yields the one-sided criterion
 $\int KD\le2\int(\|\partial_tu\|_2^2/D+\nu^2\|\Delta u\|_2^2/D)$
-(the converse comparison fails for explicit decaying solutions), and
+(the converse comparison fails, and the failure is one about the
+\emph{infinite-time} integral $T'\to\infty$, not about any finite
+$T'$), and
 $KD$ is dominated pointwise by both the Serrin $(\infty,2)$ and the
 critical $\|\nabla u\|_{L^3}^2$ actions. On the obstruction side we construct an
 explicit family of divergence-free trigonometric fields with exact
 closed-form spectral laws, and prove for it the capacity lower bound
 $\|\PP(u_N\cdot\nabla u_N)\|_2^2\ge c_0N^3$ with the sharp exponent,
-uniformly in the cutoff profile and in the seed vector. It follows
+for every admissible cutoff profile $\chi$ and every nonzero seed
+vector $v_0$; the constants $c_0=c_0(\chi,v_0)$ and
+$N_*=N_*(\chi,v_0)$ are \emph{not} uniform in $(\chi,v_0)$ and are
+non-effective. It follows
 \emph{unconditionally} that no Osgood-admissible pointwise field
-inequality $K\le\Phi(\log N_0^2)$ can hold uniformly: the dichotomy
+inequality $K\le\Phi(\log N_0^2)$ can hold uniformly over all
+zero-mean divergence-free trigonometric fields: the dichotomy
 cannot be upgraded to unconditional regularity through that route. The
 capacity constant $c_0$ and the band threshold $N_*$ are the only
 non-effective constants in the paper; every other constant is explicit.
-Proofs are elementary and self-contained modulo classical local
-theory; no numerical statement enters any proof, and all numerics are
-confined to a certificate appendix. The claimed
+Proofs are elementary and, modulo classical local theory and the
+standard Fourier-analytic facts cited in the bibliography, complete
+and self-contained: the capacity bound is proved in full in
+Appendix~\ref{app:capacity}. No numerical statement enters any proof;
+all numerics are confined to a certificate appendix, and the
+machine-checkable certificates themselves remain in the repository. The claimed
 novelty is the exact packaging --- the modal identities, their
 machine-checkable defect ledger, and the obstruction family with its
-capacity bound --- and overlap with known refinements of the Serrin
-criteria is possible. Internal review was performed by AI agents and is
-not human peer review.
+capacity bound. The criterion is not claimed to be new in strength:
+it belongs to the family of dynamic-wavenumber criteria whose closest
+representative is that of Cheskidov--Shvydkoy
+\cite{CheskidovShvydkoy2014}, and the objects $N_0$, $N_1$ and $K$ are
+classical (Section~\ref{position}). Internal review was performed by
+AI agents and is not human peer review.
 \end{abstract}
 
 \section{Introduction}
@@ -92,6 +105,28 @@ data, no blow-up, no Clay statement. Numerics never enter any proof;
 they appear only as reproducible exact-arithmetic certificates
 corroborating the proven statements.
 
+\paragraph{Structure, and what is proved where.}
+Section~\ref{proofs} gives the lemma chain behind Theorem~\ref{main} in
+compressed but complete form; each step is a few lines of elementary
+computation. Theorem~\ref{capacity}, the one statement whose proof is
+long, is proved \emph{in full} in Appendix~\ref{app:capacity}: cutoff
+class and exact family laws
+(\S\ref{app:laws}--\S\ref{app:lattice}), the continuum profile $V$ and
+its far field (\S\ref{app:profile}--\S\ref{app:farfield-sec}), the exact
+lattice-Riemann identity with an explicit rate (\S\ref{app:riemann}),
+the concentrated test field and the resulting $N^3$ duality lower bound
+(\S\ref{app:duality}), the $\chi$-independent non-degeneracy
+$\PP(V\cdot\nabla V)\not\equiv0$ (\S\ref{app:nondeg}), and the
+assembly (\S\ref{app:final}). Section~\ref{position} places the
+criterion among the known frequency-localised and dynamic-wavenumber
+criteria. Appendix~\ref{app:certificates} reports the numerical
+corroboration; the certificates themselves, being machine-checkable
+artefacts rather than mathematics, remain in the repository. Apart from
+the classical inputs listed after Theorem~\ref{main} and the standard
+Fourier-analytic facts isolated as
+Remarks~\ref{app:classical-riesz}--\ref{app:classical-leray}, the paper
+is self-contained.
+
 \section{Setting and main results}
 
 Let $\T^3=(\R/2\pi\Z)^3$ with normalised measure,
@@ -103,7 +138,15 @@ strong solution on $[0,T_{\max})$. Write
 $H_r=\sum_k|k|^{2r}|\hat u_k|^2$, $D=H_1$, $N_0^2=H_1/H_0$,
 $N_1^2=H_2/H_1$, $z=\log N_0^2\ (\ge0)$,
 $\NN=-\PP(u\cdot\nabla u)$, and
-$K=\|\NN\|_2^2/D^2$.
+$K=\|\NN\|_2^2/D^2$. The functional setting (Leray projection $\PP$,
+Stokes operator, the spaces $H^m_\sigma$ on the torus) is the standard
+one \cite{ConstantinFoias,Temam}, and the existence of a maximal
+strong solution with the continuation principle is classical
+\cite{FujitaKato1964,Kato1972,MajdaBertozzi,RRS2016}. The ratios
+$N_0$ and $N_1$ are not new objects: $N_0=\|\nabla u\|_2/\|u\|_2$ is
+the classical Taylor-microscale inverse length scale and $N_1$ the
+next rung of the same ladder
+\cite{FoiasGuillopeTemam1981,FMTT1983,BDGM1993,Gibbon1994,DoeringGibbon1995,FMRT2001}.
 
 \begin{theorem}\label{main}
 With the notation above:
@@ -126,9 +169,20 @@ is made that a global solution has finite action.
 +\nu^2\int_0^{T'}N_1^2\,dt+\nu\log\frac{D(T')}{D(0)} ,
 \]
 and by AM--GM
-$\int_0^{T'}KD\,dt\le2\int_0^{T'}(\|\partial_tu\|_2^2/D+\nu^2N_1^2)dt$;
-the reverse comparison fails ($u=e^{-\nu t}(0,0,\cos x_1)$ has
-$\int KD=0$ with divergent bandwidth action).
+$\int_0^{T'}KD\,dt\le2\int_0^{T'}(\|\partial_tu\|_2^2/D+\nu^2N_1^2)dt$.
+The reverse comparison fails, and the counterexample is a statement
+about the \emph{infinite-time} integral, i.e.\ about the limit
+$T'\to\infty$, not about a finite $T'$: for the global solution
+$u=e^{-\nu t}(0,0,\cos x_1)$ one has $KD\equiv0$, while the bandwidth
+action equals $\int_0^{T'}(\|\partial_tu\|_2^2/D+\nu^2N_1^2)dt
+=2\nu^2T'$, which is finite for every finite $T'$ and diverges only as
+$T'\to\infty$. For each finite $T'$ all three terms of the identity are
+finite and the identity holds exactly, the deficit being carried by
+$\nu\log(D(T')/D(0))=-2\nu^2T'$. Thus no bound of the form
+$\int_0^{T'}(\|\partial_tu\|_2^2/D+\nu^2N_1^2)dt\le
+C\int_0^{T'}KD\,dt$ is available, and in particular finiteness of
+$\int_0^\infty KD\,dt$ does not imply finiteness of the infinite-time
+bandwidth action.
 \item[(d)] Pointwise, $KD\le\|u\|_{L^\infty}^2$ and
 $KD\le C_S^2\|\nabla u\|_{L^3}^2$.
 \item[(e)] If moreover $KD\le\Phi(z)D+R$ a.e.\ with $\Phi>0$
@@ -139,18 +193,40 @@ holds.
 \end{theorem}
 
 The proof (Section~\ref{proofs}) is a chain of eight elementary lemmas;
-the only external inputs are the classical local theory, the
-subcritical Serrin class $L^\infty L^6$, and the mean-zero Sobolev
-embedding.
+the only external inputs are the classical local theory
+\textbf{(F1)} \cite{FujitaKato1964,Kato1972,MajdaBertozzi,RRS2016},
+the subcritical Ladyzhenskaya--Prodi--Serrin class $L^\infty L^6$
+\textbf{(F2)} \cite{Prodi1959,Serrin1962,Ladyzhenskaya1967,RRS2016},
+and the mean-zero Sobolev embedding $H^1\hookrightarrow L^6$
+\textbf{(F3)} \cite{AdamsFournier}. We do not use the endpoint
+$L^\infty L^3$ theory of \cite{ESS2003}.
 
 On the obstruction side, we use a \emph{smoothly} truncated coherent
 family.
 
 \begin{definition}[admissible cutoff]\label{admissible}
-$\chi\in C^\infty([0,\infty);[0,1])$ with $\chi\equiv1$ on
+$\chi\in C^4([0,\infty);[0,1])$ with $\chi\equiv1$ on
 $[0,\tfrac12]$ and $\operatorname{supp}\chi\subset[0,1]$; no
 monotonicity is assumed. Write $c_\chi=1+\|\chi'\|_\infty$.
 \end{definition}
+
+\begin{remark}[what the regularity of $\chi$ is for]\label{cutoffreg}
+Only $\chi'$ is used quantitatively, through the single constant
+$c_\chi$ in the Riemann-sum rate behind Theorem~\ref{capacity}
+(Theorem~\ref{app:rate}); $\chi\in C^1$ --- indeed $\chi$ merely
+Lipschitz --- suffices for Theorem~\ref{capacity} and hence for
+Theorem~\ref{nogo}. Derivatives of order $2,3,4$ occur once only, in
+the far-field expansion $V=\pi^2W+O(|y|^{-4})$
+(Theorem~\ref{app:farfield}), which no proof consumes. The
+non-degeneracy $\PP(V\cdot\nabla V)\not\equiv0$ uses no derivative of
+$\chi$ whatever --- only $0\le\chi\le1$ and $\chi\equiv1$ on
+$[0,\tfrac12]$. The smoothness of $V$ itself comes from the compact
+support of $F$, not from that of $\chi$; no step requires
+$\chi\in C^\infty$. The class is stated as $C^4$, rather than as the
+load-bearing minimum $C^1$, so that every statement of
+Appendix~\ref{app:capacity} holds verbatim and the exact-rational
+certificate cutoff of Appendix~\ref{app:certificates} is admissible.
+\end{remark}
 
 Fix $v_0\in\R^3\setminus\{0\}$ (no integrality is needed) and an
 admissible $\chi$, and let
@@ -189,12 +265,21 @@ exist $c_0=c_0(\chi,v_0)>0$ and $N_*=N_*(\chi,v_0)$ with
 \]
 The exponent $3$ is sharp, since (d) with Lemma~\ref{familylaws} gives
 $\|\PP(u_N\cdot\nabla u_N)\|_2^2\le\|u_N\|_\infty^2H_1\asymp N^3$.
+The quantifiers matter: the bound holds \emph{for every} admissible
+$\chi$ and \emph{every} $v_0\neq0$, but $c_0$ and $N_*$ depend on the
+pair $(\chi,v_0)$ and are \textbf{not} uniform in it; they are also
+non-effective (Remark~\ref{effectivity}). What \emph{is} uniform in
+$(\chi,v_0)$ is the underlying non-degeneracy
+$\PP(V\cdot\nabla V)\not\equiv0$, which is what makes the quantifier
+``for every'' legitimate.
 \end{theorem}
 
 Theorem~\ref{capacity} replaces the capacity \emph{hypothesis} of earlier
-versions of this paper. Its proof is given in full in the repository file
-\texttt{lstar/lstar\_proof\_main.md} (Theorem 7.1(3)) and is summarised in
-Section~\ref{proofs}; we state here only what it delivers.
+versions of this paper. Its complete proof is given in
+Appendix~\ref{app:capacity} of this paper; Section~\ref{proofs} gives a
+summary only. (The machine-checkable exact-arithmetic certificates that
+corroborate it remain in the repository, and are reported in
+Appendix~\ref{app:certificates}.)
 
 \begin{theorem}[no Osgood-admissible uniform majorant]\label{nogo}
 If $\Phi$ is nondecreasing and
@@ -225,7 +310,8 @@ constant sweep, is the right instrument.
 
 \begin{remark}[effectivity]\label{effectivity}
 The constants $c_0$ and $N_*$ of Theorem~\ref{capacity}, and hence $c$
-of Theorem~\ref{nogo}, are \textbf{non-effective}: the test field driving
+of Theorem~\ref{nogo}, depend on $(\chi,v_0)$ and are
+\textbf{non-effective} (see Remark~\ref{app:noneffective}): the test field driving
 the capacity bound is produced from the density of
 $C^\infty_{c,\sigma}(\R^3)$ in $L^2_\sigma(\R^3)$, a pure existence
 argument. Every other constant in this paper is explicit. An effective
@@ -238,9 +324,11 @@ a $\Psi$ has spatial radius $R\gtrsim10^3$ and forces $N_*\gtrsim10^4$.
 
 \section{Proofs}\label{proofs}
 
-The full lemma chain L0--L11 with complete proofs is reproduced from
-the repository file \texttt{complete\_proof.md}; we give it here in
-compressed form.
+The lemma chain L0--L11 is given here in compressed form; the same
+chain, written out at length, is in the repository file
+\texttt{complete\_proof.md}. The one substantial proof of the paper,
+that of Theorem~\ref{capacity}, is not compressed: it is given
+complete in Appendix~\ref{app:capacity}.
 
 \paragraph{L0a (regularity of moments).}
 $H_0,H_1,H_2$ are continuous; $H_0,H_1\in C^1$ with
@@ -291,7 +379,12 @@ integrate; $\int\dot D/D=\log(D(T')/D(0))$.
 \paragraph{L7 (dominations; (d)).}
 $\|\NN\|_2\le\|u\|_\infty\|\nabla u\|_2$ and
 $\|\NN\|_2\le\|u\|_{L^6}\|\nabla u\|_{L^3}
-\le C_S\|\nabla u\|_2\|\nabla u\|_{L^3}$.
+\le C_S\|\nabla u\|_2\|\nabla u\|_{L^3}$. Here $C_S$ is any admissible
+constant for the mean-zero embedding
+$H^1(\T^3)\hookrightarrow L^6(\T^3)$ \cite{AdamsFournier}; no sharp
+value is used or claimed. (On $\R^3$ the sharp constant is Talenti's
+\cite{Talenti1976}; we make no assertion that it transfers to the
+mean-zero torus.)
 
 \paragraph{L8 (Osgood closure; (e)).}
 $\Omega(z)=\int_0^zds/\Phi$;
@@ -320,8 +413,8 @@ monotonicity of $\Phi$ interpolates across the bounded gaps, so
 $\Phi(s)\ge c_0''e^{-c_+}e^{s}$ for all large $s$ and
 $\int^\infty ds/\Phi<\infty$.
 
-\paragraph{Theorem~\ref{capacity} (summary; full proof in the
-repository).}
+\paragraph{Theorem~\ref{capacity} (summary; complete proof in
+Appendix~\ref{app:capacity}).}
 Because $P_k=P_{k/N}$, the family obeys the exact scaling
 $\hat u_N(k)=N^{-2}F(k/N)$ with $F(\xi)=\chi(|\xi|)P_\xi v_0/|\xi|^2$,
 so with $V=\widetilde F$ (inverse transform on $\R^3$) the lattice sums
@@ -331,10 +424,16 @@ $u_N(y/N)=N(V(y)+E_N(y))$, $\nabla u_N(y/N)=N^2(\nabla V(y)+E'_N(y))$
 identically, with $\sup_{|y|\le R}(|E_N|+|E'_N|)=O(N^{-1}\log N)$
 explicitly (the integrand is compactly supported with a single
 integrable algebraic singularity; the gradient half needs and receives
-its own, log-free, argument). Poisson summation is \emph{not} available
-here --- $V$ decays exactly like $|y|^{-1}$ with a sign-definite
-spherical mean, so the periodisation diverges and, its terms being
-eventually positive, no summation method rescues it. Pairing against the
+its own, log-free, argument). The naive periodisation route --- writing
+$u_N$ as an absolutely convergent sum $N\sum_mV(N(x+2\pi m))$ over
+lattice translates --- is \emph{unavailable}: $V$ decays only like
+$|y|^{-1}$, with a sign-definite spherical mean in the $v_0$
+direction, so the series of translates diverges and the naive
+absolutely convergent periodisation argument cannot be run. (We make no
+claim about summation methods in general; the point is simply that this
+argument is not available, and none is needed --- an exact
+lattice-Riemann-sum identity replaces it. See
+Remark~\ref{app:noperiod}.) Pairing against the
 concentrated divergence-free test field $\psi_N(x)=N^{3/2}\Psi(Nx)$,
 whose $L^2(\T^3)$ norm is $N$-independent, and using self-adjointness of
 $\PP$ gives
@@ -344,8 +443,11 @@ $I_\Psi=\int(V\cdot\nabla V)\cdot\Psi$ and $\mathcal E_N=O(\log N/N)$.
 It remains to find one $\Psi$ with $I_\Psi\neq0$, i.e.\ to show
 $\PP(V\cdot\nabla V)\not\equiv0$. This holds for \emph{every} admissible
 $\chi$ and \emph{every} $v_0$, because the leading small-$\zeta$
-singularity of $F*F$ is the $\chi$-independent Oseen convolution $\tau$,
-for which, with $v_0=\|v_0\|e_3$,
+singularity of $F*F$ is the $\chi$-independent convolution $\tau$ built
+from the Oseen tensor \cite{LadyzhenskayaBook,Galdi2011} --- evaluated
+by the classical Fourier transforms of homogeneous distributions
+\cite{SteinWeiss,GelfandShilov,Grafakos} --- for which, with
+$v_0=\|v_0\|e_3$,
 \[
 \zeta\times\big(\tau(\zeta)\zeta\big)
 =\frac{3\pi^3}{8}\|v_0\|^2\frac{\zeta_3}{|\zeta|}(\zeta\times e_3)\neq0
@@ -357,7 +459,7 @@ perturbation bound $|T-\tau|\le64\pi\|v_0\|^2$ on $|\zeta|\le\tfrac18$
 transfers this to the cutoff family on $|\zeta|<\pi^2/2048$.
 \qed
 
-\section{Position among known criteria; limitations}
+\section{Position among known criteria; limitations}\label{position}
 
 By (d), the finiteness of $\int KD$ is implied by the classical Serrin
 $(\infty,2)$ action and by $\int\|\nabla u\|_{L^3}^2dt$; the criterion
@@ -369,17 +471,327 @@ half-derivative-supercritical $\dot H^1$-bandwidth action --- while
 the exact identity shows the two differ only by $\nu\log D$, which can
 diverge to $-\infty$ on decaying solutions; this makes precise both
 why the criterion is strong and why its unconditional verification is
-out of reach of the present methods.
+out of reach of the present methods. The comparison is genuinely
+one-sided, and the failure of the reverse comparison is an
+\emph{infinite-time} phenomenon: as recorded in Theorem~\ref{main}(c),
+for $u=e^{-\nu t}(0,0,\cos x_1)$ the bandwidth action is $2\nu^2T'$,
+finite for every finite $T'$ and divergent only in the limit
+$T'\to\infty$, while $\int KD\equiv0$ throughout. No finite-$T'$
+counterexample is claimed or needed.
+
+\paragraph{Comparison with the frequency-localised and dynamic-wavenumber
+criteria.}
+The criterion $\int_0^{T_{\max}}KD\,dt<\infty$ belongs to the family of
+regularity criteria stated in terms of a dynamically defined
+wavenumber rather than a norm, whose closest and strongest
+representative is the dissipation-wavenumber criterion of Cheskidov and
+Shvydkoy \cite{CheskidovShvydkoy2014}: they define $\Lambda(t)$ through
+Littlewood--Paley localisation and prove regularity under
+$\Lambda\in L^{5/2}(0,T)$, a hypothesis they show to be weaker than
+\emph{every} Ladyzhenskaya--Prodi--Serrin condition, whereas our (d)
+only establishes that $\int KD\,dt<\infty$ is \emph{implied} by the
+Serrin $(\infty,2)$ and $\int\|\nabla u\|_{L^3}^2$ actions; we
+therefore do not claim our criterion is new in strength, and it may
+well be strictly stronger --- i.e.\ a more demanding hypothesis ---
+than \cite{CheskidovShvydkoy2014}.
+
+What is genuinely different here is the mechanism rather than the
+class: $K$ and $N_0$ are $L^2$-quadratic Fourier ratios, so the
+criterion is an exact differential identity for
+$\tfrac{d}{dt}\log N_0^2$ with a computable nonnegative defect, whereas
+the frequency-localised criteria of
+\cite{CheskidovShvydkoy2010,CheskidovShvydkoy2014,BradshawGrujic2017,CheskidovDai}
+are dyadic-block estimates in Besov-type norms and carry unquantified
+harmonic-analysis constants. Conversely the ingredients we use are not
+new: $N_0$ and $N_1$ are the classical Taylor-microscale and next-rung
+inverse length scales of
+\cite{FoiasGuillopeTemam1981,BDGM1993,Gibbon1994,DoeringGibbon1995,FMRT2001},
+and the smallness of $\|\PP(u\cdot\nabla u)\|_2$ relative to
+$\|\nabla u\|_2^2$ that $K$ measures is the ``depletion of
+nonlinearity'' studied in \cite{GibbonEtAl2014}. The supercriticality
+of $\int N_1^2$ in (c) is the familiar one: $N_1^{-1}$ is a dissipative
+small scale, controlled a priori only through Gevrey/analyticity-radius
+estimates \cite{FoiasTemam1989,Kukavica1999}.
+
+Overlap is therefore concrete, and we state it as such rather than
+hedging: any solution satisfying a Serrin condition, or the
+$\dot B^0_{\infty,\infty}$/BMO logarithmic criteria of
+\cite{KozonoTaniuchi2000,KozonoOgawaTaniuchi2002} in the range where
+those imply $u\in L^\infty L^6$, also satisfies the finite-action
+hypothesis of Theorem~\ref{main}(b), so the
+criterion is \emph{not} independent of the classical ones. We are not
+aware of the specific quantity
+$\int\|\PP(u\cdot\nabla u)\|_2^2/\|\nabla u\|_2^2\,dt$, nor of the
+monotonicity of $\log N_0^2-\tfrac1{2\nu}\int KD$, appearing in the
+literature; that packaging --- not the class of criterion --- is what
+we claim, and we claim it as ``not aware of'', not as priority.
+Finally, Theorem~\ref{nogo} does not contradict the logarithmic
+closures of \cite{KozonoOgawaTaniuchi2002,Planchon2003}: those bound
+one \emph{norm} of a solution by a logarithm of a higher norm along the
+flow, whereas we exclude a \emph{pointwise field inequality}
+$K(u)\le\Phi(\log N_0^2(u))$ holding uniformly over all zero-mean
+divergence-free trigonometric fields, which is a strictly stronger
+demand and is what clause (e) would need. Results at the critical scale
+such as \cite{BourgainPavlovic2008,LeiLin2011} are context rather than
+comparison: they concern well- and ill-posedness, not criteria for a
+given strong solution.
+
+\paragraph{Limitations.}
 Theorem~\ref{nogo} closes the pointwise-Osgood route unconditionally.
-Its one limitation is effectivity (Remark~\ref{effectivity}): the
+Its one limitation is effectivity (Remark~\ref{effectivity},
+Remark~\ref{app:noneffective}): the
 capacity constant $c_0$ and the threshold $N_*$ are not produced, only
-shown to exist. All statements are elementary; the
+shown to exist, and they depend on $(\chi,v_0)$. All statements are
+elementary; the
 contribution is the exact packaging, the obstruction family with its
 capacity bound, and the machine-verifiable defect ledger accompanying
 (a).
 
+\begin{thebibliography}{99}
+
+%%% ---- F1: local existence / continuation for strong solutions ----
+\bibitem{Kato1972}
+T.~Kato,
+\emph{Nonstationary flows of viscous and ideal fluids in $\R^3$},
+J. Funct. Anal. \textbf{9} (1972), 296--305.
+\href{https://doi.org/10.1016/0022-1236(72)90003-1}{doi:10.1016/0022-1236(72)90003-1}.
+
+\bibitem{FujitaKato1964}
+H.~Fujita and T.~Kato,
+\emph{On the Navier--Stokes initial value problem.~I},
+Arch. Rational Mech. Anal. \textbf{16} (1964), 269--315.
+\href{https://doi.org/10.1007/BF00276188}{doi:10.1007/BF00276188}.
+
+\bibitem{MajdaBertozzi}
+A.~J.~Majda and A.~L.~Bertozzi,
+\emph{Vorticity and Incompressible Flow},
+Cambridge Texts in Applied Mathematics \textbf{27},
+Cambridge University Press, Cambridge, 2001.
+\href{https://doi.org/10.1017/CBO9780511613203}{doi:10.1017/CBO9780511613203}.
+
+\bibitem{ConstantinFoias}
+P.~Constantin and C.~Foias,
+\emph{Navier--Stokes Equations},
+Chicago Lectures in Mathematics,
+University of Chicago Press, Chicago, 1988.
+\href{https://doi.org/10.7208/chicago/9780226764320}{doi:10.7208/chicago/9780226764320}.
+
+\bibitem{Temam}
+R.~Temam,
+\emph{Navier--Stokes Equations: Theory and Numerical Analysis},
+reprint of the 1984 edition,
+AMS Chelsea Publishing \textbf{343},
+American Mathematical Society, Providence, RI, 2001.
+
+%%% ---- F2: Prodi--Serrin--Ladyzhenskaya subcritical regularity ----
+\bibitem{Prodi1959}
+G.~Prodi,
+\emph{Un teorema di unicit\`a per le equazioni di Navier--Stokes},
+Ann. Mat. Pura Appl. (4) \textbf{48} (1959), 173--182.
+\href{https://doi.org/10.1007/BF02410664}{doi:10.1007/BF02410664}.
+
+\bibitem{Serrin1962}
+J.~Serrin,
+\emph{On the interior regularity of weak solutions of the Navier--Stokes
+equations},
+Arch. Rational Mech. Anal. \textbf{9} (1962), 187--195.
+\href{https://doi.org/10.1007/BF00253344}{doi:10.1007/BF00253344}.
+
+\bibitem{Ladyzhenskaya1967}
+O.~A.~Ladyzhenskaya,
+\emph{On the uniqueness and smoothness of generalized solutions to the
+Navier--Stokes equations},
+Zap. Nau\v{c}n. Sem. Leningrad. Otdel. Mat. Inst. Steklov. (LOMI)
+\textbf{5} (1967), 169--185.
+
+\bibitem{RRS2016}
+J.~C.~Robinson, J.~L.~Rodrigo and W.~Sadowski,
+\emph{The Three-Dimensional Navier--Stokes Equations: Classical Theory},
+Cambridge Studies in Advanced Mathematics \textbf{157},
+Cambridge University Press, Cambridge, 2016.
+\href{https://doi.org/10.1017/CBO9781139095143}{doi:10.1017/CBO9781139095143}.
+
+\bibitem{ESS2003}
+L.~Escauriaza, G.~A.~Seregin and V.~\v{S}ver\'ak,
+\emph{$L_{3,\infty}$-solutions of the Navier--Stokes equations and backward
+uniqueness},
+Russian Math. Surveys \textbf{58} (2003), no.~2, 211--250.
+\href{https://doi.org/10.1070/RM2003v058n02ABEH000609}{doi:10.1070/RM2003v058n02ABEH000609}.
+
+%%% ---- F3: Sobolev embedding ----
+\bibitem{AdamsFournier}
+R.~A.~Adams and J.~J.~F.~Fournier,
+\emph{Sobolev Spaces}, 2nd ed.,
+Pure and Applied Mathematics \textbf{140},
+Elsevier/Academic Press, Amsterdam, 2003.
+
+\bibitem{Talenti1976}
+G.~Talenti,
+\emph{Best constant in Sobolev inequality},
+Ann. Mat. Pura Appl. (4) \textbf{110} (1976), 353--372.
+\href{https://doi.org/10.1007/BF02418013}{doi:10.1007/BF02418013}.
+
+%%% ---- Oseen tensor / Stokes fundamental solution ----
+\bibitem{LadyzhenskayaBook}
+O.~A.~Ladyzhenskaya,
+\emph{The Mathematical Theory of Viscous Incompressible Flow},
+2nd English ed., translated by R.~A.~Silverman and J.~Chu,
+Gordon and Breach, New York, 1969.
+
+\bibitem{Galdi2011}
+G.~P.~Galdi,
+\emph{An Introduction to the Mathematical Theory of the Navier--Stokes
+Equations: Steady-State Problems}, 2nd ed.,
+Springer Monographs in Mathematics, Springer, New York, 2011.
+\href{https://doi.org/10.1007/978-0-387-09620-9}{doi:10.1007/978-0-387-09620-9}.
+
+%%% ---- Fourier transform of homogeneous distributions ----
+\bibitem{GelfandShilov}
+I.~M.~Gel'fand and G.~E.~Shilov,
+\emph{Generalized Functions, Volume 1: Properties and Operations},
+Academic Press, New York, 1964.
+
+\bibitem{SteinWeiss}
+E.~M.~Stein and G.~Weiss,
+\emph{Introduction to Fourier Analysis on Euclidean Spaces},
+Princeton Mathematical Series \textbf{32},
+Princeton University Press, Princeton, NJ, 1971.
+
+\bibitem{Grafakos}
+L.~Grafakos,
+\emph{Classical Fourier Analysis}, 3rd ed.,
+Graduate Texts in Mathematics \textbf{249}, Springer, New York, 2014;
+\S2.4, ``Homogeneous Distributions''.
+\href{https://doi.org/10.1007/978-1-4939-1194-3}{doi:10.1007/978-1-4939-1194-3}.
+
+%%% ---- Frequency-localised / spectral regularity criteria ----
+\bibitem{CheskidovShvydkoy2010}
+A.~Cheskidov and R.~Shvydkoy,
+\emph{The regularity of weak solutions of the 3D Navier--Stokes equations in
+$B^{-1}_{\infty,\infty}$},
+Arch. Ration. Mech. Anal. \textbf{195} (2010), no.~1, 159--169.
+\href{https://doi.org/10.1007/s00205-009-0265-2}{doi:10.1007/s00205-009-0265-2}.
+
+\bibitem{CheskidovShvydkoy2014}
+A.~Cheskidov and R.~Shvydkoy,
+\emph{A unified approach to regularity problems for the 3D Navier--Stokes and
+Euler equations: the use of Kolmogorov's dissipation range},
+J. Math. Fluid Mech. \textbf{16} (2014), no.~2, 263--273.
+\href{https://doi.org/10.1007/s00021-014-0167-4}{doi:10.1007/s00021-014-0167-4};
+arXiv:1102.1944.
+
+\bibitem{BradshawGrujic2017}
+Z.~Bradshaw and Z.~Gruji\'c,
+\emph{Frequency localized regularity criteria for the 3D Navier--Stokes
+equations},
+Arch. Ration. Mech. Anal. \textbf{224} (2017), no.~1, 125--133.
+\href{https://doi.org/10.1007/s00205-016-1069-9}{doi:10.1007/s00205-016-1069-9};
+arXiv:1501.01043.
+
+\bibitem{CheskidovDai}
+A.~Cheskidov and M.~Dai,
+\emph{Regularity criteria for the 3D Navier--Stokes and MHD equations},
+Proc. Edinb. Math. Soc. (2) \textbf{68} (2025), 1262--1296.
+\href{https://doi.org/10.1017/S0013091525100813}{doi:10.1017/S0013091525100813};
+arXiv:1507.06611.
+
+\bibitem{KozonoTaniuchi2000}
+H.~Kozono and Y.~Taniuchi,
+\emph{Bilinear estimates in BMO and the Navier--Stokes equations},
+Math. Z. \textbf{235} (2000), 173--194.
+\href{https://doi.org/10.1007/s002090000130}{doi:10.1007/s002090000130}.
+
+\bibitem{KozonoOgawaTaniuchi2002}
+H.~Kozono, T.~Ogawa and Y.~Taniuchi,
+\emph{The critical Sobolev inequalities in Besov spaces and regularity
+criterion to some semi-linear evolution equations},
+Math. Z. \textbf{242} (2002), 251--278.
+\href{https://doi.org/10.1007/s002090100332}{doi:10.1007/s002090100332}.
+
+\bibitem{Planchon2003}
+F.~Planchon,
+\emph{An extension of the Beale--Kato--Majda criterion for the Euler
+equations},
+Comm. Math. Phys. \textbf{232} (2003), no.~2, 319--326.
+\href{https://doi.org/10.1007/s00220-002-0744-x}{doi:10.1007/s00220-002-0744-x}.
+
+\bibitem{BourgainPavlovic2008}
+J.~Bourgain and N.~Pavlovi\'c,
+\emph{Ill-posedness of the Navier--Stokes equations in a critical space in 3D},
+J. Funct. Anal. \textbf{255} (2008), no.~9, 2233--2247.
+\href{https://doi.org/10.1016/j.jfa.2008.07.008}{doi:10.1016/j.jfa.2008.07.008}.
+
+\bibitem{LeiLin2011}
+Z.~Lei and F.-H.~Lin,
+\emph{Global mild solutions of Navier--Stokes equations},
+Comm. Pure Appl. Math. \textbf{64} (2011), no.~9, 1297--1304.
+\href{https://doi.org/10.1002/cpa.20361}{doi:10.1002/cpa.20361}.
+
+%%% ---- Dynamic wavenumbers, length scales, nonlinear depletion ----
+\bibitem{FoiasGuillopeTemam1981}
+C.~Foias, C.~Guillop\'e and R.~Temam,
+\emph{New a priori estimates for Navier--Stokes equations in dimension 3},
+Comm. Partial Differential Equations \textbf{6} (1981), no.~3, 329--359.
+\href{https://doi.org/10.1080/03605308108820180}{doi:10.1080/03605308108820180}.
+
+\bibitem{FMTT1983}
+C.~Foias, O.~P.~Manley, R.~Temam and Y.~M.~Treve,
+\emph{Asymptotic analysis of the Navier--Stokes equations},
+Phys. D \textbf{9} (1983), no.~1--2, 157--188.
+\href{https://doi.org/10.1016/0167-2789(83)90297-X}{doi:10.1016/0167-2789(83)90297-X}.
+
+\bibitem{BDGM1993}
+M.~V.~Bartuccelli, C.~R.~Doering, J.~D.~Gibbon and S.~J.~A.~Malham,
+\emph{Length scales in solutions of the Navier--Stokes equations},
+Nonlinearity \textbf{6} (1993), no.~4, 549--568.
+\href{https://doi.org/10.1088/0951-7715/6/4/003}{doi:10.1088/0951-7715/6/4/003}.
+
+\bibitem{Gibbon1994}
+J.~D.~Gibbon,
+\emph{Derivation of 3d Navier--Stokes length scales from a result of Foias,
+Guillop\'e and Temam},
+Nonlinearity \textbf{7} (1994), no.~1, 245--252.
+\href{https://doi.org/10.1088/0951-7715/7/1/011}{doi:10.1088/0951-7715/7/1/011}.
+
+\bibitem{DoeringGibbon1995}
+C.~R.~Doering and J.~D.~Gibbon,
+\emph{Applied Analysis of the Navier--Stokes Equations},
+Cambridge Texts in Applied Mathematics \textbf{12},
+Cambridge University Press, Cambridge, 1995.
+\href{https://doi.org/10.1017/CBO9780511608803}{doi:10.1017/CBO9780511608803}.
+
+\bibitem{FMRT2001}
+C.~Foias, O.~Manley, R.~Rosa and R.~Temam,
+\emph{Navier--Stokes Equations and Turbulence},
+Encyclopedia of Mathematics and its Applications \textbf{83},
+Cambridge University Press, Cambridge, 2001.
+\href{https://doi.org/10.1017/CBO9780511546754}{doi:10.1017/CBO9780511546754}.
+
+\bibitem{GibbonEtAl2014}
+J.~D.~Gibbon, D.~A.~Donzis, A.~Gupta, R.~M.~Kerr, R.~Pandit and D.~Vincenzi,
+\emph{Regimes of nonlinear depletion and regularity in the 3D Navier--Stokes
+equations},
+Nonlinearity \textbf{27} (2014), no.~10, 2605--2625.
+\href{https://doi.org/10.1088/0951-7715/27/10/2605}{doi:10.1088/0951-7715/27/10/2605}.
+
+\bibitem{FoiasTemam1989}
+C.~Foias and R.~Temam,
+\emph{Gevrey class regularity for the solutions of the Navier--Stokes
+equations},
+J. Funct. Anal. \textbf{87} (1989), no.~2, 359--369.
+\href{https://doi.org/10.1016/0022-1236(89)90015-3}{doi:10.1016/0022-1236(89)90015-3}.
+
+\bibitem{Kukavica1999}
+I.~Kukavica,
+\emph{On the dissipative scale for the Navier--Stokes equation},
+Indiana Univ. Math. J. \textbf{48} (1999), no.~3, 1057--1082.
+\href{https://doi.org/10.1512/iumj.1999.48.1748}{doi:10.1512/iumj.1999.48.1748}.
+
+\end{thebibliography}
+
 \appendix
 \section{Certificate appendix (numerics, separated from all proofs)}
+\label{app:certificates}
 
 No number below enters any proof. Both Theorem~\ref{main} and
 Theorem~\ref{nogo} are unconditional, so --- unlike in earlier versions
@@ -394,12 +806,16 @@ $v_0=(1,2,3)$; weight
 $\chi(r)=1-S(\mathrm{clamp}((r^2-\tfrac14)/\tfrac34,0,1))$ with $S$ the
 degree-9 smoothstep $126s^5-420s^6+540s^7-315s^8+70s^9$, which is a
 polynomial in $r^2$ --- hence $\chi(|k|/N)\in\Q$ at every lattice point
-and the whole family is exactly rational --- and lies in $C^4$, not
-$C^\infty$. Definition~\ref{admissible} asks for $C^\infty$; the proof
-uses smoothness of $\chi$ only through $c_\chi=1+\|\chi'\|_\infty$, so
-$C^1$ suffices there, but as the class is written the exact lanes below
-are evidence for the $C^p$ variant. Degree-$(2p+1)$ smoothsteps give
-rational $\chi\in C^p$ for every $p$.
+and the whole family is exactly rational. This $\chi$ lies in
+$C^4\setminus C^5$, with $\chi\equiv1$ on $[0,\tfrac12]$,
+$\operatorname{supp}\chi=[0,1]$, $0\le\chi\le1$ and
+$\|\chi'\|_\infty=5.2167\ldots$ (so $c_\chi=6.2168\ldots$): it is
+therefore \emph{admissible} in the sense of
+Definition~\ref{admissible}, and the exact lanes below certify the
+family to which Theorem~\ref{capacity} literally applies. (See
+Remark~\ref{cutoffreg}: the proof never uses more than $\chi'$
+quantitatively.) Degree-$(2p+1)$ smoothsteps give rational
+$\chi\in C^p$ for every $p$, should a stronger class ever be wanted.
 
 Exact-\texttt{Fraction} verification of the family laws at
 $N=4,6,8,10,12$: every residual of $H_0$, $H_1$ and $u_N(0)$ is the
@@ -450,5 +866,7 @@ $\|\PP(u\cdot\nabla u)\|_2$ by the sweeping pairing:
 $0.921/0.917/0.915$ (exact, $N=4,6,8$) and
 $0.915\to0.912$ (float, $N=8\to32$); $K/N_0^2=0.259\to0.396$
 ($N=4\to32$); Leray retention $0.780\to0.867$.
+
+\input{capacity_appendix}
 
 \end{document}

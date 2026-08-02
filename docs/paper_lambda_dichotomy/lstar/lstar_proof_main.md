@@ -36,8 +36,10 @@ task (item R3) asserts an *absolutely convergent* Poisson-summation identity
 \(u_N(x)=N\sum_{m}V(N(x+2\pi m))\) with \(m\neq0\) terms \(O(1/N)\) uniformly.
 That assertion is **false**: §3.4 proves that the \(m\neq0\) series **diverges**,
 because \(V\) decays exactly like \(|y|^{-1}\) with a *non-oscillating,
-sign-definite* leading profile. **No summation method rescues it** — the
-divergent terms are eventually positive (Remark 3.4). The proof below therefore
+sign-definite* leading profile. **The naive absolutely convergent periodisation
+argument is therefore unavailable**; the divergent terms are moreover eventually
+positive, so Abel summation in particular does not converge either (Remark 3.4).
+No broader claim about summation methods is made or needed. The proof below therefore
 does **not** use Poisson summation:
 §4 replaces it with an exact lattice-Riemann-sum identity, which is elementary,
 quantitative, and gives the \(C^1_{\rm loc}\) statement (including derivatives)
@@ -81,14 +83,35 @@ symmetric, \(P_\xi\xi=0\), \(P_{-\xi}=P_\xi\), \(\|P_\xi\|\le1\).
 
 ### 0.2 The cutoff class
 
-**Definition 0.1 (admissible \(\chi\)).** \(\chi\in C^\infty([0,\infty);[0,1])\)
+**Definition 0.1 (admissible \(\chi\)).** \(\chi\in C^4([0,\infty);[0,1])\)
 with \(\chi\equiv1\) on \([0,\tfrac12]\) and \(\operatorname{supp}\chi\subset[0,1]\).
 No monotonicity is assumed (it is used nowhere). Set
 \(c_\chi:=1+\|\chi'\|_{L^\infty}\).
 
-Such \(\chi\) exist (standard mollifier construction); the numerical section uses
+*Where the four derivatives go, and why there is no \(C^\infty\).* Only
+\(\chi'\) is ever used **quantitatively**: it enters this document through the
+single constant \(c_\chi\), in the Riemann-sum rate of Theorem 4.2, and
+\(\chi\in C^1\) (indeed \(\chi\) merely Lipschitz) already suffices for every
+statement on which Theorem 7.1 depends. Derivatives of order \(2,3,4\) are used
+at exactly one place — Theorem 3.3(b), to give the far-field remainder
+\(\rho=V-\pi^2W\) the decay \(O(|y|^{-4})\) — and that decay is consumed only by
+the inert §3.4. Sections 1, 2, 3.2, 5 and 6 use **no** derivative of \(\chi\) at
+all; in particular \(V\in C^\infty\) and the Paley–Wiener statement of
+Theorem 3.2(3) are bought by the *compact support of \(F\)*, not by smoothness of
+\(\chi\), and the nonvanishing Theorem 6.7 uses only \(0\le\chi\le1\) and
+\(\chi\equiv1\) on \([0,\tfrac12]\). Nothing in this document requires
+\(\chi\in C^\infty\).
+
+Such \(\chi\) exist in abundance, and both cutoffs used in the repository are
+admissible. The float lanes (`check_lstar.py`) use the \(C^\infty\) profile
 \(\chi(t)=\Theta\!\big(\tfrac{t-1/2}{1/2}\big)\) with
 \(\Theta(s)=\frac{e^{-1/(1-s)}}{e^{-1/s}+e^{-1/(1-s)}}\) on \((0,1)\).
+The exact-rational lanes (`run_smooth_family_capacity.py`) use
+\(\chi(r)=1-S\!\big(\tfrac{r^2-1/4}{3/4}\big)\), \(S\) the degree-9 smoothstep
+\(126s^5-420s^6+540s^7-315s^8+70s^9\) clamped to \([0,1]\): a polynomial in
+\(r^2\), hence \(\chi(|k|/N)\in\mathbb Q\) at every lattice point, with
+\(\chi\in C^4\setminus C^5\) and \(\|\chi'\|_{L^\infty}=5.2167\ldots\), i.e.
+\(c_\chi=6.2168\ldots\).
 
 ### 0.3 Verification of reduction (R1)
 
@@ -312,6 +335,9 @@ V(y):=\widetilde F(y)=\int_{\mathbb R^3}F(\xi)e^{i\xi\cdot y}\,d\xi .
    \(\|\nabla V\|_\infty\le2\pi\|v_0\|\).
    Moreover \(V\) extends to an entire function on \(\mathbb C^3\) of
    exponential type \(\le1\) (Paley–Wiener).
+   (Both statements use only that \(F\in L^1\) is supported in
+   \(\{|\xi|\le1\}\); no derivative of \(\chi\) is involved, so they are
+   unaffected by the regularity assumed in Definition 0.1.)
 4. \(\nabla\cdot V\equiv0\).
 5. \(V(0)=\frac{8\pi}{3}\Big(\int_0^\infty\chi(r)\,dr\Big)v_0\neq0\).
 
@@ -355,7 +381,7 @@ W(y):=\frac{v_0}{|y|}+\frac{(v_0\cdot y)\,y}{|y|^3}\qquad(y\neq0).
 Then \(\widetilde h=\pi^2W\) as tempered distributions, and
 \[
 V(y)=\pi^2W(y)+\rho(y),\qquad
-|\rho(y)|\le C_M(\chi,v_0)\,|y|^{-M}\ \ \text{for }|y|\ge1,\ \forall M\ge2 .
+|\rho(y)|\le C_M(\chi,v_0)\,|y|^{-M}\ \ \text{for }|y|\ge1,\ \ 2\le M\le4 .
 \]
 
 *Proof.* **(a) \(\widetilde h=\pi^2W\).** The Oseen tensor
@@ -383,29 +409,37 @@ locally integrable.) Consequently
 \(\widetilde h=(2\pi)^3\mathcal O v_0=\frac{(2\pi)^3}{8\pi}W=\pi^2W\).
 
 **(b) The remainder.** \(F-h=-(1-\chi(|\cdot|))h=:-G\). \(G\) vanishes on
-\(\{|\xi|<\frac12\}\), is smooth on \(\mathbb R^3\), and since \(h\) is
+\(\{|\xi|<\frac12\}\), is \(C^4\) on \(\mathbb R^3\), and since \(h\) is
 homogeneous of degree \(-2\) and smooth off the origin,
-\(|\partial^\beta G(\xi)|\le C_\beta(\chi)\|v_0\|\,\langle\xi\rangle^{-2-|\beta|}\).
-For \(|\beta|\ge2\) this is in \(L^1(\mathbb R^3)\). From
+\(|\partial^\beta G(\xi)|\le C_\beta(\chi)\|v_0\|\,\langle\xi\rangle^{-2-|\beta|}\)
+for every \(|\beta|\le4\).
+For \(2\le|\beta|\le4\) this is in \(L^1(\mathbb R^3)\) (the exponent
+\(2+|\beta|>3\)). From
 \(\widetilde G(y)=\int G e^{i\xi y}d\xi\) (tempered) and the distributional
 identity \(y^\beta\widetilde G=i^{|\beta|}\widetilde{\partial^\beta G}\), the
-right-hand side is for \(|\beta|\ge2\) a bounded continuous function with sup
+right-hand side is for \(2\le|\beta|\le4\) a bounded continuous function with sup
 \(\le\|\partial^\beta G\|_{L^1}\). Hence \(\widetilde G\) agrees on
 \(\{|y|\ge1\}\) with a function obeying \(|\widetilde G(y)|\le C_M|y|^{-M}\) for
-every \(M\ge2\). Set \(\rho=-\widetilde G\); then
+every \(2\le M\le4\) (four derivatives are all that Definition 0.1 supplies, and
+\(M=4\) is all that §3.4 consumes). Set \(\rho=-\widetilde G\); then
 \(V=\widetilde F=\widetilde h-\widetilde G=\pi^2W+\rho\). ∎
 
 So the decay of \(V\) is **exactly** \(|y|^{-1}\): the profile
 \(\pi^2W\) is \(\chi\)-independent, and \(W\cdot v_0=\frac{\|v_0\|^2}{|y|}+\frac{(v_0\cdot y)^2}{|y|^3}\ge\frac{\|v_0\|^2}{|y|}>0\).
 
-### 3.4 Why the Poisson/periodisation route is unavailable in every form
+### 3.4 Why the naive periodisation argument is unavailable
 
-**Remark 3.4 (no periodisation identity — the route is abandoned).**
+**Remark 3.4 (the naive periodisation argument is unavailable — the route is
+abandoned).**
 The reduction sketch supplied to this task (item R3) asserts an *absolutely
 convergent* Poisson-summation identity
 \(u_N(x)=N\sum_{m\in\mathbb Z^3}V(N(x+2\pi m))\) with \(m\neq0\) terms
-\(O(1/N)\) uniformly. That is **false**, and — unlike what an earlier version of
-this document claimed — **no summation method repairs it**.
+\(O(1/N)\) uniformly. That is **false**: **the naive absolutely convergent
+periodisation argument is unavailable**, because the profile decays only like
+\(|y|^{-1}\) with a sign-definite spherical mean, so the series of translates
+diverges. (An earlier version of this document made a stronger claim about
+summation methods than is needed; what is asserted below is only the divergence
+of the series and the failure of Abel summation in particular.)
 
 *The series diverges.* By Theorem 3.3 the far field of \(V\) is exactly
 \(\pi^2W\) plus a rapidly decaying remainder, and
@@ -425,10 +459,10 @@ Now \(\sum_{m\neq0}|x+2\pi m|^{-4}<\infty\) (the shell \(|m|_\infty=n\) has
 \(\sum_nn^2\cdot n^{-1}=\infty\)). Hence
 \(\sum_{m\neq0}v_0\cdot V(N(x+2\pi m))=+\infty\) for every \(x\) and every \(N\).
 
-*And no regularisation rescues it.* The terms of the \(m\neq0\) series are
-therefore **eventually positive**, and every summation method that is regular on
-series of eventually-positive terms — Abel included — diverges together with the
-series: by monotone convergence,
+*And Abel regularisation does not repair it either.* The terms of the
+\(m\neq0\) series are **eventually positive**, and a summation method that is
+regular on series of eventually-positive terms — Abel is one — diverges together
+with the series: by monotone convergence,
 \(\lim_{\varepsilon\downarrow0}\sum_me^{-\varepsilon|m|}a_m=+\infty\) whenever
 \(a_m\ge0\) and \(\sum a_m=\infty\). So an Abel-regularised right-hand side is
 \(+\infty\) in the \(v_0\) direction while the left-hand side \(u_N(x)\) is
@@ -450,8 +484,9 @@ u_N(x)=N\Big[V(Nx)+\sum_{m\neq0}\big(V(N(x+2\pi m))-V(2\pi Nm)\big)\Big]+\text{c
 since the bracketed differences are \(O(|m|^{-2})\) by Theorem 3.3. It is not
 used below either.
 
-**Consequence.** The route (R3) is **not available**, in the naive form or in
-any regularised form. We therefore abandon Poisson summation entirely and use
+**Consequence.** The route (R3) is **not available**: neither the naive
+absolutely convergent argument nor its Abel-regularised variant works. We
+therefore abandon Poisson summation entirely and use
 the lattice Riemann-sum route of §4 instead, which is elementary, quantitative,
 and additionally delivers the derivative statement. **Nothing anywhere in this
 document depends on a periodisation identity** — this subsection is inert.
@@ -935,7 +970,15 @@ By Lemma 6.1 this means \(P_\zeta M\neq0\) on a set of positive measure, so
 1. **The proof is uniform in \(\chi\) and in \(v_0\):** \(\|v_0\|^2\) cancels,
    and the only properties of \(\chi\) used are \(0\le\chi\le1\) and
    \(\chi\equiv1\) on \([0,\frac12]\). No smoothness of \(\chi\) enters §6 at all
-   (smoothness is used only in §4 for the rate).
+   (\(\chi'\) is used only in §4, through \(c_\chi\); the higher derivatives
+   permitted by Definition 0.1 are used only in the inert Theorem 3.3(b)/§3.4).
+   **This uniformity is qualitative only.** It says that the conclusion
+   \(\mathbb P(V\cdot\nabla V)\not\equiv0\) holds for every \((\chi,v_0)\); it
+   does **not** say that the constants \(c_0,N_*\) of Theorem 7.1(3) are
+   \((\chi,v_0)\)-uniform. They are not: they are extracted only after a test
+   field \(\Psi\) has been chosen for the particular profile
+   \(V=V^{\chi,v_0}\) (Lemma 6.2), and they depend on that pair — and are
+   non-effective (§5/§7.2).
 2. **This is route (b) of the task, completed, not route (a).** No specific
    \(\chi\) and no numerically evaluated convolution integral is needed: the
    obstruction is carried entirely by the \(\chi\)-independent leading
@@ -971,6 +1014,14 @@ Let \(v_0\in\mathbb R^3\setminus\{0\}\), let \(\chi\) be admissible
    Formally \(c_0=\dfrac{|I_\Psi|^2}{2(2\pi)^3\|\Psi\|_{L^2(\mathbb R^3)}^2}\)
    for any admissible \(\Psi\) with \(I_\Psi\neq0\), which exists by
    Theorem 6.7 + Lemma 6.2.
+
+**Quantifiers (important).** The bound in (3) holds **for every** admissible
+cutoff profile \(\chi\) and **every** nonzero seed vector \(v_0\). It is
+**not** uniform in \((\chi,v_0)\): \(c_0\) and \(N_*\) depend on that pair,
+through \(V=V^{\chi,v_0}\) and through the test field \(\Psi\) chosen for it.
+What *is* \((\chi,v_0)\)-uniform is the qualitative non-degeneracy
+\(\mathbb P(V\cdot\nabla V)\not\equiv0\) of Theorem 6.7, which is exactly what
+licenses the "for every" quantifier.
 
 **Effectivity caveat (important, and load-bearing for the paper's
 "constant dependence" claim).** Part (3) is an **existence** statement:
@@ -1048,8 +1099,8 @@ c_0''e^{s_{N_j}}\); for \(s\in[s_{N_j},s_{N_{j+1}}]\), monotonicity gives
 | Lemma 9′/9″ (general radial weight, lattice and continuum) | **PROVEN** (§1.2) |
 | \(N_0^2\asymp N\), explicit crude constants | **PROVEN** (Prop 2.4) |
 | \(V\) continuous, bounded, \(C^\infty\), entire of type \(\le1\), div-free, \(V(0)\neq0\) | **PROVEN** (Thm 3.2) |
-| \(V=\pi^2W+O(|y|^{-\infty})\), \(W\) = Oseen profile | **PROVEN** (Thm 3.3) |
-| (R3) Poisson identity with absolutely convergent \(m\neq0\) tail, \(O(1/N)\) | **FALSE** — series diverges, and no summation method (Abel included) rescues it, since the terms are eventually positive (Remark 3.4). Used nowhere |
+| \(V=\pi^2W+O(|y|^{-4})\), \(W\) = Oseen profile (four derivatives of \(\chi\); more if \(\chi\) is smoother; used only by the inert §3.4) | **PROVEN** (Thm 3.3) |
+| (R3) Poisson identity with absolutely convergent \(m\neq0\) tail, \(O(1/N)\) | **FALSE** — the naive absolutely convergent periodisation argument is unavailable: the series diverges (the profile decays only like \(|y|^{-1}\) with a sign-definite spherical mean), and since the terms are eventually positive Abel summation does not converge either (Remark 3.4). Used nowhere |
 | Exact lattice-Riemann identity \(u_N(y/N)=N(V+E_N)\), \(\nabla u_N(y/N)=N^2(\nabla V+E'_N)\) | **PROVEN** (Lem 4.1) |
 | \(\sup_{|y|\le R}(|E_N|+|E'_N|)=O(N^{-1}\log N)\), constants explicit | **PROVEN** (Thm 4.2) |
 | Duality lower bound \(\ge c_0N^3(1+o(1))\) given \(I_\Psi\neq0\) | **PROVEN** (Cor 5.4) |
@@ -1061,11 +1112,13 @@ c_0''e^{s_{N_j}}\); for \(s\in[s_{N_j},s_{N_{j+1}}]\), monotonicity gives
 
 ### 7.4 Why the sharp cutoff is not covered
 
-The one and only place the smoothness of \(\chi\) is used is Theorem 4.2:
-\(|\nabla F|\lesssim|\xi|^{-3}\) fails for \(\chi=\mathbb 1_{[0,1]}\), where \(F\)
+The one and only place the smoothness of \(\chi\) is used *load-bearingly* is
+Theorem 4.2, and one derivative is all it uses:
+\(|\nabla F|\lesssim c_\chi|\xi|^{-3}\) fails for \(\chi=\mathbb 1_{[0,1]}\),
+where \(F\)
 jumps across \(|\xi|=1\). The Riemann-sum defect then carries a lattice-point
 (Gauss circle) term of size \(O(N^{-1+\theta})\) *per unit* rather than
-\(O(N^{-1}\log N)\), and — more seriously — \(V\) itself loses the \(|y|^{-\infty}\)
+\(O(N^{-1}\log N)\), and — more seriously — \(V\) itself loses the \(|y|^{-4}\)
 tail correction and acquires an oscillatory \(|y|^{-2}\) tail. None of §§5–6
 would change (they are insensitive to \(\chi\)), so the sharp-cutoff case is a
 purely technical gap in the inner-rescaling step, not a structural one. We flag
