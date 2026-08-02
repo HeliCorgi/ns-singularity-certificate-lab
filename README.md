@@ -1,4 +1,95 @@
-# ns-singularity-certificate-lab
+# Spectral-front identities for periodic Navier–Stokes<br>and an obstruction to uniform pointwise Osgood closure
+
+> ## Not a Clay solution
+>
+> **This repository does not solve the Clay Navier–Stokes problem, in either
+> direction.** No global regularity for all smooth data, no blow-up, no partial
+> solution.
+>
+> **Proven** (modulo three classical inputs — Kato-type local theory,
+> subcritical Serrin regularity, mean-zero Sobolev embedding): a
+> bandwidth–dissipation dichotomy on the torus, obtained from exact modal
+> identities, together with an exact representation of the action it turns on;
+> and, separately, an obstruction showing that the dichotomy cannot be closed
+> by any uniform pointwise Osgood majorant. **Rejected:** several blow-up
+> mechanisms, each kept on record with the equation or theorem that killed it.
+>
+> Review basis: exact-rational machine certificates and adversarial referee
+> passes run by **AI agents — this is not human peer review.**
+
+**Five-minute path:** the theorem below → the status table → the paper
+([PDF](docs/paper_lambda_dichotomy/paper_draft.pdf) ·
+[statement](docs/paper_lambda_dichotomy/theorem_statement.md) ·
+[proof](docs/paper_lambda_dichotomy/complete_proof.md) ·
+[gap audit](docs/paper_lambda_dichotomy/dependency_and_gap_audit.md)).
+Questions and corrections are welcome — please open an issue.
+日本語の詳細記録は本ページ後半にあります。
+
+---
+
+## Main theorem in one screen
+
+Unforced Navier–Stokes on $\mathbb{T}^3$, viscosity $\nu>0$, maximal strong
+solution $u$ on $[0,T_{\max})$ from $u_0\in H^m_\sigma$, $m>5/2$, $u_0\neq0$.
+Write $H_r=\sum_k |k|^{2r}|\hat u_k|^2$, $D=H_1$, bandwidth $N_0^2=H_1/H_0$,
+$N_1^2=H_2/H_1$, $z=\log N_0^2\ge 0$, and
+
+$$\mathcal{N}=-\mathbb{P}(u\cdot\nabla u),\qquad K=\frac{\lVert\mathcal{N}\rVert_2^2}{\lVert\nabla u\rVert_2^4}.$$
+
+**Theorem.**
+
+- **(a)** $\Lambda(t)=\log N_0^2(t)-\dfrac{1}{2\nu}\displaystyle\int_0^t K D\,ds$ is non-increasing on $[0,T_{\max})$, with an explicit nonnegative two-part defect.
+- **(b)** Either $\int_0^{T_{\max}}K D\,dt<\infty$ — and then $z$ is bounded, $u\in L^\infty(0,T_{\max};H^1)$ and $T_{\max}=\infty$ — or the integral diverges. In particular $T_{\max}<\infty$ forces divergence. *(No claim that divergence forces blow-up.)*
+- **(c)** Exact identity: $\displaystyle\int_0^{T'} K D\,dt=\int_0^{T'}\frac{\lVert\partial_t u\rVert_2^2}{D}\,dt+\nu^2\int_0^{T'}N_1^2\,dt+\nu\log\frac{D(T')}{D(0)}$, whence by AM–GM finiteness of the $\dot H^1$-bandwidth action implies globality. One-sided only: an explicit decaying solution kills the converse.
+- **(d)** $K D\le\lVert u\rVert_{L^\infty}^2$ and $K D\le C_S^2\lVert\nabla u\rVert_{L^3}^2$, so the criterion in (b) is at least as strong as the Serrin $(\infty,2)$ and the critical $L^3$ gradient actions.
+- **(e)** Any majorant $K D\le\Phi(z)D+R$ with $\Phi$ nondecreasing, $\int^\infty ds/\Phi=\infty$ and $\int_0^{T_{\max}}R\,dt<\infty$ puts the solution in the global case of (b).
+
+**Theorem (obstruction).** Let $\Phi$ be nondecreasing with
+$K(u)\le\Phi(\log N_0^2(u))$ for **every** real zero-mean divergence-free
+trigonometric field $u$. Then $\Phi(s)\ge c\,e^{s}$ for all large $s$, so
+$\int^\infty ds/\Phi<\infty$: **no Osgood-admissible $\Phi$ exists**, and the
+remainder-free route into (e) is closed. The proof exhibits one explicit
+family — the coherent critical-spectrum field
+$\hat u_N(k)=\chi(|k|/N)\,P_k v_0/|k|^2$ with a smooth cutoff $\chi$ — for
+which $\lVert\mathbb{P}(u_N\cdot\nabla u_N)\rVert_2^2\gtrsim N^3$, uniformly in
+$\chi$ and $v_0$. Solution-adapted remainders $R(t)$ are **not** excluded, and
+the constant is non-effective.
+
+## Proven / conditional / rejected
+
+| Status | Content |
+|---|---|
+| **Proven** | (a)–(e) above; the exact action identity; the obstruction theorem, including the capacity lower bound for the smoothly truncated family that drives it; the exact spectral laws of that family. External inputs: Kato-type local theory, subcritical Serrin, mean-zero Sobolev — nothing else. Constants in (a)–(e) are explicit; the obstruction's constant is **not** effective. |
+| **Conditional** | Every PDE tube certificate in section C1/C2 below, on its named external theorems. |
+| **Rejected, kept on record** | Steady self-similar front (Tsai 1998, and Chae–Wolf at the weak-$L^3$ level); the exact Leray cycle gate; continuum-to-lattice shadowing; the action–bandwidth *equivalence* (withdrawn after refereeing); the uniform deficit floor; a proven no-go for the constant-vector-split route to the capacity bound. See [VERDICTS.md](docs/research_notes/verification_sprint_v1/VERDICTS.md). |
+| **Still open, no longer used** | The capacity bound for the *sharply* truncated family, the repository's original Hypothesis L\*. The obstruction no longer depends on it, because its hypothesis quantifies over all fields and the smooth family suffices. |
+
+## Verify it yourself — one command
+
+```bash
+python scripts/verify.py
+```
+
+It installs the two dependencies, runs the whole suite, and then prints the
+scope of what a green run does and does not establish — in particular that it
+does **not** verify Hypothesis L\*, the paper's infinite-dimensional analysis,
+or the Lean development. Lean is deliberately outside this command; the
+optional second command is in the reproduction section below.
+
+## Where things are
+
+| You want | Go to |
+|---|---|
+| the paper as one file | [paper_draft.pdf](docs/paper_lambda_dichotomy/paper_draft.pdf) (built from source by CI) |
+| the theorem, its proof, its gaps | [docs/paper_lambda_dichotomy/](docs/paper_lambda_dichotomy/theorem_statement.md) |
+| what was tried and killed | [VERDICTS.md](docs/research_notes/verification_sprint_v1/VERDICTS.md) |
+| the AI referee reports | [A](docs/paper_lambda_dichotomy/referee_report_A.md), [B](docs/paper_lambda_dichotomy/referee_report_B.md) |
+| every verified result, with assumptions | [docs/verified_results.md](docs/verified_results.md) |
+| current state and open obligations | [STATUS.md](STATUS.md) |
+
+---
+
+## このリポジトリについて（日本語）
 
 3次元非圧縮 Navier–Stokes 方程式について、**数値候補探索・候補除外・有限次元
 形式証明・厳密有理証明書・computer-assisted PDE verification** を同一の監査

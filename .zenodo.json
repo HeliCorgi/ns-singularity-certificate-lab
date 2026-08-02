@@ -1,0 +1,22 @@
+{
+  "title": "Spectral-front identities for periodic Navier-Stokes and an obstruction to uniform pointwise Osgood closure",
+  "description": "<p><strong>This is not a solution to the Clay Navier-Stokes problem, in either direction.</strong></p><p>For strong solutions of the unforced incompressible Navier-Stokes equations on the three-dimensional torus, the spectral bandwidth obeys an exact modal identity yielding the monotone quantity Lambda = log N_0^2 - (1/2 nu) int K D, hence a bandwidth-dissipation dichotomy: finiteness of the action int K D forces the solution to be global, so any finite-time breakdown makes the action diverge. The action admits the exact representation int K D = int |du/dt|^2/D + nu^2 int H_2/H_1 + nu log(D/D_0), and is dominated pointwise by both the Serrin (infinity,2) and the critical L^3 gradient actions.</p><p>Separately, an explicit coherent critical-spectrum family with a smooth spectral cutoff forces every uniform pointwise majorant Phi in K &lt;= Phi(log N_0^2) to be of exponential class, so no Osgood-admissible majorant exists and the dichotomy cannot be closed by that route. That obstruction is unconditional; its constant is not effective.</p><p>The repository additionally records the candidate blow-up mechanisms that were tested and rejected, each with exact-arithmetic or interval certificates, and separates proven, conditional, and rejected material explicitly.</p>",
+  "upload_type": "software",
+  "license": "Apache-2.0",
+  "access_right": "open",
+  "creators": [
+    {
+      "name": "HeliCorgi"
+    }
+  ],
+  "keywords": [
+    "Navier-Stokes",
+    "regularity criteria",
+    "spectral bandwidth",
+    "Osgood condition",
+    "computer-assisted mathematics",
+    "exact rational arithmetic",
+    "Lean 4"
+  ],
+  "notes": "Machine-assisted research repository. Internal review passes were performed by AI agents; they are not human peer review."
+}

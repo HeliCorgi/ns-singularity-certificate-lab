@@ -1,0 +1,192 @@
+{
+  "precision_bits": 100,
+  "exact_schedule_used": [
+    [
+      "1",
+      [
+        "1",
+        "0",
+        "0"
+      ]
+    ],
+    [
+      "1",
+      [
+        "0",
+        "1",
+        "0"
+      ]
+    ],
+    [
+      "1",
+      [
+        "0",
+        "0",
+        "1"
+      ]
+    ]
+  ],
+  "nu_exact": "1/40",
+  "expm_pieces": [
+    {
+      "scaling_squarings": 4,
+      "taylor_order": 26,
+      "scaled_inf_norm": "176282661594238151145635289499/1267650600228229401496703205376",
+      "remainder_bound": "90470289/100433627766186892221372630771322662657637687111424552206336"
+    },
+    {
+      "scaling_squarings": 5,
+      "taylor_order": 26,
+      "scaled_inf_norm": "197080054254232539763940576461/1267650600228229401496703205376",
+      "remainder_bound": "1837379973/100433627766186892221372630771322662657637687111424552206336"
+    },
+    {
+      "scaling_squarings": 4,
+      "taylor_order": 26,
+      "scaled_inf_norm": "157465972997100370967168601293/633825300114114700748351602688",
+      "remainder_bound": "9221851777231911/1606938044258990275541962092341162602522202993782792835301376"
+    }
+  ],
+  "det_analytic": 0.00030353913807886623,
+  "det_note": "det M = exp(-nu tr D T) <= 1 exactly (every K_a is traceless), so the determinant route CANNOT certify rho > 1; not computed (Laplace is O(n!))",
+  "trace_power_bounds": [
+    {
+      "q": 1,
+      "trace_enclosure": [
+        4.207838691653044,
+        4.207838691653044
+      ],
+      "trace_enclosure_width": 7.431069727181931e-26,
+      "abs_trace_lower_bound": 4.207838691653044,
+      "rho_lower_bound": 0.35065322430442036
+    },
+    {
+      "q": 2,
+      "trace_enclosure": [
+        0.337050712854798,
+        0.337050712854798
+      ],
+      "trace_enclosure_width": 2.3257670524269003e-25,
+      "abs_trace_lower_bound": 0.337050712854798,
+      "rho_lower_bound": 0.16759343484924014
+    },
+    {
+      "q": 4,
+      "trace_enclosure": [
+        2.146798586414822,
+        2.146798586414822
+      ],
+      "trace_enclosure_width": 5.85464164862447e-25,
+      "abs_trace_lower_bound": 2.146798586414822,
+      "rho_lower_bound": 0.6503580401577158
+    },
+    {
+      "q": 8,
+      "trace_enclosure": [
+        1.9683854238903664,
+        1.9683854238903664
+      ],
+      "trace_enclosure_width": 1.2911523094023867e-24,
+      "abs_trace_lower_bound": 1.9683854238903664,
+      "rho_lower_bound": 0.797748712206164
+    },
+    {
+      "q": 16,
+      "trace_enclosure": [
+        2.654348706854601,
+        2.654348706854601
+      ],
+      "trace_enclosure_width": 3.0069689544687797e-24,
+      "abs_trace_lower_bound": 2.654348706854601,
+      "rho_lower_bound": 0.9100149888585723
+    },
+    {
+      "q": 32,
+      "trace_enclosure": [
+        3.453923660018008,
+        3.453923660018008
+      ],
+      "trace_enclosure_width": 8.236073881967386e-24,
+      "abs_trace_lower_bound": 3.453923660018008,
+      "rho_lower_bound": 0.9618289816413318
+    },
+    {
+      "q": 64,
+      "trace_enclosure": [
+        5.964204613487675,
+        5.964204613487675
+      ],
+      "trace_enclosure_width": 2.972886219058706e-23,
+      "abs_trace_lower_bound": 5.964204613487675,
+      "rho_lower_bound": 0.9891355283334482
+    },
+    {
+      "q": 128,
+      "trace_enclosure": [
+        17.78586829232224,
+        17.78586829232224
+      ],
+      "trace_enclosure_width": 1.8529164894310072e-22,
+      "abs_trace_lower_bound": 17.78586829232224,
+      "rho_lower_bound": 1.0030789300109284
+    },
+    {
+      "q": 256,
+      "trace_enclosure": [
+        158.16855545591687,
+        158.16855545591687
+      ],
+      "trace_enclosure_width": 3.443934103935259e-21,
+      "abs_trace_lower_bound": 158.16855545591687,
+      "rho_lower_bound": 1.0101241663117888
+    },
+    {
+      "q": 512,
+      "trace_enclosure": [
+        12508.645967505727,
+        12508.645967505727
+      ],
+      "trace_enclosure_width": 5.692443880199179e-19,
+      "abs_trace_lower_bound": 12508.645967505727,
+      "rho_lower_bound": 1.0136653189223377
+    },
+    {
+      "q": 1024,
+      "trace_enclosure": [
+        78233111.97019863,
+        78233111.97019863
+      ],
+      "trace_enclosure_width": 7.441026087304036e-15,
+      "abs_trace_lower_bound": 78233111.97019863,
+      "rho_lower_bound": 1.0154405477910613
+    },
+    {
+      "q": 2048,
+      "trace_enclosure": [
+        3060209904270818.0,
+        3060209904270818.0
+      ],
+      "trace_enclosure_width": 6.083411601010254e-07,
+      "abs_trace_lower_bound": 3060209904270818.0,
+      "rho_lower_bound": 1.0163293277426175
+    }
+  ],
+  "best_rho_lower_bound": 1.0163293277426175,
+  "best_q": 2048,
+  "certifies_rho_gt_1": true,
+  "claimed_bound": "rho(M) >= (|tr M^q| / n)^(1/q), rigorous for every q",
+  "float_reference": {
+    "chi": 0.005690773555361031,
+    "rho": 1.0172188856124955,
+    "orientation": [
+      2,
+      6,
+      1
+    ],
+    "single_parent_margins": [
+      -0.22499999999999987,
+      -0.22499999999999998,
+      -0.22499999999999976
+    ]
+  }
+}

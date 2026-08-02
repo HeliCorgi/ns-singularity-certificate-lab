@@ -1,0 +1,305 @@
+{
+  "stage_D_tree_control": {
+    "results": {
+      "0.0": {
+        "single_edge_systems_tested": 28480,
+        "with_positive_growth": 5438,
+        "fraction_violating_prop1": 0.19094101123595505,
+        "largest_single_edge_growth_rate": 3.577708763999665,
+        "worst_example": {
+          "child_a": [
+            0,
+            1,
+            3
+          ],
+          "child_b": [
+            1,
+            0,
+            1
+          ],
+          "parent": [
+            1,
+            -1,
+            -2
+          ],
+          "generator": "pol3_sin",
+          "polarization": [
+            5,
+            -1,
+            3
+          ],
+          "max_Re_lambda": 3.577708763999665,
+          "prop1_bound_minus_nu_min_k_sq": -0.0
+        }
+      },
+      "0.025": {
+        "single_edge_systems_tested": 28480,
+        "with_positive_growth": 3750,
+        "fraction_violating_prop1": 0.13167134831460675,
+        "largest_single_edge_growth_rate": 3.4291060336346573,
+        "worst_example": {
+          "child_a": [
+            0,
+            1,
+            3
+          ],
+          "child_b": [
+            1,
+            0,
+            1
+          ],
+          "parent": [
+            1,
+            -1,
+            -2
+          ],
+          "generator": "pol3_cos",
+          "polarization": [
+            5,
+            -1,
+            3
+          ],
+          "max_Re_lambda": 3.4291060336346573,
+          "prop1_bound_minus_nu_min_k_sq": -0.05
+        }
+      },
+      "0.1": {
+        "single_edge_systems_tested": 28480,
+        "with_positive_growth": 2256,
+        "fraction_violating_prop1": 0.07921348314606741,
+        "largest_single_edge_growth_rate": 3.000000000000002,
+        "worst_example": {
+          "child_a": [
+            0,
+            3,
+            1
+          ],
+          "child_b": [
+            1,
+            1,
+            0
+          ],
+          "parent": [
+            1,
+            -2,
+            -1
+          ],
+          "generator": "pol2_cos",
+          "polarization": [
+            5,
+            3,
+            -1
+          ],
+          "max_Re_lambda": 3.000000000000002,
+          "prop1_bound_minus_nu_min_k_sq": -0.2
+        }
+      }
+    },
+    "wall_seconds": 128.4
+  },
+  "stage_E_critical_normalization": {
+    "rows": [
+      {
+        "scale_s": 1,
+        "N_equals_max_k": 3.0,
+        "c_E": 1.0,
+        "parent_amplitude_critical": 0.5773502691896257,
+        "nu_N_sq": 0.22500000000000003,
+        "best_net_floquet_chi": 0.12498766194973675,
+        "stage_gain_q_star": 0.5555007197766076,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 1,
+        "N_equals_max_k": 3.0,
+        "c_E": 10.0,
+        "parent_amplitude_critical": 1.8257418583505538,
+        "nu_N_sq": 0.22500000000000003,
+        "best_net_floquet_chi": 0.8817581647181554,
+        "stage_gain_q_star": 3.9189251765251343,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 1,
+        "N_equals_max_k": 3.0,
+        "c_E": 100.0,
+        "parent_amplitude_critical": 5.773502691896258,
+        "nu_N_sq": 0.22500000000000003,
+        "best_net_floquet_chi": 3.2748766194972063,
+        "stage_gain_q_star": 14.55500719776536,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 1,
+        "N_equals_max_k": 3.0,
+        "c_E": 228.0,
+        "parent_amplitude_critical": 8.717797887081348,
+        "nu_N_sq": 0.22500000000000003,
+        "best_net_floquet_chi": 5.059697804215862,
+        "stage_gain_q_star": 22.487545796514937,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 2,
+        "N_equals_max_k": 6.0,
+        "c_E": 1.0,
+        "parent_amplitude_critical": 0.408248290463863,
+        "nu_N_sq": 0.9000000000000001,
+        "best_net_floquet_chi": -0.40504270180746876,
+        "stage_gain_q_star": -0.450047446452743,
+        "positive_net_growth": false
+      },
+      {
+        "scale_s": 2,
+        "N_equals_max_k": 6.0,
+        "c_E": 10.0,
+        "parent_amplitude_critical": 1.2909944487358056,
+        "nu_N_sq": 0.9000000000000001,
+        "best_net_floquet_chi": 0.6651924068115038,
+        "stage_gain_q_star": 0.7391026742350041,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 2,
+        "N_equals_max_k": 6.0,
+        "c_E": 100.0,
+        "parent_amplitude_critical": 4.08248290463863,
+        "nu_N_sq": 0.9000000000000001,
+        "best_net_floquet_chi": 4.049572981925505,
+        "stage_gain_q_star": 4.499525535472783,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 2,
+        "N_equals_max_k": 6.0,
+        "c_E": 228.0,
+        "parent_amplitude_critical": 6.164414002968976,
+        "nu_N_sq": 0.9000000000000001,
+        "best_net_floquet_chi": 6.573691307765025,
+        "stage_gain_q_star": 7.304101453072249,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 3,
+        "N_equals_max_k": 9.0,
+        "c_E": 1.0,
+        "parent_amplitude_critical": 0.3333333333333333,
+        "nu_N_sq": 2.025,
+        "best_net_floquet_chi": -1.418803587480868,
+        "stage_gain_q_star": -0.7006437469041323,
+        "positive_net_growth": false
+      },
+      {
+        "scale_s": 3,
+        "N_equals_max_k": 9.0,
+        "c_E": 10.0,
+        "parent_amplitude_critical": 1.0540925533894598,
+        "nu_N_sq": 2.025,
+        "best_net_floquet_chi": -0.10803862701651923,
+        "stage_gain_q_star": -0.05335240840321937,
+        "positive_net_growth": false
+      },
+      {
+        "scale_s": 3,
+        "N_equals_max_k": 9.0,
+        "c_E": 100.0,
+        "parent_amplitude_critical": 3.3333333333333335,
+        "nu_N_sq": 2.025,
+        "best_net_floquet_chi": 4.036964125191364,
+        "stage_gain_q_star": 1.9935625309586984,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 3,
+        "N_equals_max_k": 9.0,
+        "c_E": 228.0,
+        "parent_amplitude_critical": 5.033222956847166,
+        "nu_N_sq": 2.025,
+        "best_net_floquet_chi": 7.128365099549485,
+        "stage_gain_q_star": 3.5201802960738195,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 4,
+        "N_equals_max_k": 12.0,
+        "c_E": 1.0,
+        "parent_amplitude_critical": 0.28867513459481287,
+        "nu_N_sq": 3.6000000000000005,
+        "best_net_floquet_chi": -2.9000246761005384,
+        "stage_gain_q_star": -0.8055624100279272,
+        "positive_net_growth": false
+      },
+      {
+        "scale_s": 4,
+        "N_equals_max_k": 12.0,
+        "c_E": 10.0,
+        "parent_amplitude_critical": 0.9128709291752769,
+        "nu_N_sq": 3.6000000000000005,
+        "best_net_floquet_chi": -1.3864836705636958,
+        "stage_gain_q_star": -0.3851343529343599,
+        "positive_net_growth": false
+      },
+      {
+        "scale_s": 4,
+        "N_equals_max_k": 12.0,
+        "c_E": 100.0,
+        "parent_amplitude_critical": 2.886751345948129,
+        "nu_N_sq": 3.6000000000000005,
+        "best_net_floquet_chi": 3.3997532389945326,
+        "stage_gain_q_star": 0.9443758997207033,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 4,
+        "N_equals_max_k": 12.0,
+        "c_E": 228.0,
+        "parent_amplitude_critical": 4.358898943540674,
+        "nu_N_sq": 3.6000000000000005,
+        "best_net_floquet_chi": 6.969395608431867,
+        "stage_gain_q_star": 1.9359432245644073,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 6,
+        "N_equals_max_k": 18.0,
+        "c_E": 1.0,
+        "parent_amplitude_critical": 0.23570226039551584,
+        "nu_N_sq": 8.1,
+        "best_net_floquet_chi": -7.242708811953521,
+        "stage_gain_q_star": -0.8941615817226569,
+        "positive_net_growth": false
+      },
+      {
+        "scale_s": 6,
+        "N_equals_max_k": 18.0,
+        "c_E": 10.0,
+        "parent_amplitude_critical": 0.7453559924999299,
+        "nu_N_sq": 8.1,
+        "best_net_floquet_chi": -5.389007227781406,
+        "stage_gain_q_star": -0.6653095342940007,
+        "positive_net_growth": false
+      },
+      {
+        "scale_s": 6,
+        "N_equals_max_k": 18.0,
+        "c_E": 100.0,
+        "parent_amplitude_critical": 2.3570226039551585,
+        "nu_N_sq": 8.1,
+        "best_net_floquet_chi": 0.47291188046493443,
+        "stage_gain_q_star": 0.0583841827734487,
+        "positive_net_growth": true
+      },
+      {
+        "scale_s": 6,
+        "N_equals_max_k": 18.0,
+        "c_E": 228.0,
+        "parent_amplitude_critical": 3.559026084010437,
+        "nu_N_sq": 8.1,
+        "best_net_floquet_chi": 4.844813065135544,
+        "stage_gain_q_star": 0.5981250697698203,
+        "positive_net_growth": true
+      }
+    ],
+    "wall_seconds": 85.7
+  }
+}
