@@ -89,6 +89,144 @@ optional second command is in the reproduction section below.
 | every verified result, with assumptions | [docs/verified_results.md](docs/verified_results.md) |
 | current state and open obligations | [STATUS.md](STATUS.md) |
 
+## The position and value of this result
+
+*A calibration note: what is new here, what is not, and what this work is
+worth. 日本語版はこの節の後半にあります。*
+
+**In one sentence.** For the Navier–Stokes equations on a periodic box, this
+repository proves exact identities that meter how fast a solution's energy can
+migrate to finer scales, and proves that one natural way of turning those
+identities into a regularity proof — a uniform pointwise Osgood bound — cannot
+work.
+
+**For the non-specialist.** The Navier–Stokes equations describe how fluids
+move. Whether their three-dimensional solutions can spontaneously develop
+infinitely fine structure in finite time is a famous open problem, and this
+repository does not settle it, in either direction. What it contains instead
+is exact bookkeeping: an identity tracking a single number that measures how
+fine the flow's structure currently is; a proof that a certain integral
+controls all possible growth of that number; and a proof that a tempting
+shortcut — bounding that integral by a slowly growing function of the number
+itself, which a classical lemma would then convert into a full regularity
+proof — is impossible, because explicit velocity fields violate every such
+bound. Knowing precisely why a natural route fails, with the counterexamples
+written down, is a modest but real piece of mathematical information.
+
+**What is clarified, precisely.** Three things. (i) An exact modal identity
+for the spectral bandwidth $N_0^2=H_1/H_0$, whose Cauchy–Schwarz and
+square-completion defects are exactly computable — the identity and its
+defect decomposition are verified in exact rational arithmetic on finite
+fields. (ii) A dichotomy — finiteness of $\int K D\,dt$ forces global
+existence — together with the exact representation
+$\int KD=\int\lVert\partial_tu\rVert_2^2/D+\nu^2\int H_2/H_1+\nu\log(D/D_0)$,
+which isolates the supercritical content of the criterion in the
+$\dot H^1$-bandwidth action and a harmless logarithm. (iii) An obstruction:
+no nondecreasing $\Phi$ with $\int^\infty ds/\Phi=\infty$ satisfies
+$K\le\Phi(\log N_0^2)$ over all divergence-free trigonometric fields,
+witnessed by an explicit spectral family with capacity of order $N^3$.
+
+**What is not new.** The building blocks are classical: $N_0$ and $N_1$ are
+the Taylor-microscale inverse lengths (Foias–Guillopé–Temam and later work),
+$K$ quantifies the long-studied depletion of the nonlinearity, and
+logarithmically refined regularity criteria go back to Kozono–Ogawa–Taniuchi
+and Planchon. Cheskidov–Shvydkoy proved a wavenumber criterion strictly
+weaker than every Ladyzhenskaya–Prodi–Serrin condition; this work does not
+claim to match or beat it — the criterion here is only shown to be *implied
+by* two classical actions. The contribution is the exact packaging:
+identities with exactly computable defects, the action representation, and a
+certified counterexample family. A closed door mapped precisely, not a new
+door opened.
+
+**What it can be used for.** Structure: the action representation shows
+exactly where the supercriticality of the problem sits. Negative knowledge:
+the pointwise-uniform Osgood route is now provably dead, which spares future
+effort and sharpens what any successful attempt must do differently
+(solution-adapted remainders $R(t)$ are untouched by the obstruction). Raw
+material: an exact-rational certificate layer with independent checkers, a
+coherent spectral family with closed-form laws, and a ledger of rejected
+blow-up mechanisms, each recorded with the equation or theorem that killed
+it.
+
+**Value this work does not have.** The Clay problem is unresolved in both
+directions and nothing here bears on it beyond the statements above. There
+is no practical or engineering application. Review was adversarial and by AI
+agents, with reports committed unedited — it is not human peer review, and
+during it several claims (a quantifier, a periodisation identity, a
+positivity argument) were broken and corrected: evidence that the process
+catches errors, and equally evidence that the material contained them. The
+mechanized part covers only finite-sum algebra; the monotone quantity itself
+requires a time integration that is not formalized. The obstruction's
+constants are non-effective, and the capacity bound for the sharply
+truncated family — the original hypothesis — remains open, though nothing
+now depends on it.
+
+**Method, briefly.** Every load-bearing finite computation is an
+exact-rational certificate with an independent checker and a
+tamper-rejection battery; the paper-level proofs went through adversarial
+review by AI agents whose reports are in the repository; corrections are
+published as tagged releases rather than silent edits.
+
+### この成果の位置づけと価値（日本語）
+
+**一言で。** 周期箱上の Navier–Stokes 方程式について、解のエネルギーが
+より細かいスケールへ移る速さを厳密に測る恒等式群を証明し、それを正則性
+証明へ変換する自然な方法の一つ(帯域の関数による一様な各点 Osgood 上界)
+が不可能であることを証明した。
+
+**専門外の方へ。** Navier–Stokes 方程式は流体の運動を記述します。その
+3次元の解が有限時間で無限に細かい構造を作り得るかは有名な未解決問題で、
+本リポジトリは**どちらの方向にもこれを解決していません**。ここにあるのは
+厳密な帳簿づけです: 流れの構造の細かさを測る一つの数を追跡する恒等式、
+その数の増大をある積分が完全に支配することの証明、そして魅力的な近道 —
+その積分を「細かさ自身のゆっくり増える関数」で抑え、古典的な補題で正則性
+証明に変換する方法 — が不可能であることの証明(あらゆるそうした上界を
+破る速度場を明示的に構成)。自然な経路がなぜ失敗するかを反例つきで正確に
+知ることは、小さいが実在する数学的情報です。
+
+**数学的に明確になったこと。** (i) スペクトル帯域 $N_0^2=H_1/H_0$ の厳密
+なモード恒等式。その Cauchy–Schwarz 欠損と平方完成欠損は厳密に計算可能
+で、有限場上で有理演算により検証済み。 (ii) 二分法($\int KD\,dt<\infty$
+なら解は大域的)と、厳密な作用表現
+$\int KD=\int\lVert\partial_tu\rVert_2^2/D+\nu^2\int H_2/H_1+\nu\log(D/D_0)$。
+後者は判定条件の超臨界性が $\dot H^1$ 帯域作用に局在し、残りは無害な対数
+だけであることを示す。 (iii) 障害: $\int^\infty ds/\Phi=\infty$ を満たす
+非減少 $\Phi$ で $K\le\Phi(\log N_0^2)$ を全ての発散ゼロ三角多項式場で
+満たすものは存在しない。証人は容量が $N^3$ 次の明示的スペクトル族。
+
+**新しくないもの。** 部品は古典的です: $N_0,N_1$ は Taylor 微視スケール
+の逆長さ(Foias–Guillopé–Temam ほか)、$K$ は長く研究されてきた非線形性
+の枯渇の定量化、対数的に精密化された正則性判定は Kozono–Ogawa–Taniuchi
+や Planchon に遡ります。Cheskidov–Shvydkoy は「あらゆる
+Ladyzhenskaya–Prodi–Serrin 条件より真に弱い」波数判定を既に証明しており、
+本研究はそれに並ぶとも勝るとも主張しません — ここでの判定は古典的な
+2つの作用に*含意される*ことしか示していません。貢献は厳密なパッケージング
+です: 欠損が厳密計算できる恒等式、作用表現、認証つき反例族。新しい扉を
+開いたのではなく、閉じている扉を正確に地図にしたものです。
+
+**何の役に立つか。** 構造の理解: 作用表現は問題の超臨界性がどこに座って
+いるかを正確に示します。負の知識: 各点一様な Osgood 経路は証明つきで
+死んだので、後続の試みが何を変えなければならないかが明確になります
+(解に適応した剰余 $R(t)$ の経路はこの障害の対象外のまま残ります)。
+素材: 独立検査器つきの厳密有理証明書層、閉形式の法則を持つスペクトル族、
+そして棄却された爆発機構の台帳(各項目に、それを殺した式または定理を
+記録)。
+
+**持たない価値。** Clay 問題は両方向とも未解決で、本成果は上記の言明を
+超えてそれに関与しません。実用的・工学的応用はありません。検証は AI
+エージェントによる敵対的レビューで、報告書は未編集のまま収録されています
+が、人間の査読ではありません — その過程で複数の主張(量化子、周期化
+恒等式、正値性の議論)が破られ修正されました。これは過程が誤りを捕まえる
+証拠であると同時に、素材に誤りが含まれていた証拠でもあります。機械検証は
+有限和の代数のみで、単調量そのものには形式化されていない時間積分が必要
+です。障害の定数は非有効で、鋭いカットオフ族の容量下界(元の仮説)は
+未解決のまま残っています(ただし現在は何もそれに依存しません)。
+
+**方法論。** 負荷のかかる有限計算はすべて、独立検査器と改竄拒否テスト
+つきの厳密有理証明書です。紙上証明は AI エージェントの敵対的レビューを
+経ており、その報告書はリポジトリに収録されています。訂正は黙った編集では
+なく、タグ付き Release として公開されます。
+
 ---
 
 ## このリポジトリについて（日本語）
